@@ -1,5 +1,17 @@
 # Later Reviews
 
+## Édition fine des boutons et éléments atomiques
+
+Permettre à l'utilisateur de modifier :
+- Couleur, taille, radius, texte des boutons CTA
+- Typographie (font-family, taille des titres)
+- Icônes des sections Features
+- Liens individuels (navbar, footer)
+
+Actuellement bloqué car ces éléments n'ont pas de champs dans le ContentPanel et ne sont pas exposés via le thème.
+
+---
+
 ## Option B — Éditeur Canva niveau élément
 
 Quand l'Option A (éditeur niveau section) est stable, implémenter un vrai éditeur visuel :

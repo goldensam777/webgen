@@ -1,0 +1,154 @@
+{
+  "config": {
+    "sections": [
+      "navbar",
+      "hero",
+      "features",
+      "pricing",
+      "faq",
+      "footer"
+    ],
+    "theme": {
+      "primary": "#0891b2",
+      "secondary": "#22c55e",
+      "background": "#ffffff",
+      "surface": "#f8fafc",
+      "text": "#1e293b",
+      "textMuted": "#64748b",
+      "border": "#e2e8f0"
+    },
+    "data": {
+      "navbar": {
+        "logo": "Dr Dodji YEVI",
+        "links": [
+          {
+            "label": "À propos",
+            "href": "#about"
+          },
+          {
+            "label": "Expertise",
+            "href": "#expertise"
+          },
+          {
+            "label": "Publications",
+            "href": "#publications"
+          },
+          {
+            "label": "Contact",
+            "href": "#contact"
+          }
+        ],
+        "ctaLabel": "Prendre RDV",
+        "ctaHref": "#contact"
+      },
+      "hero": {
+        "title": "Dr Dodji Magloire Inès YEVI",
+        "subtitle": "Chirurgien Urologue-Andrologue",
+        "description": "Maître de Conférences Agrégé en Urologie-Andrologie (CAMES) | Chef de l'Unité d'Urologie-Andrologie au CHUDO | Pioneer en implantation de prothèses péniennes au Bénin",
+        "badgeLabel": "Expert International",
+        "ctaLabel": "Découvrir mon parcours",
+        "ctaHref": "#expertise",
+        "secondaryCtaLabel": "Mes publications",
+        "secondaryCtaHref": "#publications",
+        "align": "center"
+      },
+      "features": {
+        "title": "Domaines d'Expertise",
+        "subtitle": "Une expertise reconnue nationalement et internationalement",
+        "items": [
+          {
+            "title": "Chirurgie Urologique Avancée",
+            "description": "Pionnier au Bénin dans l'implantation de prothèses péniennes et de sphincters artificiels de l'urètre. Expertise en endo-urologie et chirurgie reconstructrice."
+          },
+          {
+            "title": "Chirurgie des Fistules Obstétricales",
+            "description": "Expert international reconnu dans le traitement chirurgical des fistules obstétricales, contribuant à améliorer la qualité de vie des femmes."
+          },
+          {
+            "title": "Enseignement et Recherche",
+            "description": "Enseignant-Chercheur à l'UAC, directeur de plus de 40 thèses et mémoires, spécialiste en pédagogie universitaire et recherche de mise en œuvre (OMS)."
+          },
+          {
+            "title": "Engagement Communautaire",
+            "description": "Fondateur de l'ONG 'Fondation Charité Sans Frontières' et animateur de plus de 50 émissions de sensibilisation aux pathologies urologiques."
+          }
+        ]
+      },
+      "pricing": {
+        "title": "Services de Consultation",
+        "subtitle": "Des soins spécialisés adaptés à vos besoins",
+        "plans": [
+          {
+            "name": "Consultation Générale",
+            "price": "Sur demande",
+            "period": "",
+            "description": "Consultation en urologie générale et andrologie",
+            "features": [
+              "Diagnostic approfondi",
+              "Plan de traitement personnalisé",
+              "Suivi médical",
+              "Conseils préventifs"
+            ],
+            "ctaLabel": "Prendre RDV",
+            "highlighted": false
+          },
+          {
+            "name": "Chirurgie Spécialisée",
+            "price": "Sur devis",
+            "period": "",
+            "description": "Interventions chirurgicales avancées",
+            "features": [
+              "Implantation de prothèses",
+              "Chirurgie des fistules",
+              "Endo-urologie",
+              "Reconstruction urologique"
+            ],
+            "ctaLabel": "Consultation pré-opératoire",
+            "highlighted": true
+          },
+          {
+            "name": "Formation & Recherche",
+            "price": "Variable",
+            "period": "",
+            "description": "Encadrement académique et formation",
+            "features": [
+              "Direction de thèses",
+              "Formation continue",
+              "Recherche clinique",
+              "Expertise judiciaire"
+            ],
+            "ctaLabel": "Nous contacter",
+            "highlighted": false
+          }
+        ]
+      },
+      "faq": {
+        "title": "Questions Fréquentes",
+        "items": [
+          {
+            "title": "Quelles sont les pathologies que vous traitez ?",
+            "content": "Je traite l'ensemble des pathologies urologiques et andrologiques : troubles de l'érection, incontinence urinaire, calculs rénaux, cancers urologiques, fistules obstétricales, et bien d'autres. Mon expertise particulière porte sur les chirurgies reconstructrices complexes."
+          },
+          {
+            "title": "Où puis-je vous consulter ?",
+            "content": "Je consulte principalement au Centre Hospitalier Universitaire Départemental de l'Ouémé (CHUDO) à Porto-Novo, où je dirige l'Unité d'Urologie-Andrologie. Je suis également disponible pour des consultations dans d'autres structures selon les besoins."
+          },
+          {
+            "title": "Proposez-vous des interventions innovantes ?",
+            "content": "Oui, je suis pionnier au Bénin dans plusieurs techniques avancées, notamment l'implantation de prothèses péniennes et de sphincters artificiels. Je reste constamment à la pointe des innovations en urologie grâce à ma formation continue et mes collaborations internationales."
+          },
+          {
+            "title": "Comment prendre rendez-vous ?",
+            "content": "Vous pouvez prendre rendez-vous en contactant directement le CHUDO ou en utilisant les coordonnées disponibles sur ce site. Pour les cas urgents, n'hésitez pas à mentionner la nature de votre problème lors de la prise de rendez-vous."
+          }
+        ]
+      },
+      "footer": {
+        "logo": "Dr Dodji YEVI",
+        "description": "Chirurgien Urologue-Andrologue dévoué à l'excellence médicale et à l'amélioration de la qualité de vie de mes patients.",
+        "copyright": "© 2024 Dr Dodji Magloire Inès YEVI. Tous droits réservés."
+      }
+    }
+  },
+  "publishedAt": "2026-03-23T22:24:52.174Z"
+}

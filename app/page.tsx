@@ -2,13 +2,15 @@
 "use client";
 import { useState } from "react";
 import { EditorLayout } from "@/components/editor/EditorLayout";
+import { PublishModal } from "@/components/editor/PublishModal";
 import { useSiteStore, apiConfigToSiteConfig } from "@/app/store/siteStore";
 
 export default function WebgenPage() {
   const [description, setDescription] = useState("");
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
-  const { config, setConfig, clearConfig }         = useSiteStore();
+  const [publishOpen, setPublishOpen] = useState(false);
+  const { config, setConfig, clearConfig } = useSiteStore();
 
   const generate = async () => {
     if (!description.trim()) return;
@@ -38,14 +40,25 @@ export default function WebgenPage() {
         px-6 h-14 flex items-center justify-between shrink-0">
         <span className="font-bold text-lg text-gray-900">Webgen</span>
         {config && (
-          <button
-            onClick={() => clearConfig()}
-            className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
-          >
-            ← Nouveau site
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPublishOpen(true)}
+              className="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-sm
+                font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Publier →
+            </button>
+            <button
+              onClick={() => clearConfig()}
+              className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+            >
+              ← Nouveau site
+            </button>
+          </div>
         )}
       </header>
+
+      <PublishModal isOpen={publishOpen} onClose={() => setPublishOpen(false)} />
 
       {/* ── Éditeur ou Formulaire ─────────────────────── */}
       {config ? (
