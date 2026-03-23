@@ -173,25 +173,36 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
     update(fieldKey, arr);
   };
 
-  const inputCls = `w-full text-xs border border-gray-200 rounded px-2 py-1.5
-    focus:outline-none focus:border-blue-400 bg-white`;
-  const labelCls = "text-xs text-gray-500 mb-1 block";
+  const inputCls = "w-full text-xs rounded px-2 py-1.5 focus:outline-none border";
+  const inputStyle: React.CSSProperties = {
+    backgroundColor: "var(--wg-bg)",
+    borderColor:     "var(--wg-border)",
+    color:           "var(--wg-text)",
+  };
+  const labelCls = "text-xs mb-1 block";
+  const labelStyle: React.CSSProperties = { color: "var(--wg-text-2)" };
 
   return (
     <div className="flex flex-col h-full">
 
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 shrink-0">
+      <div
+        className="flex items-center gap-2 px-4 py-3 border-b shrink-0"
+        style={{ borderColor: "var(--wg-border)" }}
+      >
         <button
           onClick={onBack}
-          className="text-gray-400 hover:text-gray-700 transition-colors"
+          className="transition-colors"
+          style={{ color: "var(--wg-text-3)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--wg-text)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-3)")}
           title="Retour"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <span className="text-sm font-semibold text-gray-800">
+        <span className="text-sm font-semibold" style={{ color: "var(--wg-text)" }}>
           {SECTION_LABELS[section] ?? section}
         </span>
       </div>
@@ -203,10 +214,11 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
           /* ── text ── */
           if (field.type === "text") return (
             <div key={field.key}>
-              <label className={labelCls}>{field.label}</label>
+              <label className={labelCls} style={labelStyle}>{field.label}</label>
               <input
                 type="text"
                 className={inputCls}
+                style={inputStyle}
                 value={(data[field.key] as string) ?? ""}
                 onChange={(e) => update(field.key, e.target.value)}
               />
@@ -216,9 +228,10 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
           /* ── textarea ── */
           if (field.type === "textarea") return (
             <div key={field.key}>
-              <label className={labelCls}>{field.label}</label>
+              <label className={labelCls} style={labelStyle}>{field.label}</label>
               <textarea
                 className={`${inputCls} resize-none`}
+                style={inputStyle}
                 rows={3}
                 value={(data[field.key] as string) ?? ""}
                 onChange={(e) => update(field.key, e.target.value)}
@@ -229,9 +242,10 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
           /* ── select ── */
           if (field.type === "select") return (
             <div key={field.key}>
-              <label className={labelCls}>{field.label}</label>
+              <label className={labelCls} style={labelStyle}>{field.label}</label>
               <select
                 className={inputCls}
+                style={inputStyle}
                 value={(data[field.key] as string) ?? field.options[0]}
                 onChange={(e) => update(field.key, e.target.value)}
               >
@@ -251,10 +265,11 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
             return (
               <div key={field.key}>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-semibold text-gray-600">{field.label}</label>
+                  <label className="text-xs font-semibold" style={{ color: "var(--wg-text-2)" }}>{field.label}</label>
                   <button
                     onClick={() => addArrayItem(field.key, field.fields)}
-                    className="text-xs text-blue-500 hover:text-blue-700 flex items-center gap-0.5"
+                    className="text-xs flex items-center gap-0.5 transition-colors"
+                    style={{ color: "var(--wg-green)" }}
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -268,21 +283,26 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
                     const isExpanded = expanded.has(i);
 
                     return (
-                      <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div key={i} className="rounded-lg overflow-hidden border" style={{ borderColor: "var(--wg-border)" }}>
 
                         {/* Item header */}
                         <div
-                          className="flex items-center justify-between px-3 py-2 bg-gray-50
-                            cursor-pointer hover:bg-gray-100 transition-colors"
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer transition-colors"
+                          style={{ backgroundColor: "var(--wg-bg-3)" }}
+                          onMouseEnter={e => (e.currentTarget.style.filter = "brightness(0.96)")}
+                          onMouseLeave={e => (e.currentTarget.style.filter = "")}
                           onClick={() => toggleItem(field.key, i)}
                         >
-                          <span className="text-xs font-medium text-gray-700 truncate flex-1">
+                          <span className="text-xs font-medium truncate flex-1" style={{ color: "var(--wg-text)" }}>
                             {getItemName(item, i, itemLabel)}
                           </span>
                           <div className="flex items-center gap-1 ml-2 shrink-0">
                             <button
                               onClick={(e) => { e.stopPropagation(); removeArrayItem(field.key, i); }}
-                              className="text-gray-300 hover:text-red-400 transition-colors"
+                              className="transition-colors"
+                              style={{ color: "var(--wg-text-3)" }}
+                              onMouseEnter={e => (e.currentTarget.style.color = "#ef4444")}
+                              onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-3)")}
                             >
                               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -300,15 +320,18 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
 
                         {/* Item fields */}
                         {isExpanded && (
-                          <div className="px-3 py-3 flex flex-col gap-2 bg-white border-t border-gray-100">
+                          <div
+                            className="px-3 py-3 flex flex-col gap-2 border-t"
+                            style={{ borderColor: "var(--wg-border)" }}
+                          >
                             {field.fields.map((subField) => {
-                              // features: string[] → textarea (one per line)
                               if (subField.key === "features" && Array.isArray(item[subField.key])) {
                                 return (
                                   <div key={subField.key}>
-                                    <label className={labelCls}>{subField.label}</label>
+                                    <label className={labelCls} style={labelStyle}>{subField.label}</label>
                                     <textarea
                                       className={`${inputCls} resize-none`}
+                                      style={inputStyle}
                                       rows={4}
                                       value={(item[subField.key] as string[]).join("\n")}
                                       onChange={(e) =>
@@ -322,9 +345,10 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
 
                               if (subField.type === "textarea") return (
                                 <div key={subField.key}>
-                                  <label className={labelCls}>{subField.label}</label>
+                                  <label className={labelCls} style={labelStyle}>{subField.label}</label>
                                   <textarea
                                     className={`${inputCls} resize-none`}
+                                    style={inputStyle}
                                     rows={3}
                                     value={(item[subField.key] as string) ?? ""}
                                     onChange={(e) =>
@@ -336,10 +360,11 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
 
                               return (
                                 <div key={subField.key}>
-                                  <label className={labelCls}>{subField.label}</label>
+                                  <label className={labelCls} style={labelStyle}>{subField.label}</label>
                                   <input
                                     type="text"
                                     className={inputCls}
+                                    style={inputStyle}
                                     value={(item[subField.key] as string) ?? ""}
                                     onChange={(e) =>
                                       updateArrayItem(field.key, i, subField.key, e.target.value)
@@ -355,7 +380,7 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
                   })}
 
                   {items.length === 0 && (
-                    <p className="text-xs text-gray-400 text-center py-3">
+                    <p className="text-xs text-center py-3" style={{ color: "var(--wg-text-3)" }}>
                       Aucun élément. Cliquez sur «&nbsp;Ajouter&nbsp;».
                     </p>
                   )}
@@ -368,7 +393,7 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
         })}
 
         {fields.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-8">
+          <p className="text-xs text-center py-8" style={{ color: "var(--wg-text-3)" }}>
             Pas de champs éditables pour cette section.
           </p>
         )}

@@ -28,19 +28,12 @@ export function SectionPanel() {
 
   if (!config) return null;
 
-  const available = ALL_SECTIONS.filter(
-    (s) => !config.sections.includes(s)
-  );
+  const available = ALL_SECTIONS.filter(s => !config.sections.includes(s));
 
   const handleDragStart = (s: string) => setDragging(s);
-  const handleDragOver  = (e: React.DragEvent, s: string) => {
-    e.preventDefault();
-    setDragOver(s);
-  };
+  const handleDragOver  = (e: React.DragEvent, s: string) => { e.preventDefault(); setDragOver(s); };
   const handleDrop = (target: string) => {
-    if (!dragging || dragging === target) {
-      setDragging(null); setDragOver(null); return;
-    }
+    if (!dragging || dragging === target) { setDragging(null); setDragOver(null); return; }
     const next = [...config.sections];
     const from = next.indexOf(dragging);
     const to   = next.indexOf(target);
@@ -52,11 +45,15 @@ export function SectionPanel() {
 
   return (
     <div className="flex flex-col gap-1">
+
       {/* Sections actives */}
-      <p className="text-xs font-semibold uppercase tracking-wide
-        text-gray-400 px-4 pt-4 pb-2">
+      <p
+        className="text-xs font-semibold uppercase tracking-wide px-4 pt-4 pb-2"
+        style={{ color: "var(--wg-text-3)" }}
+      >
         Sections actives
       </p>
+
       {config.sections.map((s) => (
         <div
           key={s}
@@ -65,30 +62,38 @@ export function SectionPanel() {
           onDragOver={(e) => handleDragOver(e, s)}
           onDrop={() => handleDrop(s)}
           onDragEnd={() => { setDragging(null); setDragOver(null); }}
-          className={`flex items-center justify-between px-4 py-2
-            rounded-lg mx-1 cursor-grab active:cursor-grabbing
-            transition-colors
-            ${dragOver === s ? "bg-blue-50 border border-blue-200" : "hover:bg-gray-50"}
-            ${dragging === s ? "opacity-40" : ""}`}
+          className="flex items-center justify-between px-4 py-2 rounded-lg mx-1
+            cursor-grab active:cursor-grabbing transition-colors"
+          style={{
+            backgroundColor: dragOver === s ? "var(--wg-green-muted)" : "transparent",
+            border:           dragOver === s ? "1px solid var(--wg-green)"  : "1px solid transparent",
+            opacity:          dragging === s ? 0.4 : 1,
+          }}
+          onMouseEnter={e => {
+            if (dragOver !== s) e.currentTarget.style.backgroundColor = "var(--wg-bg-3)";
+          }}
+          onMouseLeave={e => {
+            if (dragOver !== s) e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
           <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-300" fill="none"
-              viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                strokeWidth={2} d="M4 8h16M4 16h16" />
+            <svg className="w-4 h-4" style={{ color: "var(--wg-text-3)" }}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
             </svg>
-            <span className="text-sm text-gray-700">
+            <span className="text-sm" style={{ color: "var(--wg-text)" }}>
               {SECTION_LABELS[s] ?? s}
             </span>
           </div>
           <button
             onClick={() => removeSection(s)}
-            className="text-gray-300 hover:text-red-400 transition-colors"
+            className="transition-colors"
+            style={{ color: "var(--wg-text-3)" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#ef4444")}
+            onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-3)")}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -97,8 +102,10 @@ export function SectionPanel() {
       {/* Sections disponibles */}
       {available.length > 0 && (
         <>
-          <p className="text-xs font-semibold uppercase tracking-wide
-            text-gray-400 px-4 pt-4 pb-2">
+          <p
+            className="text-xs font-semibold uppercase tracking-wide px-4 pt-4 pb-2"
+            style={{ color: "var(--wg-text-3)" }}
+          >
             Ajouter
           </p>
           {available.map((s) => (
@@ -106,17 +113,21 @@ export function SectionPanel() {
               key={s}
               onClick={() => addSection(s)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg mx-1
-                hover:bg-blue-50 text-left transition-colors group"
+                text-left transition-colors group"
+              style={{ color: "var(--wg-text-2)" }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = "var(--wg-green-muted)";
+                e.currentTarget.style.color = "var(--wg-green)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.color = "var(--wg-text-2)";
+              }}
             >
-              <svg className="w-4 h-4 text-gray-300 group-hover:text-blue-500
-                transition-colors" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              <span className="text-sm text-gray-600 group-hover:text-blue-600">
-                {SECTION_LABELS[s] ?? s}
-              </span>
+              <span className="text-sm">{SECTION_LABELS[s] ?? s}</span>
             </button>
           ))}
         </>

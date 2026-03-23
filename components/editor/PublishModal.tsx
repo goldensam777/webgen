@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useSiteStore } from "@/app/store/siteStore";
+import { useAuthStore } from "@/app/store/authStore";
 
 function toSlug(str: string): string {
   return str
@@ -19,6 +20,7 @@ interface PublishModalProps {
 
 export function PublishModal({ isOpen, onClose }: PublishModalProps) {
   const { config } = useSiteStore();
+  const { token }  = useAuthStore();
   const [slug, setSlug]         = useState("");
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
@@ -39,9 +41,11 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
     setLoading(true);
     setError("");
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
       const res = await fetch("/api/publish", {
         method:  "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body:    JSON.stringify({ slug, config }),
       });
       const data = await res.json();
@@ -59,18 +63,20 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
       {published ? (
         /* ── Succès ── */
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-green-600">
+          <div className="flex items-center gap-2" style={{ color: "var(--wg-green)" }}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span className="font-semibold text-sm">Site publié !</span>
           </div>
 
-          <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
-            <span className="text-sm text-gray-700 font-mono truncate">{published}</span>
+          <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3 border"
+            style={{ backgroundColor: "var(--wg-bg-3)", borderColor: "var(--wg-border)" }}>
+            <span className="text-sm font-mono truncate" style={{ color: "var(--wg-text)" }}>{published}</span>
             <button
               onClick={() => navigator.clipboard.writeText(published)}
-              className="text-xs text-blue-600 hover:text-blue-800 font-medium shrink-0"
+              className="text-xs font-medium shrink-0 transition-opacity hover:opacity-70"
+              style={{ color: "var(--wg-green)" }}
             >
               Copier
             </button>
@@ -80,8 +86,7 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
             href={published}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-center py-2.5 rounded-xl bg-blue-600 text-white text-sm
-              font-semibold hover:bg-blue-700 transition-colors"
+            className="btn-green text-center py-2.5 rounded-xl text-sm font-semibold block"
           >
             Voir le site →
           </a>
@@ -89,13 +94,16 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
       ) : (
         /* ── Formulaire ── */
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-gray-500">
-            Ton site sera accessible à cette adresse :
+          <p className="text-sm" style={{ color: "var(--wg-text-2)" }}>
+            Votre site sera accessible à cette adresse :
           </p>
 
           {/* URL preview */}
-          <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center gap-1">
-            <span className="text-sm text-gray-400 shrink-0">https://</span>
+          <div
+            className="rounded-xl px-4 py-3 flex items-center gap-1 border"
+            style={{ backgroundColor: "var(--wg-bg-3)", borderColor: "var(--wg-border)" }}
+          >
+            <span className="text-sm shrink-0" style={{ color: "var(--wg-text-3)" }}>https://</span>
             <input
               type="text"
               value={slug}
@@ -103,16 +111,17 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
                 setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
                 setError("");
               }}
-              className="flex-1 bg-transparent text-sm font-mono text-gray-900
-                focus:outline-none min-w-0"
+              className="flex-1 bg-transparent text-sm font-mono focus:outline-none min-w-0"
+              style={{ color: "var(--wg-text)" }}
               placeholder="mon-site"
               maxLength={40}
             />
-            <span className="text-sm text-gray-400 shrink-0">.webgen.app</span>
+            <span className="text-sm shrink-0" style={{ color: "var(--wg-text-3)" }}>.webgen.app</span>
           </div>
 
           {error && (
-            <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+            <p className="text-xs px-3 py-2 rounded-lg"
+              style={{ color: "#ef4444", backgroundColor: "rgba(239,68,68,0.08)" }}>
               {error}
             </p>
           )}
@@ -120,15 +129,13 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
           <button
             onClick={handlePublish}
             disabled={loading || slug.length < 2}
-            className="py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold
-              hover:bg-blue-700 transition-colors disabled:opacity-50
-              disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="btn-green py-2.5 rounded-xl text-sm font-semibold
+              flex items-center justify-center gap-2"
           >
             {loading && (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent
-                rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             )}
-            {loading ? "Publication..." : "Publier →"}
+            {loading ? "Publication…" : "Publier →"}
           </button>
         </div>
       )}

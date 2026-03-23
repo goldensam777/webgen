@@ -1,115 +1,514 @@
-// app/page.tsx
+// app/page.tsx — Landing page Webgen
 "use client";
-import { useState } from "react";
-import { EditorLayout } from "@/components/editor/EditorLayout";
-import { PublishModal } from "@/components/editor/PublishModal";
-import { useSiteStore, apiConfigToSiteConfig } from "@/app/store/siteStore";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useAuthStore } from "@/app/store/authStore";
 
-export default function WebgenPage() {
-  const [description, setDescription] = useState("");
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState("");
-  const [publishOpen, setPublishOpen] = useState(false);
-  const { config, setConfig, clearConfig } = useSiteStore();
+/* ── Smart CTA : dashboard si connecté, sinon auth ─────────── */
+function SmartCTA({ label, className }: { label: string; className?: string }) {
+  const [mounted, setMounted] = useState(false);
+  const { user } = useAuthStore();
+  useEffect(() => { setMounted(true); }, []);
+  const href = mounted && user ? "/dashboard" : "/auth";
+  return (
+    <Link href={href} className={className}>
+      {label}
+    </Link>
+  );
+}
 
-  const generate = async () => {
-    if (!description.trim()) return;
-    setLoading(true);
-    setError("");
-    try {
-      const res  = await fetch("/api/generate", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ description }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setConfig(apiConfigToSiteConfig(data.config));
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erreur inconnue");
-    } finally {
-      setLoading(false);
-    }
+/* ══════════════════════════════════════════════════════════════
+   Carousel — sites mockup 3D
+══════════════════════════════════════════════════════════════ */
+interface Slide {
+  name:     string;
+  category: string;
+  primary:  string;
+  dark:     string;
+  bg:       string;
+}
+
+const SLIDES: Slide[] = [
+  { name: "Boulangerie du Coin", category: "Commerce",  primary: "#f59e0b", dark: "#d97706", bg: "#fffdf7" },
+  { name: "Studio Visuelle",    category: "Créatif",    primary: "#8b5cf6", dark: "#6d28d9", bg: "#faf5ff" },
+  { name: "Clinique Santé+",    category: "Médical",    primary: "#10b981", dark: "#059669", bg: "#f0fdf9" },
+  { name: "Cabinet Juridique",  category: "Juridique",  primary: "#2563eb", dark: "#1d4ed8", bg: "#eff6ff" },
+  { name: "Agence Digitale",    category: "Tech",       primary: "#ef4444", dark: "#dc2626", bg: "#fff5f5" },
+];
+
+function MockCard({ slide, active }: { slide: Slide; active: boolean }) {
+  return (
+    <div
+      className="w-56 h-[320px] rounded-2xl overflow-hidden border relative"
+      style={{
+        backgroundColor: slide.bg,
+        borderColor:     `${slide.primary}22`,
+        boxShadow: active
+          ? `0 28px 60px rgba(0,0,0,0.22), 0 0 0 1px ${slide.primary}30`
+          : "0 8px 24px rgba(0,0,0,0.10)",
+      }}
+    >
+      {/* Navbar */}
+      <div
+        className="h-10 flex items-center px-3 gap-2"
+        style={{ background: `linear-gradient(135deg, ${slide.primary}, ${slide.dark})` }}
+      >
+        <span className="font-bold text-white text-xs truncate flex-1">{slide.name}</span>
+        <div className="flex gap-1">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="w-5 h-1.5 rounded-full bg-white/30" />
+          ))}
+        </div>
+      </div>
+
+      {/* Hero area */}
+      <div className="p-4">
+        <span
+          className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold mb-3"
+          style={{ background: `${slide.primary}18`, color: slide.primary }}
+        >
+          {slide.category}
+        </span>
+        <div className="space-y-1.5 mb-4">
+          <div className="h-4 rounded w-4/5"  style={{ backgroundColor: slide.dark, opacity: 0.7 }} />
+          <div className="h-2.5 rounded w-2/3" style={{ backgroundColor: slide.dark, opacity: 0.25 }} />
+          <div className="h-2.5 rounded w-1/2" style={{ backgroundColor: slide.dark, opacity: 0.18 }} />
+        </div>
+        <div
+          className="h-8 w-24 rounded-lg"
+          style={{ background: `linear-gradient(135deg, ${slide.primary}, ${slide.dark})` }}
+        />
+      </div>
+
+      {/* Feature cards row */}
+      <div className="flex gap-1.5 px-4 mb-4">
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            className="flex-1 rounded-xl p-2 border"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.7)",
+              borderColor:     `${slide.primary}18`,
+            }}
+          >
+            <div className="w-5 h-5 rounded-lg mb-1.5" style={{ background: `${slide.primary}25` }} />
+            <div className="h-1.5 rounded mb-1"   style={{ backgroundColor: slide.dark, opacity: 0.28 }} />
+            <div className="h-1.5 rounded w-3/4"  style={{ backgroundColor: slide.dark, opacity: 0.18 }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Testimonial strip */}
+      <div className="px-4">
+        <div
+          className="rounded-xl p-2.5 border"
+          style={{ backgroundColor: "rgba(255,255,255,0.6)", borderColor: `${slide.primary}15` }}
+        >
+          <div className="flex gap-2 items-center mb-1.5">
+            <div className="w-6 h-6 rounded-full shrink-0" style={{ backgroundColor: `${slide.primary}35` }} />
+            <div className="h-2 rounded flex-1" style={{ backgroundColor: slide.dark, opacity: 0.28 }} />
+          </div>
+          <div className="h-1.5 rounded mb-1"  style={{ backgroundColor: slide.dark, opacity: 0.18 }} />
+          <div className="h-1.5 rounded w-4/5" style={{ backgroundColor: slide.dark, opacity: 0.13 }} />
+        </div>
+      </div>
+
+      {/* Bottom accent */}
+      <div
+        className="absolute bottom-0 inset-x-0 h-0.5"
+        style={{ backgroundColor: slide.primary }}
+      />
+    </div>
+  );
+}
+
+function SiteCarousel() {
+  const [current, setCurrent] = useState(0);
+  const [auto, setAuto]       = useState(true);
+  const n = SLIDES.length;
+
+  useEffect(() => {
+    if (!auto) return;
+    const t = setInterval(() => setCurrent(c => (c + 1) % n), 3200);
+    return () => clearInterval(t);
+  }, [auto, n]);
+
+  /* Compute offset (-2..+2) of slide i relative to current */
+  const offset = (i: number) => {
+    const raw = i - current;
+    const mod = ((raw % n) + n) % n;
+    return mod > n / 2 ? mod - n : mod;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="flex flex-col items-center gap-8 select-none">
+      {/* Track */}
+      <div
+        className="relative h-[360px] w-full max-w-3xl flex items-center justify-center"
+        style={{ overflow: "visible" }}
+      >
+        {SLIDES.map((slide, i) => {
+          const off = offset(i);
+          const abs = Math.abs(off);
+          const sign = Math.sign(off);
+          if (abs > 2) return null;
 
-      {/* ── Header ───────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200
-        px-6 h-14 flex items-center justify-between shrink-0">
-        <span className="font-bold text-lg text-gray-900">Webgen</span>
-        {config && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setPublishOpen(true)}
-              className="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-sm
-                font-semibold hover:bg-blue-700 transition-colors"
+          return (
+            <div
+              key={i}
+              className="absolute cursor-pointer"
+              style={{
+                transform:  `translateX(${sign * 190}px)`,
+                zIndex:     10 - abs,
+                transition: "transform 0.75s cubic-bezier(0.25,0.8,0.25,1)",
+              }}
+              onClick={() => { if (abs > 0) setCurrent(i); }}
             >
-              Publier →
-            </button>
-            <button
-              onClick={() => clearConfig()}
-              className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
-            >
-              ← Nouveau site
-            </button>
-          </div>
-        )}
+              <div
+                style={{
+                  transform:  `perspective(900px) rotateY(${sign * -30}deg) scale(${abs === 0 ? 1 : abs === 1 ? 0.86 : 0.72})`,
+                  opacity:    abs === 0 ? 1 : abs === 1 ? 0.72 : 0.38,
+                  transition: "all 0.75s cubic-bezier(0.25,0.8,0.25,1)",
+                }}
+              >
+                <MockCard slide={slide} active={abs === 0} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Controls — style pill inspired by the TikTok reference */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setCurrent(c => (c - 1 + n) % n)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors"
+          style={{
+            borderColor:     "var(--wg-border)",
+            color:           "var(--wg-text-2)",
+            backgroundColor: "var(--wg-bg-2)",
+          }}
+        >
+          ◀ Préc
+        </button>
+
+        <button
+          onClick={() => setAuto(a => !a)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors"
+          style={{
+            borderColor:     auto ? "var(--wg-green)"       : "var(--wg-border)",
+            color:           auto ? "var(--wg-green)"       : "var(--wg-text-2)",
+            backgroundColor: auto ? "var(--wg-green-muted)" : "var(--wg-bg-2)",
+          }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full inline-block"
+            style={{ backgroundColor: auto ? "var(--wg-green)" : "var(--wg-text-3)" }}
+          />
+          Auto
+        </button>
+
+        <button
+          onClick={() => setCurrent(c => (c + 1) % n)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors"
+          style={{
+            borderColor:     "var(--wg-border)",
+            color:           "var(--wg-text-2)",
+            backgroundColor: "var(--wg-bg-2)",
+          }}
+        >
+          Suiv ▶
+        </button>
+      </div>
+
+      {/* Dots */}
+      <div className="flex gap-2 items-center">
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className="rounded-full transition-all duration-300"
+            style={{
+              width:           i === current ? "24px" : "8px",
+              height:          "8px",
+              backgroundColor: i === current ? "var(--wg-green)" : "var(--wg-border)",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Wave SVG
+══════════════════════════════════════════════════════════════ */
+function GreenWave() {
+  return (
+    <svg
+      className="wg-wave w-full block"
+      viewBox="0 0 1440 120"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <linearGradient id="wg-g1" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#10b981" />
+          <stop offset="55%"  stopColor="#059669" />
+          <stop offset="100%" stopColor="#047857" />
+        </linearGradient>
+        <linearGradient id="wg-g2" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#34d399" />
+          <stop offset="100%" stopColor="#10b981" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M0,80 C240,20 480,110 720,60 C960,10 1200,100 1440,45 L1440,120 L0,120 Z"
+        fill="url(#wg-g2)" fillOpacity="0.13"
+      />
+      <path
+        d="M0,60 C360,120 720,5 1080,70 C1260,105 1380,40 1440,30 L1440,120 L0,120 Z"
+        fill="url(#wg-g1)" fillOpacity="0.22"
+      />
+    </svg>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Features
+══════════════════════════════════════════════════════════════ */
+const FEATURES = [
+  {
+    icon: "✦",
+    title: "Décrivez, l'IA crée",
+    body: "Tapez votre description en langage naturel. Claude génère le contenu, les textes et une palette de couleurs cohérente avec votre secteur.",
+  },
+  {
+    icon: "◈",
+    title: "Éditeur visuel",
+    body: "Glissez-déposez les sections, modifiez chaque texte, ajustez les 7 couleurs du thème en temps réel — sans recompilation, sans code.",
+  },
+  {
+    icon: "⬡",
+    title: "Publié en un clic",
+    body: "Choisissez un slug et publiez sur <strong>votre-slug.webgen.app</strong>. Votre site est en ligne en quelques secondes.",
+  },
+];
+
+/* ══════════════════════════════════════════════════════════════
+   Page
+══════════════════════════════════════════════════════════════ */
+export default function LandingPage() {
+  return (
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ backgroundColor: "var(--wg-bg)", color: "var(--wg-text)" }}
+    >
+
+      {/* ── Navbar ──────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-50 px-6 h-14 flex items-center justify-between border-b"
+        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
+      >
+        <span className="font-bold text-xl" style={{ color: "var(--wg-green)" }}>Webgen</span>
+        <SmartCTA label="Commencer" className="btn-green px-4 py-2 rounded-lg text-sm font-semibold" />
       </header>
 
-      <PublishModal isOpen={publishOpen} onClose={() => setPublishOpen(false)} />
+      {/* ── Hero ────────────────────────────────────────── */}
+      <section className="flex flex-col items-center text-center px-6 pt-20 pb-0 overflow-hidden">
+        {/* Badge */}
+        <div
+          className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
+          style={{ backgroundColor: "var(--wg-green-muted)", color: "var(--wg-green)" }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--wg-green)" }} />
+          Propulsé par Claude Sonnet
+        </div>
 
-      {/* ── Éditeur ou Formulaire ─────────────────────── */}
-      {config ? (
-        <EditorLayout />
-      ) : (
-        <div className="max-w-2xl mx-auto px-6 py-16 flex flex-col gap-6 w-full">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900">
-              Créez votre site en secondes
-            </h1>
-            <p className="mt-3 text-lg text-gray-500">
-              Décrivez votre projet, l&apos;IA génère le reste.
+        {/* Headline */}
+        <h1 className="text-5xl sm:text-6xl font-bold leading-tight max-w-3xl tracking-tight">
+          Créez votre site web
+          <br />
+          <span
+            style={{
+              background:           "var(--wg-grad)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor:  "transparent",
+            }}
+          >
+            en quelques secondes
+          </span>
+        </h1>
+
+        <p className="mt-6 text-lg max-w-xl leading-relaxed" style={{ color: "var(--wg-text-2)" }}>
+          Décrivez votre projet. L&apos;IA génère le contenu, la mise en page et les couleurs.
+          Vous personnalisez, vous publiez.
+        </p>
+
+        <SmartCTA
+          label="Créer mon site gratuitement →"
+          className="btn-green mt-8 px-8 py-3 rounded-xl text-base font-semibold inline-block"
+        />
+
+        {/* Carousel */}
+        <div className="mt-14 w-full">
+          <SiteCarousel />
+        </div>
+
+        {/* Wave */}
+        <div className="mt-12 w-full max-w-4xl">
+          <GreenWave />
+        </div>
+      </section>
+
+      {/* ── Features ────────────────────────────────────── */}
+      <section
+        className="px-6 py-20"
+        style={{ backgroundColor: "var(--wg-bg-3)" }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center" style={{ color: "var(--wg-text)" }}>
+            Comment ça marche
+          </h2>
+          <p className="mt-3 text-center text-base max-w-xl mx-auto" style={{ color: "var(--wg-text-2)" }}>
+            Trois étapes, zéro friction.
+          </p>
+
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {FEATURES.map((f, i) => (
+              <div
+                key={i}
+                className="card-3d rounded-2xl p-7 border flex flex-col gap-4"
+                style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-bold"
+                  style={{ backgroundColor: "var(--wg-green-muted)", color: "var(--wg-green)" }}
+                >
+                  {f.icon}
+                </div>
+                <h3 className="text-lg font-semibold" style={{ color: "var(--wg-text)" }}>
+                  {f.title}
+                </h3>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "var(--wg-text-2)" }}
+                  dangerouslySetInnerHTML={{ __html: f.body }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA final ───────────────────────────────────── */}
+      <section className="px-6 py-24 flex flex-col items-center text-center">
+        <h2 className="text-3xl font-bold max-w-xl" style={{ color: "var(--wg-text)" }}>
+          Votre site est à{" "}
+          <span
+            style={{
+              background:           "var(--wg-grad)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor:  "transparent",
+            }}
+          >
+            une description
+          </span>{" "}
+          de distance.
+        </h2>
+        <SmartCTA
+          label="Commencer maintenant →"
+          className="btn-green mt-8 px-8 py-3 rounded-xl text-base font-semibold inline-block"
+        />
+      </section>
+
+      {/* ── Footer ──────────────────────────────────────── */}
+      <footer
+        className="mt-auto border-t"
+        style={{ borderColor: "var(--wg-border)", backgroundColor: "var(--wg-bg-2)" }}
+      >
+        <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-8">
+          {/* Brand */}
+          <div className="col-span-2 sm:col-span-1 flex flex-col gap-3">
+            <span className="font-bold text-lg" style={{ color: "var(--wg-green)" }}>Webgen</span>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--wg-text-2)" }}>
+              Plateforme SaaS de génération de sites web propulsée par l&apos;IA.
             </p>
           </div>
 
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ex: Site pour mon agence de design à Cotonou. Style moderne. Sections : accueil, services, témoignages, contact."
-            rows={6}
-            className="w-full px-4 py-3 rounded-xl border border-gray-300
-              text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500
-              focus:border-transparent resize-none text-sm"
-          />
+          {/* Produit */}
+          <div className="flex flex-col gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+              Produit
+            </span>
+            {[
+              { label: "Créer un site", href: "/create" },
+              { label: "Fonctionnalités", href: "#features" },
+              { label: "Tarifs", href: "#pricing" },
+            ].map(l => (
+              <Link
+                key={l.label}
+                href={l.href}
+                className="text-sm transition-colors hover:opacity-80"
+                style={{ color: "var(--wg-text-2)" }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
 
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg">
-              {error}
-            </p>
-          )}
+          {/* Ressources */}
+          <div className="flex flex-col gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+              Ressources
+            </span>
+            {[
+              { label: "Documentation", href: "#" },
+              { label: "Premier.js", href: "#" },
+              { label: "API", href: "#" },
+            ].map(l => (
+              <Link
+                key={l.label}
+                href={l.href}
+                className="text-sm transition-colors hover:opacity-80"
+                style={{ color: "var(--wg-text-2)" }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
 
-          <button
-            onClick={generate}
-            disabled={loading || !description.trim()}
-            className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold
-              hover:bg-blue-700 transition-colors disabled:opacity-50
-              disabled:cursor-not-allowed"
-          >
-            {loading ? "Génération en cours..." : "Générer mon site →"}
-          </button>
-
-          {loading && (
-            <div className="flex items-center justify-center gap-3
-              text-gray-500 text-sm">
-              <div className="w-4 h-4 border-2 border-blue-600
-                border-t-transparent rounded-full animate-spin" />
-              L&apos;IA assemble votre site...
-            </div>
-          )}
+          {/* Legal */}
+          <div className="flex flex-col gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+              Légal
+            </span>
+            {[
+              { label: "Confidentialité", href: "#" },
+              { label: "CGU", href: "#" },
+            ].map(l => (
+              <Link
+                key={l.label}
+                href={l.href}
+                className="text-sm transition-colors hover:opacity-80"
+                style={{ color: "var(--wg-text-2)" }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
         </div>
-      )}
+
+        <div
+          className="border-t px-6 py-4 text-xs text-center"
+          style={{ borderColor: "var(--wg-border)", color: "var(--wg-text-3)" }}
+        >
+          © 2026 Webgen · Propulsé par{" "}
+          <span style={{ color: "var(--wg-green)" }}>Premier.js</span> &amp; Claude
+        </div>
+      </footer>
     </div>
   );
 }

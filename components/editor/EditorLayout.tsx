@@ -78,29 +78,27 @@ export function EditorLayout() {
     <div className="flex h-[calc(100vh-56px)] overflow-hidden">
 
       {/* ── Sidebar ────────────────────────────────────────────────────── */}
-      <aside className="w-64 shrink-0 bg-white border-r border-gray-200
-        flex flex-col overflow-visible">
-
+      <aside
+        className="w-64 shrink-0 flex flex-col overflow-visible border-r"
+        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
+      >
         {editingSection ? (
-          /* Content edit mode — replaces tabs entirely */
           <ContentPanel
             section={editingSection}
             onBack={() => setEditingSection(null)}
           />
         ) : (
-          /* Normal: Sections / Styles tabs */
           <>
-            <div className="flex border-b border-gray-200 shrink-0">
+            <div className="flex shrink-0 border-b" style={{ borderColor: "var(--wg-border)" }}>
               {(["sections", "styles"] as Tab[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`flex-1 py-3 text-xs font-semibold uppercase
-                    tracking-wide transition-colors
-                    ${tab === t
-                      ? "text-blue-600 border-b-2 border-blue-600"
-                      : "text-gray-400 hover:text-gray-600"
-                    }`}
+                  className="flex-1 py-3 text-xs font-semibold uppercase tracking-wide transition-colors"
+                  style={tab === t
+                    ? { color: "var(--wg-green)", borderBottom: "2px solid var(--wg-green)" }
+                    : { color: "var(--wg-text-3)" }
+                  }
                 >
                   {t === "sections" ? "Sections" : "Styles"}
                 </button>
@@ -116,12 +114,14 @@ export function EditorLayout() {
 
       {/* ── Preview ────────────────────────────────────────────────────── */}
       <main
-        className="flex-1 overflow-y-auto bg-gray-100"
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: "var(--wg-bg-3)" }}
         onClick={() => setSelectedSection(null)}
       >
         <div
-          className="min-h-full bg-white shadow-sm"
+          className="min-h-full shadow-sm"
           style={{
+            backgroundColor:      "var(--wg-bg-2)",
             "--color-primary":    config.theme.primary,
             "--color-secondary":  config.theme.secondary,
             "--color-background": config.theme.background,

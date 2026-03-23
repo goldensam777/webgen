@@ -19,15 +19,21 @@ export function StylePanel() {
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-xs font-semibold uppercase tracking-wide
-        text-gray-400 px-4 pt-4 pb-2">
+      <p
+        className="text-xs font-semibold uppercase tracking-wide px-4 pt-4 pb-2"
+        style={{ color: "var(--wg-text-3)" }}
+      >
         Couleurs
       </p>
       {(Object.keys(THEME_LABELS) as (keyof SiteTheme)[]).map((key) => (
-        <div key={key}
-          className="flex items-center justify-between px-4 py-2
-            hover:bg-gray-50 rounded-lg mx-1">
-          <span className="text-sm text-gray-700">
+        <div
+          key={key}
+          className="flex items-center justify-between px-4 py-2 rounded-lg mx-1 transition-colors"
+          style={{ color: "var(--wg-text)" }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--wg-bg-3)")}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          <span className="text-sm" style={{ color: "var(--wg-text-2)" }}>
             {THEME_LABELS[key]}
           </span>
           <ColorPicker
