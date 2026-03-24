@@ -7,12 +7,38 @@ import { PublishModal } from "@/components/editor/PublishModal";
 import { useSiteStore, apiConfigToSiteConfig } from "@/app/store/siteStore";
 
 export default function CreatePage() {
-  const [description, setDescription] = useState("");
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState("");
-  const [publishOpen, setPublishOpen] = useState(false);
-  const [mounted, setMounted]         = useState(false);
+  const [description, setDescription]   = useState("");
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState("");
+  const [publishOpen, setPublishOpen]   = useState(false);
+  const [downloading, setDownloading]   = useState(false);
+  const [mounted, setMounted]           = useState(false);
   const { config, setConfig, clearConfig } = useSiteStore();
+
+  const handleDownload = async () => {
+    if (!config) return;
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/download", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ config }),
+      });
+      if (!res.ok) throw new Error("Erreur serveur");
+      const blob     = await res.blob();
+      const url      = URL.createObjectURL(blob);
+      const a        = document.createElement("a");
+      const multi    = config.pages.length > 1;
+      a.href         = url;
+      a.download     = multi ? "site.zip" : "index.html";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Erreur lors du téléchargement.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => { setMounted(true); }, []);
   if (!mounted) return (
@@ -62,13 +88,47 @@ export default function CreatePage() {
         </Link>
 
         {config && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Télécharger */}
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              title={config.pages.length > 1 ? "Télécharger en ZIP" : "Télécharger index.html"}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors disabled:opacity-50"
+              style={{
+                color:           "var(--wg-text-2)",
+                borderColor:     "var(--wg-border)",
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = "var(--wg-bg-3)";
+                e.currentTarget.style.color           = "var(--wg-text)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.color           = "var(--wg-text-2)";
+              }}
+            >
+              {downloading ? (
+                <div className="w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: "var(--wg-green) transparent var(--wg-green) var(--wg-green)" }} />
+              ) : (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              )}
+              {downloading ? "Export…" : config.pages.length > 1 ? "ZIP" : "HTML"}
+            </button>
+
+            {/* Publier */}
             <button
               onClick={() => setPublishOpen(true)}
               className="btn-green px-4 py-1.5 rounded-lg text-sm font-semibold"
             >
               Publier →
             </button>
+
             <button
               onClick={() => clearConfig()}
               className="text-sm transition-colors"
@@ -76,7 +136,7 @@ export default function CreatePage() {
               onMouseEnter={e => (e.currentTarget.style.color = "var(--wg-text)")}
               onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-2)")}
             >
-              ← Nouveau site
+              ← Nouveau
             </button>
           </div>
         )}
