@@ -150,4 +150,4 @@ npm run dev        # http://localhost:3000
 
 Webgen est construit sur **Premier.js**, un framework de composants React/Next.js écrit entièrement à la main. Il fournit 23 composants UI primitifs, 10 sections de page avec édition inline, un système de thème via CSS Custom Properties et un système d'édition inline (EditableText + FloatingToolbar).
 
-→ [`../OFFMODE/premierjs_frmwrk`](../OFFMODE/premierjs_frmwrk)
+→ [`premier.js`](https://github.com/goldensam777/premier_js)
