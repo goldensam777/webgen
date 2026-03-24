@@ -14,9 +14,10 @@ L'utilisateur décrit son site en langage naturel → Claude génère le contenu
 |--------|-------------|
 | Framework | Next.js 16 (App Router) |
 | UI | Premier.js (composants propriétaires) |
-| IA | Claude Sonnet 4 (Anthropic API) |
+| IA | Claude Sonnet 4.6 (Anthropic API) |
 | State | Zustand 5 + persist (localStorage) |
 | Styles | Tailwind CSS 4 + CSS Custom Properties |
+| Auth | JWT (jose) + bcryptjs |
 | Language | TypeScript 5 |
 
 ## Architecture
@@ -25,28 +26,86 @@ L'utilisateur décrit son site en langage naturel → Claude génère le contenu
 webgen/
 ├── app/
 │   ├── api/
-│   │   ├── generate/route.ts   # Claude API → SiteConfig JSON + thème
-│   │   └── publish/route.ts    # Sauvegarde le site (data/sites/[slug].json)
-│   ├── s/[slug]/page.tsx       # Rendu SSR du site publié
-│   ├── store/siteStore.ts      # Zustand store + persistance localStorage
-│   └── page.tsx                # Formulaire de génération + éditeur
+│   │   ├── generate/route.ts        # Claude API → SiteConfig multi-pages
+│   │   ├── publish/route.ts         # Sauvegarde data/sites/[slug].json
+│   │   ├── auth/login|register/     # JWT auth (jose + bcryptjs)
+│   │   └── dashboard/sites/         # Liste des sites de l'utilisateur
+│   ├── s/[slug]/page.tsx            # SSR page d'accueil du site publié
+│   ├── s/[slug]/[page]/page.tsx     # SSR sous-pages
+│   ├── auth/page.tsx                # Login / Register
+│   ├── dashboard/page.tsx           # Dashboard utilisateur
+│   ├── create/page.tsx              # Formulaire de génération + éditeur
+│   ├── store/
+│   │   ├── siteStore.ts             # Zustand multi-pages + persist
+│   │   └── authStore.ts             # Auth state (user, token)
+│   └── page.tsx                     # Landing page (marketing)
 ├── components/
 │   ├── editor/
-│   │   ├── EditorLayout.tsx    # Split-view sidebar + preview
-│   │   ├── SectionWrapper.tsx  # Hover / sélection / toolbar par section
-│   │   ├── SectionPanel.tsx    # Gestion des sections (drag & drop)
-│   │   ├── StylePanel.tsx      # 7 color pickers temps réel
-│   │   ├── ContentPanel.tsx    # Édition du contenu par section
-│   │   └── PublishModal.tsx    # Modal de publication avec slug
-│   ├── sections/               # Sections de page (Premier.js)
-│   └── ui/                     # Composants primitifs (Premier.js)
-├── data/sites/                 # Sites publiés stockés en JSON
-└── middleware.ts               # Routage *.webgen.app → /s/[slug]
+│   │   ├── EditorLayout.tsx         # Split-view sidebar + preview
+│   │   ├── SectionWrapper.tsx       # Sélection, toolbar, resize par section
+│   │   ├── EditableContext.tsx      # Context isEditing + fieldStyles
+│   │   ├── EditableText.tsx         # Texte cliquable → contentEditable
+│   │   ├── FloatingToolbar.tsx      # Bulle flottante (taille police, gras)
+│   │   ├── SectionPanel.tsx         # Gestion des sections (drag & drop)
+│   │   ├── StylePanel.tsx           # 7 color pickers temps réel
+│   │   ├── ContentPanel.tsx         # Édition champ par champ
+│   │   └── PublishModal.tsx         # Modal de publication avec slug
+│   ├── sections/                    # 10 sections (Premier.js + EditableText)
+│   └── ui/                          # 23 composants primitifs (Premier.js)
+├── data/
+│   ├── sites/[slug].json            # Sites publiés
+│   └── users.json                   # Utilisateurs
+└── middleware.ts                    # Routage *.webgen.app → /s/[slug]
 ```
+
+## Système multi-pages
+
+Chaque site est structuré en pages indépendantes :
+
+```typescript
+interface SiteConfig {
+  pages: SitePage[];   // tableau de pages
+  theme: SiteTheme;    // 7 couleurs partagées
+}
+
+interface SitePage {
+  id: string;
+  name: string;        // ex: "Services"
+  slug: string;        // ex: "services" (vide = page d'accueil)
+  sections: string[];  // ordre des sections
+  data: Record<string, Record<string, unknown>>;
+}
+```
+
+## Éditeur visuel — édition inline (style Canva)
+
+### Sélection d'une section
+Cliquer sur une section dans le preview la sélectionne (bordure verte). Un toolbar flottant apparaît en haut à droite avec ↑ ↓ / ✏️ / 🗑.
+
+### Édition inline des textes
+Quand une section est sélectionnée, tous ses champs texte affichent un contour vert pointillé. Cliquer sur n'importe quel texte l'active en `contentEditable` :
+- **Enter** ou blur → sauvegarde dans le store
+- **Escape** → annule
+
+### Toolbar flottante (FloatingToolbar)
+En focus sur un texte, une bulle apparaît au-dessus avec :
+- Nom du champ (Titre, Sous-titre, Bouton…)
+- Taille de police **A−** / `32px` / **A+** (par pas de 2px, min 10 max 120)
+- Toggle **Gras**
+
+Les styles sont stockés dans `section.data._styles[field]` et persistés.
+
+### Redimensionnement des sections
+Un handle `↕ Redimensionner` apparaît en bas de la section sélectionnée. Glisser vers le bas/haut ajuste le padding vertical. Un indicateur `+Npx` s'affiche en temps réel.
+
+### Clés privées de l'éditeur
+Les clés `_*` dans `section.data` sont filtrées avant d'être passées aux composants :
+- `_styles` — styles par champ (fontSize, fontWeight)
+- `_paddingY` — padding vertical additionnel
 
 ## Système de thème
 
-Les couleurs sont injectées comme CSS Custom Properties sur le wrapper du preview, et lues par tous les composants via `style` props — mise à jour temps réel sans recompilation Tailwind.
+7 CSS Custom Properties injectées sur le wrapper preview :
 
 ```css
 --color-primary    --color-secondary   --color-background
@@ -54,24 +113,22 @@ Les couleurs sont injectées comme CSS Custom Properties sur le wrapper du previ
 --color-border
 ```
 
-## Éditeur visuel
+Mise à jour en temps réel via StylePanel sans recompilation Tailwind.
 
-- **Hover** sur une section → bordure bleue + toolbar flottante
-- **Toolbar** : ↑ ↓ monter/descendre · ✏️ éditer le contenu · 🗑 supprimer
-- **Drag & drop** dans le preview pour réordonner
-- **Onglet Sections** : ajouter / supprimer des sections
-- **Onglet Styles** : 7 color pickers avec mise à jour instantanée
-- **ContentPanel** : édition champ par champ (texte, textarea, select, arrays)
+## Auth
 
-## Génération IA
+```
+POST /api/auth/register  →  { user, token }
+POST /api/auth/login     →  { user, token }
+```
 
-Claude Sonnet 4 reçoit la description utilisateur et retourne un JSON avec le contenu de chaque section **et** un objet `theme` avec 7 couleurs cohérentes avec le secteur décrit.
+JWT 30 jours signé avec `jose` (HS256). Passwords hashés bcryptjs (10 rounds). Token envoyé en header `Authorization: Bearer <token>` sur publish et dashboard.
 
 ## Publication
 
 ```
 Utilisateur choisit un slug → POST /api/publish
-→ sauvegardé dans data/sites/[slug].json
+→ data/sites/[slug].json  { slug, config, userId, publishedAt }
 → accessible sur https://[slug].webgen.app
 ```
 
@@ -82,6 +139,7 @@ DNS wildcard `*.webgen.app` → serveur. Middleware Next.js extrait le sous-doma
 ```bash
 cp .env.local.example .env.local
 # ANTHROPIC_API_KEY=sk-ant-...
+# JWT_SECRET=change-in-prod
 
 npm install
 npm run dev        # http://localhost:3000
@@ -90,43 +148,6 @@ npm run dev        # http://localhost:3000
 
 ## Premier.js
 
-Webgen est construit sur **Premier.js**, un framework de composants React/Next.js écrit entièrement à la main. Il fournit 23 composants UI primitifs, 13 sections de page, un système de thème via CSS Custom Properties et un système de notifications Toast global.
+Webgen est construit sur **Premier.js**, un framework de composants React/Next.js écrit entièrement à la main. Il fournit 23 composants UI primitifs, 10 sections de page avec édition inline, un système de thème via CSS Custom Properties et un système d'édition inline (EditableText + FloatingToolbar).
 
 → [`../OFFMODE/premierjs_frmwrk`](../OFFMODE/premierjs_frmwrk)
-
----
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
