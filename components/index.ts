@@ -40,3 +40,15 @@ export { BillingSection } from "./sections/BillingSection";
 
 // Layout
 export { AppShell } from "./layout/AppShell";
+
+// Dashboard — UI primitives
+export { StatusBadge }  from "./ui/StatusBadge";
+export { StatCard }     from "./ui/StatCard";
+export { MiniChart }    from "./ui/MiniChart";
+export { ActivityFeed } from "./ui/ActivityFeed";
+export { DataTable }    from "./ui/DataTable";
+export type { TableColumn } from "./ui/DataTable";
+
+// Dashboard — Sections
+export { DashboardStats }  from "./sections/DashboardStats";
+export { DashboardChart }  from "./sections/DashboardChart";
