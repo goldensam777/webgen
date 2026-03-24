@@ -121,3 +121,36 @@ body {
 @media (max-width: 768px) {
   .wg-hide-mobile { display: none !important; }
 }
+
+/* ── Mobile bottom sheet animation ─────────────────────────── */
+@keyframes wg-slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.wg-sheet {
+  animation: wg-slide-up 0.26s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* ── Editor preview link hint ───────────────────────────────── */
+.wg-preview-link-hint {
+  position: fixed;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(15,23,42,0.82);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: wg-fade-in-out 2s ease forwards;
+}
+@keyframes wg-fade-in-out {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}

@@ -1,6 +1,6 @@
 // components/editor/EditorLayout.tsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StylePanel }      from "./StylePanel";
 import { SectionPanel }    from "./SectionPanel";
 import { SectionWrapper }  from "./SectionWrapper";
@@ -19,7 +19,42 @@ const SECTION_MAP: Record<string, React.ComponentType<any>> = {
   cta: CTA, contact: Contact, footer: Footer,
 };
 
-type Tab = "pages" | "sections" | "styles";
+type Tab         = "pages" | "sections" | "styles";
+type MobileSheet = Tab | "content" | null;
+
+/* ── Icônes tab mobile ───────────────────────────────────── */
+function IconPages() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+function IconSections() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  );
+}
+function IconStyles() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+    </svg>
+  );
+}
+function IconContent() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  );
+}
 
 export function EditorLayout() {
   const { config, activePageId, setActivePage, addPage, removePage } = useSiteStore();
@@ -32,12 +67,21 @@ export function EditorLayout() {
   const [dragOver, setDragOver]               = useState<string | null>(null);
   const [addingPage, setAddingPage]           = useState(false);
   const [newPageName, setNewPageName]         = useState("");
+  const [isMobile, setIsMobile]               = useState(false);
+  const [mobileSheet, setMobileSheet]         = useState<MobileSheet>(null);
 
   const { removeSection, reorderSections, updateSection } = useSiteStore();
 
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   if (!config || !activePage) return null;
 
-  /* ── section helpers ─────────────────────────────────────── */
+  /* ── Section helpers ─────────────────────────────────────── */
 
   const moveUp = (section: string) => {
     const arr = [...activePage.sections];
@@ -70,9 +114,15 @@ export function EditorLayout() {
   const handleEdit = (section: string) => {
     setEditingSection(section);
     setSelectedSection(section);
+    if (isMobile) setMobileSheet("content");
   };
 
-  /* ── page helpers ────────────────────────────────────────── */
+  const handleBackFromContent = () => {
+    setEditingSection(null);
+    if (isMobile) setMobileSheet("sections");
+  };
+
+  /* ── Page helpers ────────────────────────────────────────── */
 
   const handleAddPage = () => {
     const name = newPageName.trim();
@@ -81,26 +131,292 @@ export function EditorLayout() {
     setNewPageName("");
     setAddingPage(false);
     setTab("sections");
+    if (isMobile) setMobileSheet(null);
   };
 
-  /* ── render ──────────────────────────────────────────────── */
+  /* ── Link intercept — ouvre dans un nouvel onglet ────────── */
+
+  const interceptLinks = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.isContentEditable) return;
+    const a = target.closest("a[href]") as HTMLAnchorElement | null;
+    if (!a) return;
+    e.preventDefault();
+    const href = a.getAttribute("href");
+    if (href && href !== "#" && !href.startsWith("javascript:")) {
+      window.open(a.href, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  /* ── Shared: pages list content ──────────────────────────── */
+
+  const renderPagesContent = () => (
+    <div className="flex flex-col gap-1 pt-2">
+      <p className="text-xs font-semibold uppercase tracking-wide px-4 pt-2 pb-1"
+        style={{ color: "var(--wg-text-3)" }}>
+        Pages du site
+      </p>
+      {config.pages.map((page, idx) => (
+        <div
+          key={page.id}
+          className="flex items-center gap-2 px-3 py-2 mx-1 rounded-lg cursor-pointer transition-colors"
+          style={{
+            backgroundColor: page.id === activePageId ? "var(--wg-green-muted)" : "transparent",
+            border: page.id === activePageId ? "1px solid var(--wg-green)" : "1px solid transparent",
+          }}
+          onClick={() => {
+            setActivePage(page.id);
+            setTab("sections");
+            setSelectedSection(null);
+            setEditingSection(null);
+            if (isMobile) setMobileSheet(null);
+          }}
+          onMouseEnter={e => { if (page.id !== activePageId) e.currentTarget.style.backgroundColor = "var(--wg-bg-3)"; }}
+          onMouseLeave={e => { if (page.id !== activePageId) e.currentTarget.style.backgroundColor = "transparent"; }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate"
+              style={{ color: page.id === activePageId ? "var(--wg-green)" : "var(--wg-text)" }}>
+              {page.name}
+            </p>
+            <p className="text-xs truncate" style={{ color: "var(--wg-text-3)" }}>
+              {idx === 0 ? "/ (accueil)" : `/${page.slug}`}
+            </p>
+          </div>
+          {config.pages.length > 1 && (
+            <button
+              onClick={e => { e.stopPropagation(); removePage(page.id); }}
+              className="shrink-0 transition-colors"
+              style={{ color: "var(--wg-text-3)" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#ef4444")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-3)")}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+      ))}
+      {addingPage ? (
+        <div className="flex gap-2 px-3 mx-1 mt-2">
+          <input
+            autoFocus
+            value={newPageName}
+            onChange={e => setNewPageName(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter")  handleAddPage();
+              if (e.key === "Escape") { setAddingPage(false); setNewPageName(""); }
+            }}
+            placeholder="Ex: Services"
+            className="flex-1 text-xs px-2 py-1.5 rounded border focus:outline-none"
+            style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-green)", color: "var(--wg-text)" }}
+          />
+          <button onClick={handleAddPage} className="btn-green px-2 py-1 rounded text-xs font-semibold shrink-0">
+            OK
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setAddingPage(true)}
+          className="flex items-center gap-1.5 px-4 py-2 mx-1 rounded-lg text-xs font-semibold transition-colors"
+          style={{ color: "var(--wg-green)" }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--wg-green-muted)")}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Nouvelle page
+        </button>
+      )}
+    </div>
+  );
+
+  /* ── Shared: preview content ─────────────────────────────── */
+
+  const renderPreview = () => (
+    <div
+      className="min-h-full shadow-sm"
+      style={{
+        backgroundColor:      "var(--wg-bg-2)",
+        "--color-primary":    config.theme.primary,
+        "--color-secondary":  config.theme.secondary,
+        "--color-background": config.theme.background,
+        "--color-surface":    config.theme.surface,
+        "--color-text":       config.theme.text,
+        "--color-text-muted": config.theme.textMuted,
+        "--color-border":     config.theme.border,
+      } as React.CSSProperties}
+    >
+      {activePage.sections.map((section, index) => {
+        const Component = SECTION_MAP[section];
+        const data      = activePage.data[section] ?? {};
+        if (!Component) return null;
+
+        const fieldStyles   = ((data._styles   ?? {}) as Record<string, import("./EditableContext").FieldStyle>);
+        const elementStyles = ((data._elStyles  ?? {}) as Record<string, import("./EditableContext").ElementStyle>);
+        const canvasMode    = (data._canvasMode as boolean) ?? false;
+        const extraPadding  = (data._paddingY as number) ?? 0;
+
+        const componentData = Object.fromEntries(
+          Object.entries(data).filter(([k]) => !k.startsWith("_"))
+        );
+
+        return (
+          <SectionWrapper
+            key={section}
+            isFirst={index === 0}
+            isLast={index === activePage.sections.length - 1}
+            isSelected={selectedSection === section}
+            extraPadding={extraPadding}
+            canvasMode={canvasMode}
+            onExtraPaddingChange={(v) => updateSection(section, { ...data, _paddingY: v })}
+            onToggleCanvas={(v) => updateSection(section, { ...data, _canvasMode: v })}
+            onSelect={() => setSelectedSection(section)}
+            onMoveUp={() => moveUp(section)}
+            onMoveDown={() => moveDown(section)}
+            onRemove={() => removeSection(section)}
+            onEdit={() => handleEdit(section)}
+            onDragStart={() => setDragging(section)}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(section); }}
+            onDrop={() => handleDrop(section)}
+            onDragEnd={() => { setDragging(null); setDragOver(null); }}
+            isDragOver={dragOver === section}
+          >
+            <EditableContext.Provider
+              value={{
+                isEditing: selectedSection === section,
+                canvasMode,
+                fieldStyles,
+                elementStyles,
+                onUpdate:      (field, val) => updateSection(section, { ...data, [field]: val }),
+                onStyleUpdate: (field, style) => updateSection(section, {
+                  ...data,
+                  _styles: { ...fieldStyles, [field]: { ...fieldStyles[field], ...style } },
+                }),
+                onElementStyleUpdate: (elementId, style) => updateSection(section, {
+                  ...data,
+                  _elStyles: { ...elementStyles, [elementId]: style },
+                }),
+              }}
+            >
+              <Component {...componentData} />
+            </EditableContext.Provider>
+          </SectionWrapper>
+        );
+      })}
+    </div>
+  );
+
+  /* ── Mobile layout ───────────────────────────────────────── */
+
+  if (isMobile) {
+    const MOBILE_TABS: { key: MobileSheet; label: string; icon: React.ReactNode }[] = [
+      { key: "pages",    label: "Pages",    icon: <IconPages /> },
+      { key: "sections", label: "Sections", icon: <IconSections /> },
+      { key: "styles",   label: "Styles",   icon: <IconStyles /> },
+      { key: "content",  label: "Contenu",  icon: <IconContent /> },
+    ];
+
+    return (
+      <div className="flex flex-col" style={{ height: "calc(100vh - 56px)" }}>
+
+        {/* Preview — full width, scrollable */}
+        <main
+          className="flex-1 overflow-y-auto"
+          style={{ backgroundColor: "var(--wg-bg-3)" }}
+          onClick={() => setSelectedSection(null)}
+          onClickCapture={interceptLinks}
+        >
+          {config.pages.length > 1 && (
+            <div
+              className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 border-b text-xs font-semibold"
+              style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)", color: "var(--wg-text-2)" }}
+            >
+              <span style={{ color: "var(--wg-text-3)" }}>Aperçu :</span>
+              <span style={{ color: "var(--wg-green)" }}>{activePage.name}</span>
+            </div>
+          )}
+          {renderPreview()}
+        </main>
+
+        {/* Bottom sheet overlay */}
+        {mobileSheet && (
+          <div
+            className="fixed inset-0 z-40"
+            style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+            onClick={() => setMobileSheet(null)}
+          >
+            <div
+              className="wg-sheet absolute bottom-14 left-0 right-0 rounded-t-2xl border-t overflow-hidden flex flex-col"
+              style={{
+                backgroundColor: "var(--wg-bg-2)",
+                borderColor:     "var(--wg-border)",
+                maxHeight:       "65vh",
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1 shrink-0">
+                <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "var(--wg-border)" }} />
+              </div>
+
+              {/* Sheet content */}
+              <div className="flex-1 overflow-y-auto pb-4">
+                {mobileSheet === "pages"   && renderPagesContent()}
+                {mobileSheet === "sections" && <SectionPanel />}
+                {mobileSheet === "styles"   && <StylePanel />}
+                {mobileSheet === "content"  && editingSection && (
+                  <ContentPanel section={editingSection} onBack={handleBackFromContent} />
+                )}
+                {mobileSheet === "content"  && !editingSection && (
+                  <div className="flex flex-col items-center justify-center py-12 gap-2">
+                    <p className="text-sm" style={{ color: "var(--wg-text-3)" }}>
+                      Sélectionne une section pour l&apos;éditer
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom tab bar */}
+        <nav
+          className="shrink-0 flex border-t z-50"
+          style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)", height: "56px" }}
+        >
+          {MOBILE_TABS.map(t => (
+            <button
+              key={String(t.key)}
+              onClick={() => setMobileSheet(s => s === t.key ? null : t.key)}
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors"
+              style={{ color: mobileSheet === t.key ? "var(--wg-green)" : "var(--wg-text-3)" }}
+            >
+              {t.icon}
+              <span className="text-[9px] font-semibold uppercase tracking-wide">{t.label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+    );
+  }
+
+  /* ── Desktop layout ──────────────────────────────────────── */
 
   return (
     <div className="flex h-[calc(100vh-56px)] overflow-hidden">
 
-      {/* ── Sidebar ──────────────────────────────────────── */}
+      {/* Sidebar */}
       <aside
         className="w-64 shrink-0 flex flex-col overflow-visible border-r"
         style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
       >
         {editingSection ? (
-          <ContentPanel
-            section={editingSection}
-            onBack={() => setEditingSection(null)}
-          />
+          <ContentPanel section={editingSection} onBack={handleBackFromContent} />
         ) : (
           <>
-            {/* Tabs */}
             <div className="flex shrink-0 border-b" style={{ borderColor: "var(--wg-border)" }}>
               {(["pages", "sections", "styles"] as Tab[]).map((t) => (
                 <button
@@ -116,103 +432,8 @@ export function EditorLayout() {
                 </button>
               ))}
             </div>
-
             <div className="flex-1 overflow-y-auto overflow-x-visible pb-4">
-              {/* ── Pages tab ─────────────────────────────── */}
-              {tab === "pages" && (
-                <div className="flex flex-col gap-1 pt-2">
-                  <p
-                    className="text-xs font-semibold uppercase tracking-wide px-4 pt-2 pb-1"
-                    style={{ color: "var(--wg-text-3)" }}
-                  >
-                    Pages du site
-                  </p>
-
-                  {config.pages.map((page, idx) => (
-                    <div
-                      key={page.id}
-                      className="flex items-center gap-2 px-3 py-2 mx-1 rounded-lg cursor-pointer transition-colors"
-                      style={{
-                        backgroundColor: page.id === activePageId ? "var(--wg-green-muted)" : "transparent",
-                        border:           page.id === activePageId ? "1px solid var(--wg-green)" : "1px solid transparent",
-                      }}
-                      onClick={() => { setActivePage(page.id); setTab("sections"); setSelectedSection(null); setEditingSection(null); }}
-                      onMouseEnter={e => {
-                        if (page.id !== activePageId) e.currentTarget.style.backgroundColor = "var(--wg-bg-3)";
-                      }}
-                      onMouseLeave={e => {
-                        if (page.id !== activePageId) e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate" style={{
-                          color: page.id === activePageId ? "var(--wg-green)" : "var(--wg-text)",
-                        }}>
-                          {page.name}
-                        </p>
-                        <p className="text-xs truncate" style={{ color: "var(--wg-text-3)" }}>
-                          {idx === 0 ? "/ (accueil)" : `/${page.slug}`}
-                        </p>
-                      </div>
-                      {config.pages.length > 1 && (
-                        <button
-                          onClick={e => { e.stopPropagation(); removePage(page.id); }}
-                          className="shrink-0 transition-colors"
-                          style={{ color: "var(--wg-text-3)" }}
-                          onMouseEnter={e => (e.currentTarget.style.color = "#ef4444")}
-                          onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-3)")}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Add page */}
-                  {addingPage ? (
-                    <div className="flex gap-2 px-3 mx-1 mt-2">
-                      <input
-                        autoFocus
-                        value={newPageName}
-                        onChange={e => setNewPageName(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter")  handleAddPage();
-                          if (e.key === "Escape") { setAddingPage(false); setNewPageName(""); }
-                        }}
-                        placeholder="Ex: Services"
-                        className="flex-1 text-xs px-2 py-1.5 rounded border focus:outline-none"
-                        style={{
-                          backgroundColor: "var(--wg-bg)",
-                          borderColor:     "var(--wg-green)",
-                          color:           "var(--wg-text)",
-                        }}
-                      />
-                      <button
-                        onClick={handleAddPage}
-                        className="btn-green px-2 py-1 rounded text-xs font-semibold shrink-0"
-                      >
-                        OK
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setAddingPage(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 mx-1 rounded-lg text-xs font-semibold transition-colors"
-                      style={{ color: "var(--wg-green)" }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--wg-green-muted)")}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                      Nouvelle page
-                    </button>
-                  )}
-                </div>
-              )}
-
+              {tab === "pages"    && renderPagesContent()}
               {tab === "sections" && <SectionPanel />}
               {tab === "styles"   && <StylePanel />}
             </div>
@@ -220,21 +441,17 @@ export function EditorLayout() {
         )}
       </aside>
 
-      {/* ── Preview ──────────────────────────────────────── */}
+      {/* Preview */}
       <main
         className="flex-1 overflow-y-auto"
         style={{ backgroundColor: "var(--wg-bg-3)" }}
         onClick={() => setSelectedSection(null)}
+        onClickCapture={interceptLinks}
       >
-        {/* Page indicator */}
         {config.pages.length > 1 && (
           <div
             className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 border-b text-xs font-semibold"
-            style={{
-              backgroundColor: "var(--wg-bg-2)",
-              borderColor:     "var(--wg-border)",
-              color:           "var(--wg-text-2)",
-            }}
+            style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)", color: "var(--wg-text-2)" }}
           >
             <span style={{ color: "var(--wg-text-3)" }}>Aperçu :</span>
             <span style={{ color: "var(--wg-green)" }}>{activePage.name}</span>
@@ -243,80 +460,7 @@ export function EditorLayout() {
             </span>
           </div>
         )}
-
-        <div
-          className="min-h-full shadow-sm"
-          style={{
-            backgroundColor:      "var(--wg-bg-2)",
-            "--color-primary":    config.theme.primary,
-            "--color-secondary":  config.theme.secondary,
-            "--color-background": config.theme.background,
-            "--color-surface":    config.theme.surface,
-            "--color-text":       config.theme.text,
-            "--color-text-muted": config.theme.textMuted,
-            "--color-border":     config.theme.border,
-          } as React.CSSProperties}
-        >
-          {activePage.sections.map((section, index) => {
-            const Component = SECTION_MAP[section];
-            const data      = activePage.data[section] ?? {};
-            if (!Component) return null;
-
-            // Read private editor state from section data
-            const fieldStyles   = ((data._styles   ?? {}) as Record<string, import("./EditableContext").FieldStyle>);
-            const elementStyles = ((data._elStyles  ?? {}) as Record<string, import("./EditableContext").ElementStyle>);
-            const canvasMode    = (data._canvasMode as boolean) ?? false;
-            const extraPadding  = (data._paddingY as number) ?? 0;
-
-            // Filter internal keys before passing to component
-            const componentData = Object.fromEntries(
-              Object.entries(data).filter(([k]) => !k.startsWith("_"))
-            );
-
-            return (
-              <SectionWrapper
-                key={section}
-                isFirst={index === 0}
-                isLast={index === activePage.sections.length - 1}
-                isSelected={selectedSection === section}
-                extraPadding={extraPadding}
-                canvasMode={canvasMode}
-                onExtraPaddingChange={(v) => updateSection(section, { ...data, _paddingY: v })}
-                onToggleCanvas={(v) => updateSection(section, { ...data, _canvasMode: v })}
-                onSelect={() => setSelectedSection(section)}
-                onMoveUp={() => moveUp(section)}
-                onMoveDown={() => moveDown(section)}
-                onRemove={() => removeSection(section)}
-                onEdit={() => handleEdit(section)}
-                onDragStart={() => setDragging(section)}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(section); }}
-                onDrop={() => handleDrop(section)}
-                onDragEnd={() => { setDragging(null); setDragOver(null); }}
-                isDragOver={dragOver === section}
-              >
-                <EditableContext.Provider
-                  value={{
-                    isEditing: selectedSection === section,
-                    canvasMode,
-                    fieldStyles,
-                    elementStyles,
-                    onUpdate:      (field, val) => updateSection(section, { ...data, [field]: val }),
-                    onStyleUpdate: (field, style) => updateSection(section, {
-                      ...data,
-                      _styles: { ...fieldStyles, [field]: { ...fieldStyles[field], ...style } },
-                    }),
-                    onElementStyleUpdate: (elementId, style) => updateSection(section, {
-                      ...data,
-                      _elStyles: { ...elementStyles, [elementId]: style },
-                    }),
-                  }}
-                >
-                  <Component {...componentData} />
-                </EditableContext.Provider>
-              </SectionWrapper>
-            );
-          })}
-        </div>
+        {renderPreview()}
       </main>
     </div>
   );
