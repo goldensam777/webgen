@@ -4,6 +4,7 @@ import { Input } from "../ui/Input";
 import { Textarea } from "../ui/Textarea";
 import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface ContactProps {
   title?: string;
@@ -57,31 +58,33 @@ export function Contact({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <Input
-            label="Nom"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={namePlaceholder}
-          />
-          <Input
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={emailPlaceholder}
-          />
-          <Textarea
-            label="Message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder={messagePlaceholder}
-            rows={5}
-          />
-          <Button isDefault={false} className="w-full justify-center">
-            {ctaLabel}
-          </Button>
-        </form>
+        <CanvasElement id="form">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <Input
+              label="Nom"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={namePlaceholder}
+            />
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={emailPlaceholder}
+            />
+            <Textarea
+              label="Message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={messagePlaceholder}
+              rows={5}
+            />
+            <Button isDefault={false} className="w-full justify-center">
+              {ctaLabel}
+            </Button>
+          </form>
+        </CanvasElement>
       </div>
     </section>
   );

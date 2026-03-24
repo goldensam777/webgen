@@ -2,6 +2,7 @@ import React from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface PricingPlan {
   name: string;
@@ -56,8 +57,8 @@ export function Pricing({
           {plans.map((plan, i) => {
             const isHighlighted = plan.highlighted;
             return (
+              <CanvasElement id={`plan-${i}`} key={i}>
               <Card
-                key={i}
                 bgColor={isHighlighted ? "var(--color-primary)" : "var(--color-surface)"}
                 shadow={isHighlighted ? "xl" : "sm"}
                 className="flex flex-col"
@@ -131,6 +132,7 @@ export function Pricing({
                   </Button>
                 </a>
               </Card>
+              </CanvasElement>
             );
           })}
         </div>

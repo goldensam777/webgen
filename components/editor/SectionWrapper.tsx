@@ -6,11 +6,13 @@ interface SectionWrapperProps {
   isLast: boolean;
   isSelected: boolean;
   extraPadding: number;
+  canvasMode: boolean;
   onSelect: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onRemove: () => void;
   onEdit: () => void;
+  onToggleCanvas: (v: boolean) => void;
   onDragStart: () => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: () => void;
@@ -21,8 +23,8 @@ interface SectionWrapperProps {
 }
 
 export function SectionWrapper({
-  isFirst, isLast, isSelected, extraPadding,
-  onSelect, onMoveUp, onMoveDown, onRemove, onEdit,
+  isFirst, isLast, isSelected, extraPadding, canvasMode,
+  onSelect, onMoveUp, onMoveDown, onRemove, onEdit, onToggleCanvas,
   onDragStart, onDragOver, onDrop, onDragEnd, isDragOver,
   onExtraPaddingChange,
   children,
@@ -108,6 +110,22 @@ export function SectionWrapper({
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
+        <button
+          onClick={() => onToggleCanvas(!canvasMode)}
+          title={canvasMode ? "Quitter le canvas" : "Mode canvas"}
+          className="p-1.5 rounded transition-colors"
+          style={{
+            color:           canvasMode ? "var(--wg-green)" : "var(--wg-text-3)",
+            backgroundColor: canvasMode ? "var(--wg-green-muted)" : "transparent",
+          }}
+          onMouseEnter={e => { if (!canvasMode) e.currentTarget.style.color = "var(--wg-green)"; }}
+          onMouseLeave={e => { if (!canvasMode) e.currentTarget.style.color = "var(--wg-text-3)"; }}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
           </svg>
         </button>
         <button onClick={onRemove} title="Supprimer"

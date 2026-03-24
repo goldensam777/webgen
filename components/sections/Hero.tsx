@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface HeroProps {
   title: string;
@@ -45,16 +46,18 @@ export function Hero({
         <div className={`${isCenter ? "flex flex-col items-center" : ""} gap-6`}>
 
           {badgeLabel && (
-            <span
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-              style={{
-                backgroundColor: "var(--color-primary)",
-                color: "#ffffff",
-                opacity: 0.9,
-              }}
-            >
-              <EditableText field="badgeLabel" value={badgeLabel} />
-            </span>
+            <CanvasElement id="badge">
+              <span
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "#ffffff",
+                  opacity: 0.9,
+                }}
+              >
+                <EditableText field="badgeLabel" value={badgeLabel} />
+              </span>
+            </CanvasElement>
           )}
 
           <h1
@@ -79,27 +82,33 @@ export function Hero({
           {(ctaLabel || secondaryCtaLabel) && (
             <div className={`flex flex-wrap gap-3 ${isCenter ? "justify-center" : ""} mt-2`}>
               {ctaLabel && (
-                <a href={ctaHref}>
-                  <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
-                </a>
+                <CanvasElement id="ctaBtn">
+                  <a href={ctaHref}>
+                    <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
+                  </a>
+                </CanvasElement>
               )}
               {secondaryCtaLabel && (
-                <a href={secondaryCtaHref}>
-                  <Button><EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} /></Button>
-                </a>
+                <CanvasElement id="ctaBtnSecondary">
+                  <a href={secondaryCtaHref}>
+                    <Button><EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} /></Button>
+                  </a>
+                </CanvasElement>
               )}
             </div>
           )}
 
           {imageSrc && (
-            <div className="mt-10 w-full max-w-4xl">
-              <img
-                src={imageSrc}
-                alt={imageAlt}
-                className="w-full rounded-2xl shadow-xl"
-                style={{ borderColor: "var(--color-border)", border: "1px solid" }}
-              />
-            </div>
+            <CanvasElement id="image">
+              <div className="mt-10 w-full max-w-4xl">
+                <img
+                  src={imageSrc}
+                  alt={imageAlt}
+                  className="w-full rounded-2xl shadow-xl"
+                  style={{ borderColor: "var(--color-border)", border: "1px solid" }}
+                />
+              </div>
+            </CanvasElement>
           )}
         </div>
       </div>

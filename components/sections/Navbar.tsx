@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface NavLink {
   label: string;
@@ -63,9 +64,11 @@ export function Navbar({
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
           {ctaLabel && (
-            <a href={ctaHref}>
-              <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
-            </a>
+            <CanvasElement id="ctaBtn">
+              <a href={ctaHref}>
+                <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
+              </a>
+            </CanvasElement>
           )}
         </div>
 

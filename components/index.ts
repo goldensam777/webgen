@@ -1,3 +1,7 @@
+// Editor — canvas
+export { CanvasElement } from "./editor/CanvasElement";
+export { ElementToolbar } from "./editor/ElementToolbar";
+
 // UI — Primitives
 export { Button } from "./ui/Button";
 export { Input } from "./ui/Input";

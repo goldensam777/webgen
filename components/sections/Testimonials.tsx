@@ -2,6 +2,7 @@ import React from "react";
 import { Card } from "../ui/Card";
 import { Avatar } from "../ui/Avatar";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface TestimonialItem {
   quote: string;
@@ -61,28 +62,30 @@ export function Testimonials({
 
         <div className={`grid gap-6 ${colStyles[columns]}`}>
           {items.map((item, i) => (
-            <Card key={i} shadow="sm">
-              <p className="text-sm leading-relaxed mb-5" style={{ color: quoteColor }}>
-                &ldquo;{item.quote}&rdquo;
-              </p>
-              <div className="flex items-center gap-3">
-                <Avatar
-                  src={item.avatarSrc}
-                  initials={item.initials ?? item.name}
-                  size="sm"
-                />
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: nameColor }}>
-                    {item.name}
-                  </p>
-                  {item.role && (
-                    <p className="text-xs" style={{ color: roleColor }}>
-                      {item.role}
+            <CanvasElement id={`testimonial-${i}`} key={i}>
+              <Card shadow="sm">
+                <p className="text-sm leading-relaxed mb-5" style={{ color: quoteColor }}>
+                  &ldquo;{item.quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    src={item.avatarSrc}
+                    initials={item.initials ?? item.name}
+                    size="sm"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: nameColor }}>
+                      {item.name}
                     </p>
-                  )}
+                    {item.role && (
+                      <p className="text-xs" style={{ color: roleColor }}>
+                        {item.role}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </CanvasElement>
           ))}
         </div>
       </div>

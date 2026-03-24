@@ -1,6 +1,7 @@
 import React from "react";
 import { Card } from "../ui/Card";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface FeatureItem {
   icon?: React.ReactNode;
@@ -61,20 +62,22 @@ export function Features({
 
         <div className={`grid gap-6 ${colStyles[columns]}`}>
           {items.map((item, i) => (
-            <Card key={i} hoverable={hoverable} shadow="sm">
-              {item.icon && (
-                <div
-                  className="inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4"
-                  style={{ backgroundColor: "var(--color-primary)", opacity: 0.15 }}
-                />
-              )}
-              <h3 className="font-semibold text-base mb-2" style={{ color: itemTitleColor }}>
-                {item.title}
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: itemDescColor }}>
-                {item.description}
-              </p>
-            </Card>
+            <CanvasElement id={`feature-${i}`} key={i}>
+              <Card hoverable={hoverable} shadow="sm">
+                {item.icon && (
+                  <div
+                    className="inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4"
+                    style={{ backgroundColor: "var(--color-primary)", opacity: 0.15 }}
+                  />
+                )}
+                <h3 className="font-semibold text-base mb-2" style={{ color: itemTitleColor }}>
+                  {item.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: itemDescColor }}>
+                  {item.description}
+                </p>
+              </Card>
+            </CanvasElement>
           ))}
         </div>
       </div>

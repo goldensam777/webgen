@@ -1,5 +1,6 @@
 import React from "react";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface FooterLinkGroup {
   section: string;
@@ -40,37 +41,41 @@ export function Footer({
       <div className="max-w-6xl mx-auto">
         <div className={`grid grid-cols-1 gap-10 ${linkGroups.length > 0 ? "md:grid-cols-[2fr_repeat(3,1fr)]" : ""}`}>
           {/* Brand */}
-          <div className="flex flex-col gap-4">
-            <a href="/" className="font-bold text-xl" style={{ color: logoColor }}>
-              {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
-            </a>
-            {description && (
-              <p className="text-sm leading-relaxed max-w-xs" style={{ color: descriptionColor }}>
-                <EditableText field="description" value={description} />
-              </p>
-            )}
-          </div>
+          <CanvasElement id="brand">
+            <div className="flex flex-col gap-4">
+              <a href="/" className="font-bold text-xl" style={{ color: logoColor }}>
+                {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
+              </a>
+              {description && (
+                <p className="text-sm leading-relaxed max-w-xs" style={{ color: descriptionColor }}>
+                  <EditableText field="description" value={description} />
+                </p>
+              )}
+            </div>
+          </CanvasElement>
 
           {/* Link groups */}
           {linkGroups.map((group, i) => (
-            <div key={i} className="flex flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: sectionTitleColor }}>
-                {group.section}
-              </p>
-              <ul className="flex flex-col gap-2">
-                {group.items.map((link, j) => (
-                  <li key={j}>
-                    <a
-                      href={link.href}
-                      className="text-sm hover:text-white transition-colors"
-                      style={{ color: linkColor }}
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <CanvasElement id={`linkGroup-${i}`} key={i}>
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: sectionTitleColor }}>
+                  {group.section}
+                </p>
+                <ul className="flex flex-col gap-2">
+                  {group.items.map((link, j) => (
+                    <li key={j}>
+                      <a
+                        href={link.href}
+                        className="text-sm hover:text-white transition-colors"
+                        style={{ color: linkColor }}
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CanvasElement>
           ))}
         </div>
 

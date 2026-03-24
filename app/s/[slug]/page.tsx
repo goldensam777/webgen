@@ -5,6 +5,8 @@ import {
   Navbar, Hero, Features, Pricing, FAQ, Footer,
   Stats, Testimonials, CTA, Contact,
 } from "@/components";
+import { EditableContext } from "@/components/editor/EditableContext";
+import type { FieldStyle, ElementStyle } from "@/components/editor/EditableContext";
 import type { SiteConfig, SitePage } from "@/app/store/siteStore";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,10 +57,32 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"]) {
       </head>
       <body>
         {page.sections.map((section) => {
-          const Component  = SECTION_MAP[section];
+          const Component   = SECTION_MAP[section];
           const sectionData = (page.data[section] ?? {}) as Record<string, unknown>;
           if (!Component) return null;
-          return <Component key={section} {...sectionData} />;
+
+          const fieldStyles   = ((sectionData._styles   ?? {}) as Record<string, FieldStyle>);
+          const elementStyles = ((sectionData._elStyles  ?? {}) as Record<string, ElementStyle>);
+          const cleanData     = Object.fromEntries(
+            Object.entries(sectionData).filter(([k]) => !k.startsWith("_"))
+          );
+
+          return (
+            <EditableContext.Provider
+              key={section}
+              value={{
+                isEditing: false,
+                canvasMode: false,
+                fieldStyles,
+                elementStyles,
+                onUpdate: () => {},
+                onStyleUpdate: () => {},
+                onElementStyleUpdate: () => {},
+              }}
+            >
+              <Component {...cleanData} />
+            </EditableContext.Provider>
+          );
         })}
       </body>
     </html>

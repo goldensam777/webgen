@@ -263,8 +263,10 @@ export function EditorLayout() {
             if (!Component) return null;
 
             // Read private editor state from section data
-            const fieldStyles = ((data._styles ?? {}) as Record<string, import("./EditableContext").FieldStyle>);
-            const extraPadding = (data._paddingY as number) ?? 0;
+            const fieldStyles   = ((data._styles   ?? {}) as Record<string, import("./EditableContext").FieldStyle>);
+            const elementStyles = ((data._elStyles  ?? {}) as Record<string, import("./EditableContext").ElementStyle>);
+            const canvasMode    = (data._canvasMode as boolean) ?? false;
+            const extraPadding  = (data._paddingY as number) ?? 0;
 
             // Filter internal keys before passing to component
             const componentData = Object.fromEntries(
@@ -278,7 +280,9 @@ export function EditorLayout() {
                 isLast={index === activePage.sections.length - 1}
                 isSelected={selectedSection === section}
                 extraPadding={extraPadding}
+                canvasMode={canvasMode}
                 onExtraPaddingChange={(v) => updateSection(section, { ...data, _paddingY: v })}
+                onToggleCanvas={(v) => updateSection(section, { ...data, _canvasMode: v })}
                 onSelect={() => setSelectedSection(section)}
                 onMoveUp={() => moveUp(section)}
                 onMoveDown={() => moveDown(section)}
@@ -293,11 +297,17 @@ export function EditorLayout() {
                 <EditableContext.Provider
                   value={{
                     isEditing: selectedSection === section,
+                    canvasMode,
                     fieldStyles,
+                    elementStyles,
                     onUpdate:      (field, val) => updateSection(section, { ...data, [field]: val }),
                     onStyleUpdate: (field, style) => updateSection(section, {
                       ...data,
                       _styles: { ...fieldStyles, [field]: { ...fieldStyles[field], ...style } },
+                    }),
+                    onElementStyleUpdate: (elementId, style) => updateSection(section, {
+                      ...data,
+                      _elStyles: { ...elementStyles, [elementId]: style },
                     }),
                   }}
                 >

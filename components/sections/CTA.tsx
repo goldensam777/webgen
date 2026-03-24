@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface CTAProps {
   title: string;
@@ -46,17 +47,21 @@ export function CTA({
         )}
 
         <div className={`mt-8 flex flex-wrap gap-3 ${isCenter ? "justify-center" : ""}`}>
-          <a href={ctaHref}>
-            <Button isDefault={false} className="bg-white text-blue-600 hover:bg-gray-100 border-white">
-              <EditableText field="ctaLabel" value={ctaLabel} />
-            </Button>
-          </a>
-          {secondaryCtaLabel && (
-            <a href={secondaryCtaHref}>
-              <Button className="border-white/40 text-white hover:bg-white/10 bg-transparent">
-                <EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} />
+          <CanvasElement id="ctaBtn">
+            <a href={ctaHref}>
+              <Button isDefault={false} className="bg-white text-blue-600 hover:bg-gray-100 border-white">
+                <EditableText field="ctaLabel" value={ctaLabel} />
               </Button>
             </a>
+          </CanvasElement>
+          {secondaryCtaLabel && (
+            <CanvasElement id="ctaBtnSecondary">
+              <a href={secondaryCtaHref}>
+                <Button className="border-white/40 text-white hover:bg-white/10 bg-transparent">
+                  <EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} />
+                </Button>
+              </a>
+            </CanvasElement>
           )}
         </div>
       </div>

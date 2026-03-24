@@ -1,5 +1,6 @@
 import React from "react";
 import { EditableText } from "../editor/EditableText";
+import { CanvasElement } from "../editor/CanvasElement";
 
 interface StatItem {
   value: string;
@@ -53,22 +54,24 @@ export function Stats({
         <div className="flex flex-wrap justify-center items-center gap-0">
           {items.map((item, i) => (
             <React.Fragment key={i}>
-              <div className="flex flex-col items-center text-center px-10 py-6">
-                <span className="text-4xl md:text-5xl font-bold" style={{ color: valueColor }}>
-                  {item.value}
-                </span>
-                <span
-                  className="mt-1 text-sm font-semibold uppercase tracking-wide"
-                  style={{ color: labelColor }}
-                >
-                  {item.label}
-                </span>
-                {item.description && (
-                  <span className="mt-1 text-xs max-w-[140px]" style={{ color: descriptionColor }}>
-                    {item.description}
+              <CanvasElement id={`stat-${i}`}>
+                <div className="flex flex-col items-center text-center px-10 py-6">
+                  <span className="text-4xl md:text-5xl font-bold" style={{ color: valueColor }}>
+                    {item.value}
                   </span>
-                )}
-              </div>
+                  <span
+                    className="mt-1 text-sm font-semibold uppercase tracking-wide"
+                    style={{ color: labelColor }}
+                  >
+                    {item.label}
+                  </span>
+                  {item.description && (
+                    <span className="mt-1 text-xs max-w-[140px]" style={{ color: descriptionColor }}>
+                      {item.description}
+                    </span>
+                  )}
+                </div>
+              </CanvasElement>
               {showDividers && i < items.length - 1 && (
                 <div
                   className="hidden md:block h-16 w-px"

@@ -318,14 +318,6 @@ export default function LandingPage() {
 
       {/* ── Hero ────────────────────────────────────────── */}
       <section className="flex flex-col items-center text-center px-6 pt-20 pb-0 overflow-hidden">
-        {/* Badge */}
-        <div
-          className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
-          style={{ backgroundColor: "var(--wg-green-muted)", color: "var(--wg-green)" }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--wg-green)" }} />
-          Propulsé par Claude Sonnet
-        </div>
 
         {/* Headline */}
         <h1 className="text-5xl sm:text-6xl font-bold leading-tight max-w-3xl tracking-tight">
