@@ -123,13 +123,39 @@ export async function generateMetadata({ params }: PageProps) {
   try {
     const config = await loadConfig(slug);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = config as any;
+    const raw  = config as any;
     const page = Array.isArray(config.pages) ? config.pages[0] : null;
-    const title = page?.data?.navbar?.logo
-               || page?.data?.hero?.title
-               || raw?.data?.navbar?.logo
-               || slug;
-    return { title: String(title) };
+
+    const title = String(
+      page?.data?.navbar?.logo  ||
+      page?.data?.hero?.title   ||
+      raw?.data?.navbar?.logo   ||
+      slug
+    );
+    const description = String(
+      page?.data?.hero?.description ||
+      page?.data?.hero?.subtitle    ||
+      `Site web créé avec Webgen — ${title}`
+    );
+    const siteUrl = `https://webgen.app/s/${slug}`;
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        url:      siteUrl,
+        type:     "website",
+        locale:   "fr_FR",
+      },
+      twitter: {
+        card:        "summary",
+        title,
+        description,
+      },
+      alternates: { canonical: siteUrl },
+    };
   } catch {
     return { title: slug };
   }
