@@ -139,6 +139,7 @@ export function EditorLayout() {
   const interceptLinks = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.isContentEditable) return;
+    if (target.closest("[data-canvas-el]")) return;
     const a = target.closest("a[href]") as HTMLAnchorElement | null;
     if (!a) return;
     e.preventDefault();

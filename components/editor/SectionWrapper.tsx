@@ -147,6 +147,7 @@ export function SectionWrapper({
         onClickCapture={isSelected ? (e) => {
           const t = e.target as HTMLElement;
           if (t.isContentEditable) return;
+          if (t.closest("[data-canvas-el]")) return;
           const link = t.closest("a, button");
           if (link) { e.preventDefault(); e.stopPropagation(); }
         } : undefined}
