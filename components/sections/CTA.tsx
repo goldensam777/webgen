@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "../ui/Button";
+import { EditableText } from "../editor/EditableText";
 
 interface CTAProps {
   title: string;
@@ -35,25 +36,25 @@ export function CTA({
           className="text-3xl md:text-4xl font-bold leading-tight"
           style={{ color: titleColor }}
         >
-          {title}
+          <EditableText field="title" value={title} />
         </h2>
 
         {description && (
           <p className="mt-4 text-lg" style={{ color: descriptionColor }}>
-            {description}
+            <EditableText field="description" value={description} />
           </p>
         )}
 
         <div className={`mt-8 flex flex-wrap gap-3 ${isCenter ? "justify-center" : ""}`}>
           <a href={ctaHref}>
             <Button isDefault={false} className="bg-white text-blue-600 hover:bg-gray-100 border-white">
-              {ctaLabel}
+              <EditableText field="ctaLabel" value={ctaLabel} />
             </Button>
           </a>
           {secondaryCtaLabel && (
             <a href={secondaryCtaHref}>
               <Button className="border-white/40 text-white hover:bg-white/10 bg-transparent">
-                {secondaryCtaLabel}
+                <EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} />
               </Button>
             </a>
           )}

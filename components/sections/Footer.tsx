@@ -1,4 +1,5 @@
 import React from "react";
+import { EditableText } from "../editor/EditableText";
 
 interface FooterLinkGroup {
   section: string;
@@ -41,11 +42,11 @@ export function Footer({
           {/* Brand */}
           <div className="flex flex-col gap-4">
             <a href="/" className="font-bold text-xl" style={{ color: logoColor }}>
-              {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : logo}
+              {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
             </a>
             {description && (
               <p className="text-sm leading-relaxed max-w-xs" style={{ color: descriptionColor }}>
-                {description}
+                <EditableText field="description" value={description} />
               </p>
             )}
           </div>
@@ -77,7 +78,7 @@ export function Footer({
           <>
             <div className="mt-12 h-px" style={{ backgroundColor: borderColor }} />
             <p className="mt-6 text-xs text-center" style={{ color: copyrightColor }}>
-              {copyright}
+              <EditableText field="copyright" value={copyright} />
             </p>
           </>
         )}

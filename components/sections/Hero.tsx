@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "../ui/Button";
+import { EditableText } from "../editor/EditableText";
 
 interface HeroProps {
   title: string;
@@ -52,7 +53,7 @@ export function Hero({
                 opacity: 0.9,
               }}
             >
-              {badgeLabel}
+              <EditableText field="badgeLabel" value={badgeLabel} />
             </span>
           )}
 
@@ -60,18 +61,18 @@ export function Hero({
             className="text-4xl md:text-6xl font-bold leading-tight tracking-tight"
             style={{ color: titleColor }}
           >
-            {title}
+            <EditableText field="title" value={title} />
           </h1>
 
           {subtitle && (
             <p className="text-xl md:text-2xl font-medium" style={{ color: subtitleColor }}>
-              {subtitle}
+              <EditableText field="subtitle" value={subtitle} />
             </p>
           )}
 
           {description && (
             <p className="text-base md:text-lg max-w-2xl" style={{ color: descriptionColor }}>
-              {description}
+              <EditableText field="description" value={description} />
             </p>
           )}
 
@@ -79,12 +80,12 @@ export function Hero({
             <div className={`flex flex-wrap gap-3 ${isCenter ? "justify-center" : ""} mt-2`}>
               {ctaLabel && (
                 <a href={ctaHref}>
-                  <Button isDefault={false}>{ctaLabel}</Button>
+                  <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
                 </a>
               )}
               {secondaryCtaLabel && (
                 <a href={secondaryCtaHref}>
-                  <Button>{secondaryCtaLabel}</Button>
+                  <Button><EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} /></Button>
                 </a>
               )}
             </div>

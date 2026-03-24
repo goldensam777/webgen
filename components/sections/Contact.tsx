@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Input } from "../ui/Input";
 import { Textarea } from "../ui/Textarea";
 import { Button } from "../ui/Button";
+import { EditableText } from "../editor/EditableText";
 
 interface ContactProps {
   title?: string;
@@ -45,12 +46,12 @@ export function Contact({
           <div className="text-center mb-10">
             {title && (
               <h2 className="text-3xl md:text-4xl font-bold" style={{ color: titleColor }}>
-                {title}
+                <EditableText field="title" value={title} />
               </h2>
             )}
             {subtitle && (
               <p className="mt-4 text-lg" style={{ color: subtitleColor }}>
-                {subtitle}
+                <EditableText field="subtitle" value={subtitle} />
               </p>
             )}
           </div>

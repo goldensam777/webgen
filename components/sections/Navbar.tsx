@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
+import { EditableText } from "../editor/EditableText";
 
 interface NavLink {
   label: string;
@@ -42,7 +43,7 @@ export function Navbar({
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="font-bold text-xl" style={{ color: logoColor }}>
-          {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : logo}
+          {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
         </a>
 
         {/* Desktop links */}
@@ -63,7 +64,7 @@ export function Navbar({
         <div className="hidden md:flex items-center gap-3">
           {ctaLabel && (
             <a href={ctaHref}>
-              <Button isDefault={false}>{ctaLabel}</Button>
+              <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
             </a>
           )}
         </div>

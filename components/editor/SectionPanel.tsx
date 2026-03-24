@@ -1,7 +1,7 @@
 // components/editor/SectionPanel.tsx
 "use client";
 import { useState } from "react";
-import { useSiteStore } from "@/app/store/siteStore";
+import { useSiteStore, useActivePage } from "@/app/store/siteStore";
 
 const ALL_SECTIONS = [
   "navbar", "hero", "stats", "features",
@@ -22,19 +22,20 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 export function SectionPanel() {
-  const { config, addSection, removeSection, reorderSections } = useSiteStore();
+  const { addSection, removeSection, reorderSections } = useSiteStore();
+  const activePage = useActivePage();
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver]  = useState<string | null>(null);
 
-  if (!config) return null;
+  if (!activePage) return null;
 
-  const available = ALL_SECTIONS.filter(s => !config.sections.includes(s));
+  const available = ALL_SECTIONS.filter(s => !activePage.sections.includes(s));
 
   const handleDragStart = (s: string) => setDragging(s);
   const handleDragOver  = (e: React.DragEvent, s: string) => { e.preventDefault(); setDragOver(s); };
   const handleDrop = (target: string) => {
     if (!dragging || dragging === target) { setDragging(null); setDragOver(null); return; }
-    const next = [...config.sections];
+    const next = [...activePage.sections];
     const from = next.indexOf(dragging);
     const to   = next.indexOf(target);
     next.splice(from, 1);
@@ -54,7 +55,7 @@ export function SectionPanel() {
         Sections actives
       </p>
 
-      {config.sections.map((s) => (
+      {activePage.sections.map((s) => (
         <div
           key={s}
           draggable

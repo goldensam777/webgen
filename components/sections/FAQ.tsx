@@ -1,5 +1,6 @@
 import React from "react";
 import { Accordion } from "../ui/Accordion";
+import { EditableText } from "../editor/EditableText";
 
 interface FAQItem {
   title: string;
@@ -30,12 +31,12 @@ export function FAQ({
           <div className="text-center mb-12">
             {title && (
               <h2 className="text-3xl md:text-4xl font-bold" style={{ color: titleColor }}>
-                {title}
+                <EditableText field="title" value={title} />
               </h2>
             )}
             {subtitle && (
               <p className="mt-4 text-lg" style={{ color: subtitleColor }}>
-                {subtitle}
+                <EditableText field="subtitle" value={subtitle} />
               </p>
             )}
           </div>

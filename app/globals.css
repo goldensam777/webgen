@@ -59,6 +59,11 @@ body {
   animation: wave-drift 8s ease-in-out infinite;
 }
 
+/* ── Editor inline editing ─────────────────────────────────── */
+.wg-editing a,
+.wg-editing button { cursor: default; }
+.wg-editing [contenteditable] { cursor: text; }
+
 /* ── 3D card ───────────────────────────────────────────────── */
 .card-3d {
   transform: perspective(900px) rotateX(3deg);

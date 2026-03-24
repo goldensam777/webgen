@@ -1,6 +1,7 @@
 import React from "react";
 import { Card } from "../ui/Card";
 import { Avatar } from "../ui/Avatar";
+import { EditableText } from "../editor/EditableText";
 
 interface TestimonialItem {
   quote: string;
@@ -47,12 +48,12 @@ export function Testimonials({
           <div className="text-center mb-14">
             {title && (
               <h2 className="text-3xl md:text-4xl font-bold" style={{ color: titleColor }}>
-                {title}
+                <EditableText field="title" value={title} />
               </h2>
             )}
             {subtitle && (
               <p className="mt-4 text-lg max-w-2xl mx-auto" style={{ color: subtitleColor }}>
-                {subtitle}
+                <EditableText field="subtitle" value={subtitle} />
               </p>
             )}
           </div>

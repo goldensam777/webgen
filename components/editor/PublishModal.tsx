@@ -29,9 +29,10 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
   // Pré-remplir le slug depuis le logo/titre du site
   useEffect(() => {
     if (!isOpen) { setPublished(null); setError(""); return; }
+    const homeData = config?.pages?.[0]?.data ?? {};
     const raw =
-      (config?.data?.navbar?.logo as string) ??
-      (config?.data?.hero?.title as string) ??
+      (homeData?.navbar?.logo as string) ??
+      (homeData?.hero?.title as string) ??
       "mon-site";
     setSlug(toSlug(raw));
   }, [isOpen, config]);

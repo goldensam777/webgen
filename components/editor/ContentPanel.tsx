@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useSiteStore } from "@/app/store/siteStore";
+import { useSiteStore, useActivePage } from "@/app/store/siteStore";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,12 +128,13 @@ interface ContentPanelProps {
 }
 
 export function ContentPanel({ section, onBack }: ContentPanelProps) {
-  const { config, updateSection } = useSiteStore();
+  const { updateSection } = useSiteStore();
+  const activePage = useActivePage();
   const [expandedItems, setExpandedItems] = useState<Record<string, Set<number>>>({});
 
-  if (!config) return null;
+  if (!activePage) return null;
 
-  const data  = (config.data[section] ?? {}) as Record<string, unknown>;
+  const data  = (activePage.data[section] ?? {}) as Record<string, unknown>;
   const fields = SCHEMA[section] ?? [];
 
   const update = (key: string, value: unknown) =>
