@@ -218,29 +218,64 @@ export async function POST(req: NextRequest) {
     { type: "text", text: description },
   ];
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key":    process.env.ANTHROPIC_API_KEY ?? "",
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model:      "claude-sonnet-4-20250514",
-      max_tokens: 6000,
-      system:     SYSTEM_PROMPT,
-      messages:   [{ role: "user", content: userContent }],
-    }),
-  });
+  let anthropicRes: Response;
+  try {
+    anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type":      "application/json",
+        "x-api-key":         process.env.ANTHROPIC_API_KEY ?? "",
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model:      "claude-sonnet-4-6",
+        max_tokens: 8000,
+        system:     SYSTEM_PROMPT,
+        messages:   [{ role: "user", content: userContent }],
+      }),
+    });
+  } catch (e) {
+    return NextResponse.json(
+      { error: `Erreur réseau Anthropic : ${(e as Error).message}` },
+      { status: 502 }
+    );
+  }
 
-  const data = await response.json();
-  const text = data.content?.[0]?.text ?? "";
+  if (!anthropicRes.ok) {
+    const errBody = await anthropicRes.text().catch(() => "");
+    return NextResponse.json(
+      { error: `Anthropic ${anthropicRes.status} : ${errBody.slice(0, 200)}` },
+      { status: 502 }
+    );
+  }
+
+  let data: Record<string, unknown>;
+  try {
+    data = await anthropicRes.json();
+  } catch {
+    return NextResponse.json({ error: "Réponse Anthropic non-JSON" }, { status: 502 });
+  }
+
+  // Avertir si la réponse a été coupée par la limite de tokens
+  if ((data.stop_reason as string) === "max_tokens") {
+    return NextResponse.json(
+      { error: "La description est trop longue — le JSON généré a été tronqué. Réduisez le contenu ou simplifiez la demande." },
+      { status: 422 }
+    );
+  }
+
+  const text = (data.content as Array<{ type: string; text?: string }>)?.[0]?.text ?? "";
+
+  if (!text) {
+    const apiErr = (data.error as Record<string, unknown>)?.message ?? JSON.stringify(data);
+    return NextResponse.json({ error: `Réponse vide : ${apiErr}` }, { status: 502 });
+  }
 
   try {
-    const clean  = text.replace(/```json|```/g, "").trim();
+    const clean  = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
     const config = JSON.parse(clean);
     return NextResponse.json({ config });
   } catch {
-    return NextResponse.json({ error: "Parsing JSON échoué", raw: text }, { status: 500 });
+    return NextResponse.json({ error: "JSON invalide dans la réponse IA", raw: text.slice(0, 500) }, { status: 500 });
   }
 }
