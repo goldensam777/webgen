@@ -9,6 +9,7 @@ import { useSiteStore, apiConfigToSiteConfig } from "@/app/store/siteStore";
 export default function CreatePage() {
   const [description, setDescription]   = useState("");
   const [loading, setLoading]           = useState(false);
+  const [loadingMsg, setLoadingMsg]     = useState("");
   const [error, setError]               = useState("");
   const [publishOpen, setPublishOpen]   = useState(false);
   const [downloading, setDownloading]   = useState(false);
@@ -66,21 +67,25 @@ export default function CreatePage() {
     setLoading(true);
     setError("");
     try {
-      let res: Response;
-
-      if (files.length > 0) {
+      /* ── Étape 1 : résumer chaque fichier via /api/summarize ── */
+      const summaries: string[] = [];
+      for (const file of files) {
+        setLoadingMsg(`Analyse de ${file.name}…`);
         const fd = new FormData();
-        fd.append("description", description);
-        files.forEach(f => fd.append("files", f));
-        res = await fetch("/api/generate", { method: "POST", body: fd });
-      } else {
-        res = await fetch("/api/generate", {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ description }),
-        });
+        fd.append("file", file);
+        const res = await fetch("/api/summarize", { method: "POST", body: fd });
+        const data = await res.json();
+        if (data.error) throw new Error(`Résumé "${file.name}" : ${data.error}`);
+        summaries.push(`[Résumé de "${file.name}"] :\n${data.summary}`);
       }
 
+      /* ── Étape 2 : générer le site ── */
+      setLoadingMsg("Génération du site…");
+      const res = await fetch("/api/generate", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ description, summaries }),
+      });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setConfig(apiConfigToSiteConfig(data.config));
@@ -89,6 +94,7 @@ export default function CreatePage() {
       setError(e instanceof Error ? e.message : "Erreur inconnue");
     } finally {
       setLoading(false);
+      setLoadingMsg("");
     }
   };
 
@@ -313,7 +319,7 @@ export default function CreatePage() {
             disabled={loading || !description.trim()}
             className="btn-green w-full py-3 rounded-xl text-base font-semibold"
           >
-            {loading ? "Génération en cours…" : "Générer mon site →"}
+            {loading ? (loadingMsg || "Génération en cours…") : "Générer mon site →"}
           </button>
 
           {loading && (

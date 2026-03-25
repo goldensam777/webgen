@@ -149,73 +149,28 @@ RÈGLES GÉNÉRALES
 - Génère des contenus réalistes, précis et professionnels. Pas de lorem ipsum. Textes adaptés au vrai secteur.
 - Les titres hero doivent être percutants (max 8 mots), les descriptions concises (max 2 phrases).`;
 
-/* ── Types pour les blocs de contenu Claude ─────────────────── */
-
-type TextBlock  = { type: "text"; text: string };
-type ImageBlock = { type: "image"; source: { type: "base64"; media_type: string; data: string } };
-type ContentBlock = TextBlock | ImageBlock;
-
-/* ── Extraction PDF (server-side) ───────────────────────────── */
-
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdf = require("pdf-parse");
-  const result = await pdf(buffer);
-  // Limite à 3000 chars pour ne pas dépasser le contexte
-  return result.text.slice(0, 3000).trim();
-}
-
 /* ── Route POST ─────────────────────────────────────────────── */
 
 export async function POST(req: NextRequest) {
-  const contentType = req.headers.get("content-type") ?? "";
-  let description = "";
-  const contentBlocks: ContentBlock[] = [];
-
-  if (contentType.includes("multipart/form-data")) {
-    /* ── Formulaire avec fichiers ── */
-    const formData = await req.formData();
-    description = (formData.get("description") as string) ?? "";
-
-    for (const [key, value] of formData.entries()) {
-      if (key !== "files") continue;
-      const file = value as File;
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      if (file.type === "application/pdf") {
-        const text = await extractPdfText(buffer);
-        if (text) {
-          contentBlocks.push({
-            type: "text",
-            text: `\n\n[Contenu extrait du PDF "${file.name}"] :\n${text}`,
-          });
-        }
-      } else if (file.type.startsWith("image/")) {
-        contentBlocks.push({
-          type: "image",
-          source: {
-            type:       "base64",
-            media_type: file.type,
-            data:       buffer.toString("base64"),
-          },
-        });
-      }
-    }
-  } else {
-    /* ── JSON simple (rétrocompat) ── */
-    const body = await req.json();
-    description = body.description ?? "";
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Corps JSON invalide" }, { status: 400 });
   }
+
+  const description = (body.description as string) ?? "";
+  const summaries   = (body.summaries   as string[]) ?? [];
 
   if (!description.trim()) {
     return NextResponse.json({ error: "Description requise" }, { status: 400 });
   }
 
   /* ── Construction du message utilisateur ── */
-  const userContent: ContentBlock[] = [
-    ...contentBlocks,
-    { type: "text", text: description },
+  const contextBlocks = summaries.map((s) => ({ type: "text" as const, text: s }));
+  const userContent = [
+    ...contextBlocks,
+    { type: "text" as const, text: description },
   ];
 
   let anthropicRes: Response;
