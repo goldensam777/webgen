@@ -12,6 +12,7 @@ export default function CreatePage() {
   const [loadingMsg, setLoadingMsg]     = useState("");
   const [error, setError]               = useState("");
   const [publishOpen, setPublishOpen]   = useState(false);
+  const [confirmNew,  setConfirmNew]    = useState(false);
   const [downloading, setDownloading]   = useState(false);
   const [mounted, setMounted]           = useState(false);
   const [files, setFiles]               = useState<File[]>([]);
@@ -192,7 +193,7 @@ export default function CreatePage() {
 
             {/* Nouveau */}
             <button
-              onClick={() => clearConfig()}
+              onClick={() => setConfirmNew(true)}
               title="Nouveau site"
               className="flex items-center justify-center w-8 h-8 rounded-lg border transition-colors"
               style={{ color: "var(--wg-text-2)", borderColor: "var(--wg-border)", backgroundColor: "transparent" }}
@@ -209,6 +210,50 @@ export default function CreatePage() {
       </header>
 
       <PublishModal isOpen={publishOpen} onClose={() => setPublishOpen(false)} />
+
+      {/* ── Modal confirmation Nouveau ─────────────────── */}
+      {confirmNew && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={() => setConfirmNew(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4 shadow-xl"
+            style={{ backgroundColor: "var(--wg-bg-2)", border: "1px solid var(--wg-border)" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-1">
+              <h2 className="text-base font-bold" style={{ color: "var(--wg-text)" }}>
+                Créer un nouveau site ?
+              </h2>
+              <p className="text-sm" style={{ color: "var(--wg-text-2)" }}>
+                Le site actuel sera effacé. Cette action est irréversible.
+              </p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmNew(false)}
+                className="px-4 py-2 rounded-lg text-sm font-semibold border transition-colors"
+                style={{ color: "var(--wg-text-2)", borderColor: "var(--wg-border)", backgroundColor: "transparent" }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--wg-bg-3)")}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => { clearConfig(); setConfirmNew(false); }}
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                style={{ backgroundColor: "#ef4444", color: "#fff" }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#dc2626")}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#ef4444")}
+              >
+                Effacer et recommencer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Éditeur ou Formulaire ─────────────────────── */}
       {config ? (
