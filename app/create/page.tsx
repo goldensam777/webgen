@@ -162,49 +162,47 @@ export default function CreatePage() {
               onClick={handleDownload}
               disabled={downloading}
               title={config.pages.length > 1 ? "Télécharger en ZIP" : "Télécharger index.html"}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors disabled:opacity-50"
-              style={{
-                color:           "var(--wg-text-2)",
-                borderColor:     "var(--wg-border)",
-                backgroundColor: "transparent",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = "var(--wg-bg-3)";
-                e.currentTarget.style.color           = "var(--wg-text)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color           = "var(--wg-text-2)";
-              }}
+              className="flex items-center justify-center w-8 h-8 rounded-lg border transition-colors disabled:opacity-50"
+              style={{ color: "var(--wg-text-2)", borderColor: "var(--wg-border)", backgroundColor: "transparent" }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--wg-bg-3)"; e.currentTarget.style.color = "var(--wg-text)"; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--wg-text-2)"; }}
             >
               {downloading ? (
                 <div className="w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin"
                   style={{ borderColor: "var(--wg-green) transparent var(--wg-green) var(--wg-green)" }} />
               ) : (
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               )}
-              {downloading ? "Export…" : config.pages.length > 1 ? "ZIP" : "HTML"}
             </button>
 
             {/* Publier */}
             <button
               onClick={() => setPublishOpen(true)}
-              className="btn-green px-4 py-1.5 rounded-lg text-sm font-semibold"
+              title="Publier le site"
+              className="flex items-center justify-center w-8 h-8 rounded-lg btn-green transition-colors"
             >
-              Publier →
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
             </button>
 
+            {/* Nouveau */}
             <button
               onClick={() => clearConfig()}
-              className="text-sm transition-colors"
-              style={{ color: "var(--wg-text-2)" }}
-              onMouseEnter={e => (e.currentTarget.style.color = "var(--wg-text)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-2)")}
+              title="Nouveau site"
+              className="flex items-center justify-center w-8 h-8 rounded-lg border transition-colors"
+              style={{ color: "var(--wg-text-2)", borderColor: "var(--wg-border)", backgroundColor: "transparent" }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--wg-bg-3)"; e.currentTarget.style.color = "var(--wg-text)"; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--wg-text-2)"; }}
             >
-              ← Nouveau
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 4v16m8-8H4" />
+              </svg>
             </button>
           </div>
         )}
