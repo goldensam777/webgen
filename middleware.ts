@@ -1,17 +1,41 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export function middleware(request: NextRequest) {
-  const host = request.headers.get("host") ?? "";
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET ?? "webgen-dev-secret-change-in-prod"
+);
 
-  // Sous-domaine webgen.app → /s/[slug]
-  // ex: "dr-yevi.webgen.app" → rewrite vers /s/dr-yevi
+const PROTECTED = ["/create", "/dashboard"];
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  /* ── Sous-domaine webgen.app → /s/[slug] ── */
+  const host  = request.headers.get("host") ?? "";
   const match = host.match(/^([a-z0-9-]+)\.webgen\.app$/);
   if (match && match[1] !== "www") {
-    const slug = match[1];
-    const url  = request.nextUrl.clone();
-    url.pathname = `/s/${slug}`;
+    const url      = request.nextUrl.clone();
+    url.pathname   = `/s/${match[1]}`;
     return NextResponse.rewrite(url);
+  }
+
+  /* ── Protection des routes authentifiées ── */
+  if (PROTECTED.some(p => pathname.startsWith(p))) {
+    const token = request.cookies.get("webgen-token")?.value;
+
+    if (!token) {
+      return NextResponse.redirect(new URL("/auth", request.url));
+    }
+
+    try {
+      await jwtVerify(token, JWT_SECRET);
+    } catch {
+      // Token expiré ou invalide → effacer le cookie et rediriger
+      const res = NextResponse.redirect(new URL("/auth", request.url));
+      res.cookies.set("webgen-token", "", { maxAge: 0, path: "/" });
+      return res;
+    }
   }
 
   return NextResponse.next();

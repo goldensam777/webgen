@@ -45,8 +45,16 @@ export async function POST(req: NextRequest) {
     .setExpirationTime("30d")
     .sign(JWT_SECRET);
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     user:  { id: user.id, email: user.email, name: user.name },
     token,
   });
+  res.cookies.set("webgen-token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    path:     "/",
+    maxAge:   30 * 24 * 60 * 60,
+    secure:   process.env.NODE_ENV === "production",
+  });
+  return res;
 }

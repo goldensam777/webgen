@@ -21,7 +21,10 @@ export const useAuthStore = create<AuthStore>()(
       user:  null,
       token: null,
       setAuth: (user, token) => set({ user, token }),
-      logout:  ()            => set({ user: null, token: null }),
+      logout: () => {
+        fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+        set({ user: null, token: null });
+      },
     }),
     {
       name:    "webgen-auth",
