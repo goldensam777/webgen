@@ -5,6 +5,7 @@ import { StylePanel }       from "./StylePanel";
 import { SectionPanel }     from "./SectionPanel";
 import { PropertiesPanel }  from "./PropertiesPanel";
 import { MediaPanel }       from "./MediaPanel";
+import { AIPatchPanel }     from "./AIPatchPanel";
 import { useSiteStore, useActivePage } from "@/app/store/siteStore";
 import type { PreviewMsg } from "@/lib/preview-bridge";
 
@@ -64,17 +65,19 @@ export function EditorLayout() {
   const [newPageName,     setNewPageName]     = useState("");
   const [isMobile,        setIsMobile]        = useState(false);
   const [mobileSheet,     setMobileSheet]     = useState<MobileSheet>(null);
+  const [aiPatchOpen,     setAiPatchOpen]     = useState(false);
 
   const { removeSection, reorderSections, updateSection } = useSiteStore();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  /* ── Raccourcis clavier Ctrl+Z / Ctrl+Y (fenêtre parente) ── */
+  /* ── Raccourcis clavier Ctrl+Z / Ctrl+Y / Ctrl+I ── */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
       const key = e.key.toLowerCase();
       if (key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
       if (key === "y" || (key === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+      if (key === "i") { e.preventDefault(); setAiPatchOpen(o => !o); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -302,6 +305,12 @@ export function EditorLayout() {
 
     return (
       <div className="flex flex-col" style={{ height: "calc(100vh - 56px)" }}>
+        {aiPatchOpen && (
+          <AIPatchPanel
+            selectedSection={selectedSection}
+            onClose={() => setAiPatchOpen(false)}
+          />
+        )}
 
         {/* Iframe plein écran */}
         <main className="flex-1 overflow-hidden" style={{ backgroundColor: "var(--wg-bg-3)" }}>
@@ -359,6 +368,17 @@ export function EditorLayout() {
               <span className="text-[9px] font-semibold uppercase tracking-wide">{t.label}</span>
             </button>
           ))}
+          {/* Bouton IA */}
+          <button
+            onClick={() => setAiPatchOpen(o => !o)}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5"
+            style={{ color: aiPatchOpen ? "var(--wg-green)" : "var(--wg-text-3)" }}
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+            </svg>
+            <span className="text-[9px] font-semibold uppercase tracking-wide">IA</span>
+          </button>
         </nav>
       </div>
     );
@@ -367,6 +387,12 @@ export function EditorLayout() {
   /* ── Desktop ─────────────────────────────────────────────── */
   return (
     <div className="flex h-[calc(100vh-56px)] overflow-hidden">
+      {aiPatchOpen && (
+        <AIPatchPanel
+          selectedSection={selectedSection}
+          onClose={() => setAiPatchOpen(false)}
+        />
+      )}
 
       {/* Sidebar gauche — pages / sections / styles */}
       <aside
@@ -422,6 +448,25 @@ export function EditorLayout() {
         style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
       >
         {renderProperties()}
+        {/* Bouton IA */}
+        <div className="shrink-0 p-3 border-t" style={{ borderColor: "var(--wg-border)" }}>
+          <button
+            onClick={() => setAiPatchOpen(o => !o)}
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all"
+            style={{
+              backgroundColor: aiPatchOpen ? "var(--wg-green)" : "var(--wg-green-muted)",
+              color: aiPatchOpen ? "#fff" : "var(--wg-green)",
+            }}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+            </svg>
+            Modifier avec l&apos;IA
+            <kbd className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: "rgba(0,0,0,0.15)" }}>
+              Ctrl+I
+            </kbd>
+          </button>
+        </div>
       </aside>
     </div>
   );

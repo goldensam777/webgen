@@ -6,7 +6,7 @@ import type { FieldStyle, ElementStyle } from "@/components/editor/EditableConte
 import { EditableContext } from "@/components/editor/EditableContext";
 import {
   Navbar, Hero, Features, Pricing, FAQ, Footer,
-  Stats, Testimonials, CTA, Contact,
+  Stats, Testimonials, CTA, Contact, Blog, ChatWidget,
 } from "@/components";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,6 +14,7 @@ const SECTION_MAP: Record<string, React.ComponentType<any>> = {
   navbar: Navbar, hero: Hero, features: Features, stats: Stats,
   testimonials: Testimonials, pricing: Pricing, faq: FAQ,
   cta: CTA, contact: Contact, footer: Footer,
+  blog: Blog, chatwidget: ChatWidget,
 };
 
 function getPage(config: SiteConfig, pageId: string | null): SitePage | null {

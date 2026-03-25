@@ -56,3 +56,5 @@ export type { TableColumn } from "./ui/DataTable";
 // Dashboard — Sections
 export { DashboardStats }  from "./sections/DashboardStats";
 export { DashboardChart }  from "./sections/DashboardChart";
+export { Blog }            from "./sections/Blog";
+export { ChatWidget }      from "./sections/ChatWidget";

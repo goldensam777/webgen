@@ -6,7 +6,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "webgen-dev-secret-change-in-prod"
 );
 
-const PROTECTED = ["/create", "/dashboard"];
+const PROTECTED = ["/create", "/dashboard", "/manage"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

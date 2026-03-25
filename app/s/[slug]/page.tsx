@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   Navbar, Hero, Features, Pricing, FAQ, Footer,
-  Stats, Testimonials, CTA, Contact,
+  Stats, Testimonials, CTA, Contact, Blog, ChatWidget,
 } from "@/components";
 import { EditableContext } from "@/components/editor/EditableContext";
 import type { FieldStyle, ElementStyle } from "@/components/editor/EditableContext";
@@ -13,6 +13,7 @@ const SECTION_MAP: Record<string, React.ComponentType<any>> = {
   navbar: Navbar, hero: Hero, features: Features, stats: Stats,
   testimonials: Testimonials, pricing: Pricing, faq: FAQ,
   cta: CTA, contact: Contact, footer: Footer,
+  blog: Blog, chatwidget: ChatWidget,
 };
 
 interface PageProps {
@@ -30,7 +31,7 @@ async function loadConfig(slug: string): Promise<SiteConfig> {
   return data.config as SiteConfig;
 }
 
-function renderPage(page: SitePage, theme: SiteConfig["theme"]) {
+function renderPage(page: SitePage, theme: SiteConfig["theme"], slug: string) {
   const font    = theme.font || "Inter";
   const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap`;
   const cssVars = `
@@ -74,6 +75,9 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"]) {
             Object.entries(sectionData).filter(([k]) => !k.startsWith("_"))
           );
 
+          const slugSections = new Set(["contact", "blog", "chatwidget"]);
+          const extraProps = slugSections.has(section) ? { siteSlug: slug } : {};
+
           return (
             <EditableContext.Provider
               key={section}
@@ -87,7 +91,7 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"]) {
                 onElementStyleUpdate: () => {},
               }}
             >
-              <Component {...cleanData} />
+              <Component {...cleanData} {...extraProps} />
             </EditableContext.Provider>
           );
         })}
@@ -116,13 +120,13 @@ export default async function SitePage({ params }: PageProps) {
       sections: raw.sections,
       data:     raw.data ?? {},
     };
-    return renderPage(page, config.theme ?? raw.theme);
+    return renderPage(page, config.theme ?? raw.theme, slug);
   }
 
   const homePage = config.pages[0];
   if (!homePage) notFound();
 
-  return renderPage(homePage, config.theme);
+  return renderPage(homePage, config.theme, slug);
 }
 
 export async function generateMetadata({ params }: PageProps) {

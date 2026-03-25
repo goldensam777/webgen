@@ -5,7 +5,7 @@ import { useSiteStore, useActivePage } from "@/app/store/siteStore";
 
 const ALL_SECTIONS = [
   "navbar", "hero", "stats", "features",
-  "testimonials", "pricing", "faq", "cta", "contact", "footer"
+  "testimonials", "pricing", "faq", "cta", "contact", "blog", "chatwidget", "footer"
 ];
 
 const SECTION_LABELS: Record<string, string> = {
@@ -18,6 +18,8 @@ const SECTION_LABELS: Record<string, string> = {
   faq:          "FAQ",
   cta:          "Appel à l'action",
   contact:      "Contact",
+  blog:         "Blog",
+  chatwidget:   "Chat IA",
   footer:       "Pied de page",
 };
 

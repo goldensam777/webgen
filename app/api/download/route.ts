@@ -46,7 +46,7 @@ function str(v: unknown, fallback = ""): string {
 
 /* ── Section templates ──────────────────────────────────────── */
 
-function renderNavbar(d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>, pages: SitePage[]): string {
+function renderNavbar(d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>, pages: SitePage[], prefix = ""): string {
   const logo       = str(d.logo, "Logo");
   const logoSrc    = str(d.logoSrc);
   const ctaLabel   = str(d.ctaLabel);
@@ -74,14 +74,14 @@ function renderNavbar(d: SectionData, fs: Record<string, FieldStyle>, es: Record
 
   const pagesNav = pages.length > 1
     ? pages.map((p, i) =>
-        `<a href="${i === 0 ? "index.html" : `${p.slug}/index.html`}" style="color:${textColor};font-size:.875rem;font-weight:500;text-decoration:none">${p.name}</a>`
+        `<a href="${i === 0 ? `${prefix}index.html` : `${prefix}${p.slug}/index.html`}" style="color:${textColor};font-size:.875rem;font-weight:500;text-decoration:none">${p.name}</a>`
       ).join("")
     : navLinks;
 
   return `
 <nav style="background:${bgColor};border-bottom:1px solid ${borderColor};position:sticky;top:0;z-index:50;width:100%">
   <div style="max-width:72rem;margin:0 auto;padding:0 1.5rem;height:4rem;display:flex;align-items:center;justify-content:space-between">
-    <a href="index.html" style="font-weight:700;font-size:1.25rem;color:${logoColor};text-decoration:none">${logoHtml}</a>
+    <a href="${prefix}index.html" style="font-weight:700;font-size:1.25rem;color:${logoColor};text-decoration:none">${logoHtml}</a>
     <div class="nav-links" style="display:flex;align-items:center;gap:2rem">${pagesNav}</div>
     <div style="display:flex;align-items:center;gap:.75rem">${ctaBtn}</div>
     <button class="burger" onclick="toggleMenu()" style="display:none;background:none;border:none;cursor:pointer;color:${textColor}">
@@ -115,7 +115,7 @@ function renderHero(d: SectionData, fs: Record<string, FieldStyle>, es: Record<s
   return `
 <section style="padding:5rem 1.5rem;background:${bgColor}">
   <div style="max-width:72rem;margin:0 auto;${center ? "text-align:center" : ""}">
-    <div style="display:flex;flex-direction:column;${center ? "align-items:center" : ""};gap:1.5rem">
+    <div style="display:flex;flex-direction:column;align-items:${center ? "center" : "flex-start"};gap:1.5rem">
       ${badge ? `<span class="${eClass(es.badge)}" style="display:inline-flex;align-items:center;padding:.25rem .75rem;border-radius:9999px;font-size:.875rem;font-weight:500;background:var(--color-primary);color:#fff;opacity:.9${eStyle(es.badge) ? ";" + eStyle(es.badge).replace(/ style="/,"").replace(/"$/,"") : ""}"${eStyle(es.badge)}><span${fStyle(fs.badgeLabel)}>${badge}</span></span>` : ""}
       <h1 style="font-size:clamp(2rem,5vw,3.75rem);font-weight:700;line-height:1.15;color:${titleColor}"><span${fStyle(fs.title)}>${title}</span></h1>
       ${subtitle ? `<p style="font-size:clamp(1rem,2.5vw,1.5rem);font-weight:500;color:${subColor}"><span${fStyle(fs.subtitle)}>${subtitle}</span></p>` : ""}
@@ -292,24 +292,43 @@ function renderCTA(d: SectionData, fs: Record<string, FieldStyle>, es: Record<st
 function renderContact(d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>): string {
   const title    = str(d.title, "Contact");
   const subtitle = str(d.subtitle);
+  const email    = str(d.email);
+  const phone    = str(d.phone);
+  const address  = str(d.address);
   const bgColor  = str(d.bgColor, "var(--color-background)");
+  const hasInfo  = email || phone || address;
 
-  return `
-<section style="padding:5rem 1.5rem;background:${bgColor}">
-  <div style="max-width:40rem;margin:0 auto;text-align:center">
-    <h2 style="font-size:clamp(1.5rem,4vw,2.5rem);font-weight:700;color:var(--color-text)"><span${fStyle(fs.title)}>${title}</span></h2>
-    ${subtitle ? `<p style="margin-top:1rem;color:var(--color-text-muted)"><span${fStyle(fs.subtitle)}>${subtitle}</span></p>` : ""}
-    <div class="${eClass(es.form)}" style="margin-top:2.5rem;display:flex;flex-direction:column;gap:1rem;text-align:left"${eStyle(es.form)}>
+  const infoHtml = hasInfo ? `
+    <div class="${eClass(es.info)}" style="display:flex;flex-direction:column;gap:1.25rem"${eStyle(es.info)}>
+      ${email   ? `<div style="display:flex;gap:.75rem;align-items:flex-start"><span>✉️</span><div><p style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem">Email</p><a href="mailto:${email}" style="font-size:.875rem;font-weight:500;color:var(--color-text);text-decoration:none">${email}</a></div></div>` : ""}
+      ${phone   ? `<div style="display:flex;gap:.75rem;align-items:flex-start"><span>📞</span><div><p style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem">Téléphone</p><a href="tel:${phone}" style="font-size:.875rem;font-weight:500;color:var(--color-text);text-decoration:none">${phone}</a></div></div>` : ""}
+      ${address ? `<div style="display:flex;gap:.75rem;align-items:flex-start"><span>📍</span><div><p style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);margin-bottom:.2rem">Adresse</p><p style="font-size:.875rem;font-weight:500;color:var(--color-text)">${address}</p></div></div>` : ""}
+    </div>` : "";
+
+  const formHtml = `
+    <div class="${eClass(es.form)}" style="display:flex;flex-direction:column;gap:1rem"${eStyle(es.form)}>
       <input type="text" placeholder="Votre nom" style="width:100%;padding:.75rem 1rem;border-radius:.5rem;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);font-size:.875rem">
       <input type="email" placeholder="Votre email" style="width:100%;padding:.75rem 1rem;border-radius:.5rem;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);font-size:.875rem">
       <textarea rows="4" placeholder="Votre message" style="width:100%;padding:.75rem 1rem;border-radius:.5rem;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);font-size:.875rem;resize:vertical"></textarea>
       <button type="submit" class="btn-primary" style="align-self:flex-start">Envoyer →</button>
+    </div>`;
+
+  return `
+<section style="padding:5rem 1.5rem;background:${bgColor}">
+  <div style="max-width:${hasInfo ? "72rem" : "40rem"};margin:0 auto">
+    <div style="${hasInfo ? "display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:start" : ""}">
+      <div>
+        <h2 style="font-size:clamp(1.5rem,4vw,2.5rem);font-weight:700;color:var(--color-text);margin-bottom:${subtitle ? ".75rem" : "2rem"}"><span${fStyle(fs.title)}>${title}</span></h2>
+        ${subtitle ? `<p style="color:var(--color-text-muted);margin-bottom:2.5rem"><span${fStyle(fs.subtitle)}>${subtitle}</span></p>` : ""}
+        ${infoHtml}
+      </div>
+      ${formHtml}
     </div>
   </div>
 </section>`;
 }
 
-function renderFooter(d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>): string {
+function renderFooter(d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>, prefix = ""): string {
   const logo       = str(d.logo, "Logo");
   const logoSrc    = str(d.logoSrc);
   const desc       = str(d.description);
@@ -337,7 +356,7 @@ function renderFooter(d: SectionData, fs: Record<string, FieldStyle>, es: Record
   <div style="max-width:72rem;margin:0 auto">
     <div style="display:grid;grid-template-columns:${groups.length > 0 ? "2fr repeat(auto-fit,minmax(140px,1fr))" : "1fr"};gap:2.5rem;flex-wrap:wrap">
       <div class="${eClass(es.brand)}" style="display:flex;flex-direction:column;gap:1rem"${eStyle(es.brand)}>
-        <a href="index.html" style="font-weight:700;font-size:1.25rem;color:${logoColor};text-decoration:none">${logoHtml}</a>
+        <a href="${prefix}index.html" style="font-weight:700;font-size:1.25rem;color:${logoColor};text-decoration:none">${logoHtml}</a>
         ${desc ? `<p style="font-size:.875rem;line-height:1.6;max-width:18rem;color:${descColor}"><span${fStyle(fs.description)}>${desc}</span></p>` : ""}
       </div>
       ${groupsHtml}
@@ -352,8 +371,8 @@ function renderFooter(d: SectionData, fs: Record<string, FieldStyle>, es: Record
 
 /* ── Section dispatcher ─────────────────────────────────────── */
 
-const RENDERERS: Record<string, (d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>, pages: SitePage[]) => string> = {
-  navbar:        (d, fs, es, pages) => renderNavbar(d, fs, es, pages),
+const RENDERERS: Record<string, (d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>, pages: SitePage[], prefix: string) => string> = {
+  navbar:        (d, fs, es, pages, prefix) => renderNavbar(d, fs, es, pages, prefix),
   hero:          (d, fs, es) => renderHero(d, fs, es),
   features:      (d, fs, es) => renderFeatures(d, fs, es),
   stats:         (d, fs, es) => renderStats(d, fs, es),
@@ -362,12 +381,14 @@ const RENDERERS: Record<string, (d: SectionData, fs: Record<string, FieldStyle>,
   faq:           (d, fs, es) => renderFAQ(d, fs, es),
   cta:           (d, fs, es) => renderCTA(d, fs, es),
   contact:       (d, fs, es) => renderContact(d, fs, es),
-  footer:        (d, fs, es) => renderFooter(d, fs, es),
+  footer:        (d, fs, es, _pages, prefix) => renderFooter(d, fs, es, prefix),
 };
 
 /* ── Page HTML builder ──────────────────────────────────────── */
 
 function buildPageHTML(page: SitePage, theme: SiteTheme, allPages: SitePage[]): string {
+  // prefix = "../" for sub-pages (slug/index.html), "" for root (index.html)
+  const prefix = page.slug === "" ? "" : "../";
   const title = str(page.data.navbar?.logo as unknown) || str(page.data.hero?.title as unknown) || page.name;
 
   const font = theme.font || "Inter";
@@ -415,7 +436,7 @@ function buildPageHTML(page: SitePage, theme: SiteTheme, allPages: SitePage[]): 
     const fs   = ((data._styles  ?? {}) as Record<string, FieldStyle>);
     const es   = ((data._elStyles ?? {}) as Record<string, ElementStyle>);
     const clean: SectionData = Object.fromEntries(Object.entries(data).filter(([k]) => !k.startsWith("_")));
-    return renderer(clean, fs, es, allPages);
+    return renderer(clean, fs, es, allPages, prefix);
   }).join("\n");
 
   return `<!DOCTYPE html>
