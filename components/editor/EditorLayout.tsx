@@ -4,10 +4,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { StylePanel }       from "./StylePanel";
 import { SectionPanel }     from "./SectionPanel";
 import { PropertiesPanel }  from "./PropertiesPanel";
+import { MediaPanel }       from "./MediaPanel";
 import { useSiteStore, useActivePage } from "@/app/store/siteStore";
 import type { PreviewMsg } from "@/lib/preview-bridge";
 
-type Tab         = "pages" | "sections" | "styles";
+type Tab         = "pages" | "sections" | "styles" | "media";
 type MobileSheet = Tab | "properties" | null;
 
 /* ── Icônes ────────────────────────────────────────────────── */
@@ -40,6 +41,14 @@ function IconProps() {
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  );
+}
+function IconMedia() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
+        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   );
 }
@@ -287,6 +296,7 @@ export function EditorLayout() {
       { key: "pages",      label: "Pages",    icon: <IconPages /> },
       { key: "sections",   label: "Sections", icon: <IconSections /> },
       { key: "styles",     label: "Styles",   icon: <IconStyles /> },
+      { key: "media",      label: "Médias",   icon: <IconMedia /> },
       { key: "properties", label: "Éditer",   icon: <IconProps /> },
     ];
 
@@ -326,6 +336,7 @@ export function EditorLayout() {
                 {mobileSheet === "pages"      && renderPagesContent()}
                 {mobileSheet === "sections"   && <SectionPanel />}
                 {mobileSheet === "styles"     && <StylePanel />}
+                {mobileSheet === "media"      && <MediaPanel />}
                 {mobileSheet === "properties" && renderProperties()}
               </div>
             </div>
@@ -363,7 +374,7 @@ export function EditorLayout() {
         style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
       >
         <div className="flex shrink-0 border-b" style={{ borderColor: "var(--wg-border)" }}>
-          {(["pages", "sections", "styles"] as Tab[]).map((t) => (
+          {(["pages", "sections", "styles", "media"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -373,7 +384,7 @@ export function EditorLayout() {
                 : { color: "var(--wg-text-3)" }
               }
             >
-              {t === "pages" ? "Pages" : t === "sections" ? "Sections" : "Styles"}
+              {t === "pages" ? "Pages" : t === "sections" ? "Sections" : t === "styles" ? "Styles" : "Médias"}
             </button>
           ))}
         </div>
@@ -381,6 +392,7 @@ export function EditorLayout() {
           {tab === "pages"    && renderPagesContent()}
           {tab === "sections" && <SectionPanel />}
           {tab === "styles"   && <StylePanel />}
+          {tab === "media"    && <MediaPanel />}
         </div>
       </aside>
 
