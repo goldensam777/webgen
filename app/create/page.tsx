@@ -15,7 +15,7 @@ export default function CreatePage() {
   const [mounted, setMounted]           = useState(false);
   const [files, setFiles]               = useState<File[]>([]);
   const fileInputRef                    = useRef<HTMLInputElement>(null);
-  const { config, setConfig, clearConfig } = useSiteStore();
+  const { config, setConfig, clearConfig, undo, redo, past, future } = useSiteStore();
 
   const handleDownload = async () => {
     if (!config) return;
@@ -116,6 +116,41 @@ export default function CreatePage() {
 
         {config && (
           <div className="flex items-center gap-2">
+
+            {/* Undo / Redo */}
+            <div className="flex items-center rounded-lg border overflow-hidden"
+              style={{ borderColor: "var(--wg-border)" }}>
+              <button
+                onClick={undo}
+                disabled={past.length === 0}
+                title="Annuler (Ctrl+Z)"
+                className="flex items-center justify-center w-8 h-8 transition-colors disabled:opacity-30"
+                style={{ color: "var(--wg-text-2)", backgroundColor: "transparent" }}
+                onMouseEnter={e => { if (past.length) e.currentTarget.style.backgroundColor = "var(--wg-bg-3)"; }}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+              </button>
+              <div className="w-px h-4" style={{ backgroundColor: "var(--wg-border)" }} />
+              <button
+                onClick={redo}
+                disabled={future.length === 0}
+                title="Rétablir (Ctrl+Y)"
+                className="flex items-center justify-center w-8 h-8 transition-colors disabled:opacity-30"
+                style={{ color: "var(--wg-text-2)", backgroundColor: "transparent" }}
+                onMouseEnter={e => { if (future.length) e.currentTarget.style.backgroundColor = "var(--wg-bg-3)"; }}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
+                </svg>
+              </button>
+            </div>
+
             {/* Télécharger */}
             <button
               onClick={handleDownload}

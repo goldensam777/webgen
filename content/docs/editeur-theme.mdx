@@ -1,0 +1,47 @@
+---
+title: Thème et couleurs
+description: Personnaliser les 7 couleurs du thème et la police de caractères.
+---
+
+Le système de thème Webgen repose sur 7 variables de couleur et une police globale. Chaque modification s'applique instantanément à l'ensemble du site.
+
+## Accéder au panneau de thème
+
+Dans la barre latérale gauche, cliquez sur l'onglet **Style**. Le panneau affiche les 7 couleurs du thème et le sélecteur de police.
+
+## Les 7 variables de couleur
+
+| Variable | Rôle |
+|---|---|
+| `primary` | Couleur principale — boutons, liens, accents |
+| `secondary` | Couleur secondaire — variantes, badges, éléments décoratifs |
+| `background` | Arrière-plan de la page |
+| `surface` | Arrière-plan des cartes, modals, sections alternées |
+| `text` | Couleur du texte principal |
+| `textMuted` | Texte secondaire, sous-titres, labels discrets |
+| `border` | Bordures, séparateurs, contours |
+
+Chaque variable est représentée par un bouton coloré. Cliquez dessus pour ouvrir le **color picker** natif du navigateur et choisir n'importe quelle couleur hexadécimale, RGBA ou HSL.
+
+## Sélecteur de police
+
+Sous les couleurs, le menu déroulant **Police** propose 12 familles Google Fonts :
+
+- Inter, Space Grotesk, Manrope (sans-serif modernes)
+- Merriweather, Lora, Playfair Display (serif élégants)
+- Nunito, Poppins, DM Sans (ronds et accessibles)
+- Syne, Cabinet Grotesk, Outfit (créatifs et distinctifs)
+
+La police s'applique à tous les textes du site. Les titres et les corps de texte utilisent la même famille avec des graisses différentes.
+
+## Prévisualisation en temps réel
+
+Toute modification de couleur ou de police est répercutée **immédiatement** dans le canvas de prévisualisation, sans rechargement. Les changements sont sauvegardés automatiquement dans votre projet.
+
+<Callout variant="tip">
+Pour un thème sombre, réglez `background` sur un ton très sombre (ex. `#0f0f0f`), `surface` légèrement plus clair (`#1a1a1a`), `text` sur blanc (`#ffffff`) et `textMuted` sur gris clair (`#a0a0a0`). Le contraste entre `primary` et `background` est crucial pour la lisibilité des boutons.
+</Callout>
+
+## Thème généré automatiquement
+
+Lors de la génération initiale, l'IA choisit un thème cohérent avec le secteur détecté. Vous repartez toujours d'une base harmonieuse, que vous pouvez affiner selon vos préférences de marque.

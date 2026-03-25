@@ -46,7 +46,7 @@ function IconProps() {
 
 /* ── Composant principal ────────────────────────────────────── */
 export function EditorLayout() {
-  const { config, activePageId, setActivePage, addPage, removePage } = useSiteStore();
+  const { config, activePageId, setActivePage, addPage, removePage, undo, redo, past, future } = useSiteStore();
   const activePage = useActivePage();
 
   const [tab,             setTab]             = useState<Tab>("sections");
@@ -58,6 +58,18 @@ export function EditorLayout() {
 
   const { removeSection, reorderSections, updateSection } = useSiteStore();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  /* ── Raccourcis clavier Ctrl+Z / Ctrl+Y (fenêtre parente) ── */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      if (key === "y" || (key === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [undo, redo]);
 
   /* ── Détection mobile ── */
   useEffect(() => {
@@ -127,10 +139,12 @@ export function EditorLayout() {
           },
         }));
       }
+      if (msg.type === "undo") { undo(); }
+      if (msg.type === "redo") { redo(); }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [config, activePageId, isMobile]);
+  }, [config, activePageId, isMobile, undo, redo]);
 
   if (!config || !activePage) return null;
 

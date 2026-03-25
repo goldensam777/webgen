@@ -1,0 +1,51 @@
+---
+title: Télécharger le site
+description: Exporter votre site en HTML statique ou en archive ZIP.
+---
+
+En plus de la publication en ligne, Webgen vous permet d'exporter votre site en fichiers HTML statiques pour l'héberger où vous le souhaitez.
+
+## Le bouton Télécharger
+
+Dans l'en-tête de l'éditeur, cliquez sur **Télécharger**. Le format d'export dépend du nombre de pages de votre site.
+
+## Site mono-page → `index.html`
+
+Si votre site n'a qu'une seule page, vous téléchargez un fichier `index.html` autonome :
+
+- Tout le CSS est **embarqué** dans le fichier (balise `<style>`)
+- Les polices sont chargées depuis **Google Fonts CDN**
+- Aucune dépendance externe supplémentaire
+
+## Site multi-pages → `site.zip`
+
+Si votre site a plusieurs pages, vous téléchargez une archive ZIP contenant :
+
+- Un fichier `.html` par page (ex. `index.html`, `about.html`, `contact.html`)
+- Des **liens de navigation cohérents** entre toutes les pages
+- Chaque fichier est autonome avec son CSS embarqué
+
+## Contenu du HTML généré
+
+Chaque fichier HTML inclut :
+
+| Élément | Détail |
+|---|---|
+| Variables CSS | Les 7 couleurs du thème en variables CSS (`--primary`, `--background`…) |
+| Google Fonts | Import CDN de la police choisie |
+| Contenu des sections | Tout le texte et la structure générés ou édités |
+| JS navbar | Toggle du menu mobile (hamburger) |
+| JS FAQ | Accordéon ouverture/fermeture des questions |
+
+## Héberger le site téléchargé
+
+Le site est 100 % statique — aucun serveur backend requis. Vous pouvez l'héberger sur :
+
+- **GitHub Pages** — Poussez les fichiers dans un dépôt public, activez Pages dans les paramètres
+- **Netlify** — Glissez-déposez le dossier (ou le ZIP) sur [netlify.com/drop](https://app.netlify.com/drop)
+- **Vercel** — Importez depuis GitHub ou glissez-déposez le dossier
+- **Tout hébergement FTP classique** — Uploadez les fichiers à la racine du serveur
+
+<Callout variant="note">
+Le site téléchargé est **entièrement statique** : HTML + CSS intégré + JS vanilla. Il ne dépend d'aucun framework, d'aucun bundler et d'aucun serveur Node.js. Un simple hébergement de fichiers statiques suffit.
+</Callout>

@@ -1,0 +1,54 @@
+---
+title: Joindre des fichiers
+description: Utiliser des PDF et des images comme contexte de génération.
+---
+
+En plus de la description textuelle, vous pouvez joindre des fichiers pour donner à l'IA un contexte plus riche — documents de marque, visuels, brochures existantes.
+
+## Comment joindre un fichier
+
+Dans le formulaire de création (`/create`), cliquez sur l'icône **trombone** (📎) ou le bouton **Joindre un fichier** sous le champ de description. Sélectionnez un ou plusieurs fichiers depuis votre ordinateur.
+
+## Formats acceptés
+
+| Type | Formats |
+|---|---|
+| Documents | PDF (`.pdf`) |
+| Images | PNG, JPG, JPEG, WebP, GIF, AVIF |
+
+## Traitement des PDF
+
+Les PDF sont traités côté serveur :
+
+1. Le texte est **extrait** du document
+2. Les **3 000 premiers caractères** sont envoyés à Claude comme contexte supplémentaire
+3. Claude utilise ce contenu pour générer des textes fidèles à votre document
+
+Cas d'usage : brochures commerciales, cahiers des charges, présentations d'entreprise, menus de restaurant au format PDF.
+
+<Callout variant="warning">
+Seul le **texte** des PDF est traité — les images et graphiques à l'intérieur du PDF sont ignorés. Pour les PDF scannés (images de pages), le contenu ne sera pas extrait. Préférez des PDF avec du texte sélectionnable.
+</Callout>
+
+## Traitement des images
+
+Les images sont envoyées directement à l'**API vision de Claude**. L'IA "voit" l'image et peut en extraire des informations pertinentes pour la génération.
+
+Cas d'usage :
+
+| Fichier joint | Ce que Claude en tire |
+|---|---|
+| Logo de votre marque | Couleurs dominantes → palette de thème adaptée |
+| Capture d'un site concurrent | Style à différencier, sections à éviter |
+| Maquette ou wireframe | Structure de page à respecter |
+| Photo produit ou d'ambiance | Ton et esthétique à reproduire |
+
+## Limites
+
+- **Les images jointes ne sont pas insérées** dans le site généré — elles servent uniquement de contexte pour l'IA. Le site généré ne contient pas d'images (sections texte + icônes uniquement).
+- L'extraction PDF est limitée aux **3 000 premiers caractères** — pour les longs documents, placez les informations clés en début de fichier.
+- Les fichiers sont utilisés **uniquement pour la génération en cours** — ils ne sont pas stockés durablement.
+
+<Callout variant="note">
+La taille maximale par fichier est de **5 Mo**. Pour les PDF volumineux, exportez uniquement les pages pertinentes avant de les joindre.
+</Callout>

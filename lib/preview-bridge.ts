@@ -12,4 +12,6 @@ export type PreviewMsg =
   | { type: "navigate"; pageId: string }
   | { type: "update"; sectionId: string; field: string; value: string }
   | { type: "style-update"; sectionId: string; field: string; style: { fontSize?: string; fontWeight?: string } }
-  | { type: "element-style-update"; sectionId: string; elementId: string; style: Record<string, unknown> };
+  | { type: "element-style-update"; sectionId: string; elementId: string; style: Record<string, unknown> }
+  | { type: "undo" }
+  | { type: "redo" };

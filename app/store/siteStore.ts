@@ -32,9 +32,17 @@ interface SiteStore {
   config:          SiteConfig | null;
   activePageId:    string | null;
 
+  /* undo/redo history (non-persisté) */
+  past:            SiteConfig[];
+  future:          SiteConfig[];
+
   setConfig:       (config: SiteConfig) => void;
   clearConfig:     () => void;
   setActivePage:   (id: string) => void;
+
+  /* undo / redo */
+  undo:            () => void;
+  redo:            () => void;
 
   /* page-level */
   addPage:         (name: string) => void;
@@ -88,20 +96,61 @@ function mapPage(
 
 /* ── Store ──────────────────────────────────────────────────── */
 
+/* ── History helpers ─────────────────────────────────────────── */
+
+const MAX_HISTORY = 50;
+
+function snapshot(s: SiteStore): Pick<SiteStore, "past" | "future"> {
+  if (!s.config) return { past: s.past, future: s.future };
+  return {
+    past:   [...s.past.slice(-(MAX_HISTORY - 1)), s.config],
+    future: [],
+  };
+}
+
+/* ── Store ──────────────────────────────────────────────────── */
+
 export const useSiteStore = create<SiteStore>()(
   persist(
     (set, get) => ({
       config:       null,
       activePageId: null,
+      past:         [],
+      future:       [],
 
+      /* setConfig / clearConfig ne poussent pas d'historique — nouveau projet */
       setConfig: (config) => set({
         config,
         activePageId: config.pages[0]?.id ?? null,
+        past:   [],
+        future: [],
       }),
 
-      clearConfig: () => set({ config: null, activePageId: null }),
+      clearConfig: () => set({ config: null, activePageId: null, past: [], future: [] }),
 
       setActivePage: (id) => set({ activePageId: id }),
+
+      /* ── undo / redo ── */
+
+      undo: () => set((s) => {
+        if (!s.past.length) return s;
+        const previous = s.past[s.past.length - 1];
+        return {
+          config:  previous,
+          past:    s.past.slice(0, -1),
+          future:  s.config ? [s.config, ...s.future.slice(0, MAX_HISTORY - 1)] : s.future,
+        };
+      }),
+
+      redo: () => set((s) => {
+        if (!s.future.length) return s;
+        const next = s.future[0];
+        return {
+          config:  next,
+          past:    s.config ? [...s.past.slice(-(MAX_HISTORY - 1)), s.config] : s.past,
+          future:  s.future.slice(1),
+        };
+      }),
 
       /* ── pages ── */
 
@@ -116,6 +165,7 @@ export const useSiteStore = create<SiteStore>()(
           data: {},
         };
         return {
+          ...snapshot(s),
           config:       { ...s.config, pages: [...s.config.pages, page] },
           activePageId: page.id,
         };
@@ -125,18 +175,19 @@ export const useSiteStore = create<SiteStore>()(
         if (!s.config || s.config.pages.length <= 1) return s;
         const pages    = s.config.pages.filter(p => p.id !== id);
         const activeId = s.activePageId === id ? (pages[0]?.id ?? null) : s.activePageId;
-        return { config: { ...s.config, pages }, activePageId: activeId };
+        return { ...snapshot(s), config: { ...s.config, pages }, activePageId: activeId };
       }),
 
       renamePage: (id, name) => set((s) => {
         if (!s.config) return s;
-        return { config: mapPage(s.config, id, p => ({ ...p, name })) };
+        return { ...snapshot(s), config: mapPage(s.config, id, p => ({ ...p, name })) };
       }),
 
       /* ── theme ── */
 
       updateTheme: (key, value) => set((s) => s.config ? {
-        config: { ...s.config, theme: { ...s.config.theme, [key]: value } }
+        ...snapshot(s),
+        config: { ...s.config, theme: { ...s.config.theme, [key]: value } },
       } : s),
 
       /* ── sections (page active) ── */
@@ -145,10 +196,10 @@ export const useSiteStore = create<SiteStore>()(
         if (!s.config) return s;
         const page = activePage(s.config, s.activePageId);
         if (!page) return s;
-        // Toujours lire le dernier state pour éviter les closures périmées
         const prev    = page.data[section] ?? {};
         const newData = typeof updater === "function" ? updater(prev) : updater;
         return {
+          ...snapshot(s),
           config: mapPage(s.config, page.id, p => ({
             ...p, data: { ...p.data, [section]: newData },
           })),
@@ -160,6 +211,7 @@ export const useSiteStore = create<SiteStore>()(
         const page = activePage(s.config, s.activePageId);
         if (!page || page.sections.includes(section)) return s;
         return {
+          ...snapshot(s),
           config: mapPage(s.config, page.id, p => ({
             ...p, sections: [...p.sections, section],
           })),
@@ -171,6 +223,7 @@ export const useSiteStore = create<SiteStore>()(
         const page = activePage(s.config, s.activePageId);
         if (!page) return s;
         return {
+          ...snapshot(s),
           config: mapPage(s.config, page.id, p => ({
             ...p, sections: p.sections.filter(v => v !== section),
           })),
@@ -181,7 +234,10 @@ export const useSiteStore = create<SiteStore>()(
         if (!s.config) return s;
         const page = activePage(s.config, s.activePageId);
         if (!page) return s;
-        return { config: mapPage(s.config, page.id, p => ({ ...p, sections })) };
+        return {
+          ...snapshot(s),
+          config: mapPage(s.config, page.id, p => ({ ...p, sections })),
+        };
       }),
 
       /* expose pour les composants */
@@ -194,7 +250,8 @@ export const useSiteStore = create<SiteStore>()(
     {
       name:    "webgen-site",
       storage: createJSONStorage(() => localStorage),
-      // Efface automatiquement les configs en ancien format (sans pages[])
+      // Ne persister que config + activePageId (pas l'historique)
+      partialize: (s) => ({ config: s.config, activePageId: s.activePageId }),
       onRehydrateStorage: () => (state) => {
         if (state?.config && !Array.isArray((state.config as unknown as Record<string, unknown>).pages)) {
           state.config       = null;

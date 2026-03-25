@@ -1,0 +1,126 @@
+---
+title: Sections disponibles
+description: Référence complète des 10 sections et de leurs champs de données.
+---
+
+Chaque section Webgen est composée de champs de données typés. Ces champs sont peuplés par l'IA lors de la génération et modifiables via l'édition inline ou le panneau de sections.
+
+## Navbar
+
+Barre de navigation fixe en haut de toutes les pages.
+
+| Champ | Type | Description |
+|---|---|---|
+| `logo` | `string` | Texte du logo (nom de marque) |
+| `links` | `{ label: string, href: string }[]` | Liens de navigation |
+| `ctaLabel` | `string` | Texte du bouton d'appel à l'action |
+| `ctaHref` | `string` | URL cible du bouton CTA |
+
+## Hero
+
+Section d'accroche principale, généralement en haut de la page d'accueil.
+
+| Champ | Type | Description |
+|---|---|---|
+| `title` | `string` | Titre principal (H1) |
+| `subtitle` | `string` | Sous-titre court |
+| `description` | `string` | Paragraphe de description |
+| `badgeLabel` | `string` | Badge/étiquette au-dessus du titre (optionnel) |
+| `ctaLabel` | `string` | Texte du bouton principal |
+| `ctaHref` | `string` | URL du bouton principal |
+| `secondaryCtaLabel` | `string` | Texte du bouton secondaire (optionnel) |
+| `secondaryCtaHref` | `string` | URL du bouton secondaire |
+| `align` | `"left" \| "center"` | Alignement du contenu |
+
+## Features
+
+Grille de fonctionnalités ou avantages.
+
+| Champ | Type | Description |
+|---|---|---|
+| `title` | `string` | Titre de la section |
+| `subtitle` | `string` | Sous-titre introductif |
+| `items` | `{ title: string, description: string }[]` | Liste des fonctionnalités |
+
+## Stats
+
+Affichage de chiffres clés en grande typographie.
+
+| Champ | Type | Description |
+|---|---|---|
+| `items` | `{ value: string, label: string }[]` | Paires valeur/label (ex. "50+", "Clients") |
+
+## Testimonials
+
+Grille d'avis clients.
+
+| Champ | Type | Description |
+|---|---|---|
+| `title` | `string` | Titre de la section |
+| `items` | `{ name: string, role: string, content: string, avatar: string }[]` | Témoignages |
+
+Le champ `avatar` accepte une URL d'image ou une initiale générée automatiquement.
+
+## Pricing
+
+Tableau de plans tarifaires.
+
+| Champ | Type | Description |
+|---|---|---|
+| `title` | `string` | Titre de la section |
+| `subtitle` | `string` | Sous-titre |
+| `plans` | `Plan[]` | Liste des plans (voir ci-dessous) |
+
+**Structure d'un plan (`Plan`) :**
+
+| Champ | Type | Description |
+|---|---|---|
+| `name` | `string` | Nom du plan (ex. "Pro") |
+| `price` | `string` | Prix affiché (ex. "29€") |
+| `period` | `string` | Période (ex. "/mois") |
+| `description` | `string` | Courte description du plan |
+| `features` | `string[]` | Liste des fonctionnalités incluses |
+| `ctaLabel` | `string` | Texte du bouton |
+| `highlighted` | `boolean` | Met en avant le plan (style accentué) |
+
+## FAQ
+
+Accordéon de questions fréquentes.
+
+| Champ | Type | Description |
+|---|---|---|
+| `title` | `string` | Titre de la section |
+| `items` | `{ question: string, answer: string }[]` | Paires question/réponse |
+
+## CTA
+
+Bannière d'appel à l'action centrée.
+
+| Champ | Type | Description |
+|---|---|---|
+| `title` | `string` | Titre accrocheur |
+| `subtitle` | `string` | Texte d'accompagnement |
+| `primaryCta` | `string` | Texte du bouton principal |
+| `secondaryCta` | `string` | Texte du bouton secondaire (optionnel) |
+
+## Contact
+
+Bloc d'informations de contact.
+
+| Champ | Type | Description |
+|---|---|---|
+| `title` | `string` | Titre de la section |
+| `subtitle` | `string` | Sous-titre |
+| `email` | `string` | Adresse e-mail |
+| `phone` | `string` | Numéro de téléphone |
+| `address` | `string` | Adresse postale |
+
+## Footer
+
+Pied de page commun à toutes les pages.
+
+| Champ | Type | Description |
+|---|---|---|
+| `logo` | `string` | Texte du logo |
+| `description` | `string` | Courte description de l'entreprise |
+| `copyright` | `string` | Mention légale (ex. "© 2026 NutriCoach") |

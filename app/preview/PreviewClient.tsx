@@ -60,6 +60,23 @@ export function PreviewClient() {
   const [pageId,  setPageId]  = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
+  /* ── Relay Ctrl+Z / Ctrl+Y vers le parent quand hors contentEditable ── */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const key = e.key.toLowerCase();
+      if (key !== "z" && key !== "y") return;
+      // Laisser le browser gérer l'undo natif dans les spans contentEditable
+      const active = document.activeElement as HTMLElement | null;
+      if (active?.isContentEditable) return;
+      e.preventDefault();
+      const type = (key === "z" && !e.shiftKey) ? "undo" : "redo";
+      window.parent?.postMessage({ type }, "*");
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   /* ── Écoute les messages du parent ── */
   useEffect(() => {
     const handler = (e: MessageEvent) => {
