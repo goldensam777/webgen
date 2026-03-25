@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/app/store/authStore";
+import { useSiteStore, apiConfigToSiteConfig } from "@/app/store/siteStore";
 import { StatCard }     from "@/components/ui/StatCard";
 import { DataTable }    from "@/components/ui/DataTable";
 import { ActivityFeed } from "@/components/ui/ActivityFeed";
@@ -24,11 +25,30 @@ function formatDate(iso: string) {
 
 export default function DashboardPage() {
   const { user, token, logout } = useAuthStore();
+  const { setConfig }           = useSiteStore();
   const router = useRouter();
 
-  const [sites,   setSites]   = useState<Site[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const [sites,    setSites]    = useState<Site[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [mounted,  setMounted]  = useState(false);
+  const [resuming, setResuming] = useState<string | null>(null);
+
+  const handleEdit = async (slug: string) => {
+    setResuming(slug);
+    try {
+      const res  = await fetch(`/api/dashboard/sites/${slug}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setConfig(apiConfigToSiteConfig(data.config));
+      router.push("/create");
+    } catch {
+      alert("Impossible de charger ce site.");
+    } finally {
+      setResuming(null);
+    }
+  };
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -78,25 +98,23 @@ export default function DashboardPage() {
       key: "url", label: "Actions",
       render: (v, row) => (
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleEdit(String(row.slug))}
+            disabled={resuming === String(row.slug)}
+            className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors disabled:opacity-50"
+            style={{ color: "var(--color-primary)", borderColor: "var(--color-border)" }}
+          >
+            {resuming === String(row.slug) ? "…" : "✏ Modifier"}
+          </button>
           <a
             href={String(v)}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors"
-            style={{
-              color: "var(--color-primary)",
-              borderColor: "var(--color-border)",
-            }}
+            style={{ color: "var(--color-text-muted)", borderColor: "var(--color-border)" }}
           >
             Voir →
           </a>
-          <button
-            onClick={() => navigator.clipboard.writeText(String(v))}
-            className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors"
-            style={{ color: "var(--color-text-muted)", borderColor: "var(--color-border)" }}
-          >
-            ⎘ Copier
-          </button>
         </div>
       ),
     },
