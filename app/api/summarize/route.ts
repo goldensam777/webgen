@@ -16,13 +16,49 @@ type ContentBlock =
   | { type: "text"; text: string }
   | { type: "image"; source: { type: "base64"; media_type: string; data: string } };
 
+/* ── Polyfill Node.js : APIs browser requis par pdfjs-dist ─────── */
+
+function ensureBrowserPolyfills() {
+  if (typeof globalThis.DOMMatrix === "undefined") {
+    class DOMMatrixPolyfill {
+      a=1; b=0; c=0; d=1; e=0; f=0;
+      m11=1; m12=0; m13=0; m14=0; m21=0; m22=1; m23=0; m24=0;
+      m31=0; m32=0; m33=1; m34=0; m41=0; m42=0; m43=0; m44=1;
+      is2D=true; isIdentity=true;
+      static fromMatrix()         { return new DOMMatrixPolyfill(); }
+      static fromFloat32Array()   { return new DOMMatrixPolyfill(); }
+      static fromFloat64Array()   { return new DOMMatrixPolyfill(); }
+      multiply()                  { return new DOMMatrixPolyfill(); }
+      translate()                 { return new DOMMatrixPolyfill(); }
+      scale()                     { return new DOMMatrixPolyfill(); }
+      scaleNonUniform()           { return new DOMMatrixPolyfill(); }
+      rotate()                    { return new DOMMatrixPolyfill(); }
+      rotateFromVector()          { return new DOMMatrixPolyfill(); }
+      rotateAxisAngle()           { return new DOMMatrixPolyfill(); }
+      skewX()                     { return new DOMMatrixPolyfill(); }
+      skewY()                     { return new DOMMatrixPolyfill(); }
+      flipX()                     { return new DOMMatrixPolyfill(); }
+      flipY()                     { return new DOMMatrixPolyfill(); }
+      inverse()                   { return new DOMMatrixPolyfill(); }
+      transformPoint(p: unknown)  { return p; }
+      toFloat32Array()            { return new Float32Array(16); }
+      toFloat64Array()            { return new Float64Array(16); }
+      toString()                  { return "matrix(1, 0, 0, 1, 0, 0)"; }
+    }
+    // @ts-expect-error polyfill Node.js
+    globalThis.DOMMatrix = DOMMatrixPolyfill;
+  }
+}
+
 /* ── Extraction texte PDF ───────────────────────────────────────── */
 
 async function extractPdfText(buffer: Buffer): Promise<string> {
+  ensureBrowserPolyfills();
+  // Import via lib/ pour éviter le test runner qui se déclenche sur require("pdf-parse")
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdf = require("pdf-parse");
+  const pdf = require("pdf-parse/lib/pdf-parse.js");
   const result = await pdf(buffer);
-  // Limite raisonnable pour le contexte du résumé (~20 000 chars ≈ 5 000 tokens)
+  // ~20 000 chars ≈ 5 000 tokens — largement suffisant pour un CV
   return result.text.slice(0, 20_000).trim();
 }
 
