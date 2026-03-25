@@ -54,10 +54,9 @@ function ensureBrowserPolyfills() {
 
 async function extractPdfText(buffer: Buffer): Promise<string> {
   ensureBrowserPolyfills();
-  // Import via lib/ pour éviter le test runner qui se déclenche sur require("pdf-parse")
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdf = require("pdf-parse/lib/pdf-parse.js");
-  const result = await pdf(buffer);
+  const { PDFParse } = await import("pdf-parse");
+  const parser = new PDFParse({ data: buffer });
+  const result = await parser.getText();
   // ~20 000 chars ≈ 5 000 tokens — largement suffisant pour un CV
   return result.text.slice(0, 20_000).trim();
 }
