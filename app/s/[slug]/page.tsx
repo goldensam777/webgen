@@ -1,6 +1,5 @@
-import { readFile } from "fs/promises";
-import path from "path";
 import { notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import {
   Navbar, Hero, Features, Pricing, FAQ, Footer,
   Stats, Testimonials, CTA, Contact,
@@ -21,11 +20,14 @@ interface PageProps {
 }
 
 async function loadConfig(slug: string): Promise<SiteConfig> {
-  const raw = await readFile(
-    path.join(process.cwd(), "data", "sites", `${slug}.json`),
-    "utf-8"
-  );
-  return JSON.parse(raw).config as SiteConfig;
+  const { data, error } = await supabase
+    .from("sites")
+    .select("config")
+    .eq("slug", slug)
+    .single();
+
+  if (error || !data) throw new Error("Site not found");
+  return data.config as SiteConfig;
 }
 
 function renderPage(page: SitePage, theme: SiteConfig["theme"]) {

@@ -1,29 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "fs/promises";
-import path from "path";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
+import { supabase } from "@/lib/supabase";
 
-const USERS_FILE = path.join(process.cwd(), "data", "users.json");
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "webgen-dev-secret-change-in-prod"
 );
-
-interface StoredUser {
-  id:           string;
-  email:        string;
-  name:         string;
-  passwordHash: string;
-}
-
-async function readUsers(): Promise<StoredUser[]> {
-  try {
-    const raw = await readFile(USERS_FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
@@ -32,10 +14,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "E-mail et mot de passe requis." }, { status: 400 });
   }
 
-  const users = await readUsers();
-  const user  = users.find(u => u.email === email.toLowerCase());
+  const { data: user } = await supabase
+    .from("users")
+    .select("id, email, name, password_hash")
+    .eq("email", email.toLowerCase())
+    .single();
 
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+  if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     return NextResponse.json({ error: "E-mail ou mot de passe incorrect." }, { status: 401 });
   }
 

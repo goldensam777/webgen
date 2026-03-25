@@ -1,34 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile, writeFile } from "fs/promises";
-import path from "path";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
-import { randomUUID } from "crypto";
+import { supabase } from "@/lib/supabase";
 
-const USERS_FILE = path.join(process.cwd(), "data", "users.json");
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "webgen-dev-secret-change-in-prod"
 );
-
-interface StoredUser {
-  id:           string;
-  email:        string;
-  name:         string;
-  passwordHash: string;
-}
-
-async function readUsers(): Promise<StoredUser[]> {
-  try {
-    const raw = await readFile(USERS_FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-async function writeUsers(users: StoredUser[]): Promise<void> {
-  await writeFile(USERS_FILE, JSON.stringify(users, null, 2));
-}
 
 export async function POST(req: NextRequest) {
   const { email, password, name } = await req.json();
@@ -36,30 +13,39 @@ export async function POST(req: NextRequest) {
   if (!email?.trim() || !password || !name?.trim()) {
     return NextResponse.json({ error: "Tous les champs sont requis." }, { status: 400 });
   }
-
   if (password.length < 6) {
     return NextResponse.json({ error: "Mot de passe : 6 caractères minimum." }, { status: 400 });
   }
 
-  const users = await readUsers();
+  const { data: existing } = await supabase
+    .from("users")
+    .select("id")
+    .eq("email", email.toLowerCase())
+    .single();
 
-  if (users.find(u => u.email === email.toLowerCase())) {
+  if (existing) {
     return NextResponse.json({ error: "Un compte existe déjà avec cet e-mail." }, { status: 409 });
   }
 
-  const id           = randomUUID();
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user: StoredUser = { id, email: email.toLowerCase(), name: name.trim(), passwordHash };
+  const password_hash = await bcrypt.hash(password, 10);
 
-  await writeUsers([...users, user]);
+  const { data: user, error } = await supabase
+    .from("users")
+    .insert({ email: email.toLowerCase(), name: name.trim(), password_hash })
+    .select("id, email, name")
+    .single();
 
-  const token = await new SignJWT({ sub: id, email: user.email, name: user.name })
+  if (error || !user) {
+    return NextResponse.json({ error: "Erreur lors de la création du compte." }, { status: 500 });
+  }
+
+  const token = await new SignJWT({ sub: user.id, email: user.email, name: user.name })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")
     .sign(JWT_SECRET);
 
-  const res = NextResponse.json({ user: { id, email: user.email, name: user.name }, token });
+  const res = NextResponse.json({ user: { id: user.id, email: user.email, name: user.name }, token });
   res.cookies.set("webgen-token", token, {
     httpOnly: true,
     sameSite: "lax",
