@@ -24,15 +24,17 @@ export async function middleware(request: NextRequest) {
   if (PROTECTED.some(p => pathname.startsWith(p))) {
     const token = request.cookies.get("webgen-token")?.value;
 
+    const authUrl = new URL("/auth", request.url);
+    authUrl.searchParams.set("redirect", pathname);
+
     if (!token) {
-      return NextResponse.redirect(new URL("/auth", request.url));
+      return NextResponse.redirect(authUrl);
     }
 
     try {
       await jwtVerify(token, JWT_SECRET);
     } catch {
-      // Token expiré ou invalide → effacer le cookie et rediriger
-      const res = NextResponse.redirect(new URL("/auth", request.url));
+      const res = NextResponse.redirect(authUrl);
       res.cookies.set("webgen-token", "", { maxAge: 0, path: "/" });
       return res;
     }

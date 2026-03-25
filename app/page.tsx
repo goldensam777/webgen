@@ -501,9 +501,9 @@ export default function LandingPage() {
               Ressources
             </span>
             {[
-              { label: "Documentation", href: "#" },
-              { label: "Premier.js", href: "#" },
-              { label: "API", href: "#" },
+              { label: "Documentation", href: "/docs/introduction" },
+              { label: "Guide IA", href: "/docs/ia-description" },
+              { label: "Référence sections", href: "/docs/ref-sections" },
             ].map(l => (
               <Link
                 key={l.label}
@@ -522,8 +522,8 @@ export default function LandingPage() {
               Légal
             </span>
             {[
-              { label: "Confidentialité", href: "#" },
-              { label: "CGU", href: "#" },
+              { label: "Confidentialité", href: "/legal/confidentialite" },
+              { label: "CGU", href: "/legal/cgu" },
             ].map(l => (
               <Link
                 key={l.label}

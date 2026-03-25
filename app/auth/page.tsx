@@ -1,7 +1,7 @@
 // app/auth/page.tsx
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/app/store/authStore";
 
@@ -17,14 +17,16 @@ export default function AuthPage() {
   const [mounted, setMounted]   = useState(false);
 
   const { user, setAuth } = useAuthStore();
-  const router = useRouter();
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo   = searchParams.get("redirect") ?? "/dashboard";
 
   useEffect(() => { setMounted(true); }, []);
 
   // Redirect already-logged-in users
   useEffect(() => {
-    if (mounted && user) router.replace("/dashboard");
-  }, [mounted, user, router]);
+    if (mounted && user) router.replace(redirectTo);
+  }, [mounted, user, router, redirectTo]);
 
   if (!mounted) return <div className="min-h-screen" style={{ backgroundColor: "var(--wg-bg)" }} />;
 
@@ -49,7 +51,7 @@ export default function AuthPage() {
       if (!res.ok) throw new Error(data.error ?? "Erreur inconnue");
 
       setAuth(data.user, data.token);
-      router.push("/dashboard");
+      router.push(redirectTo);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erreur inconnue");
     } finally {
