@@ -68,6 +68,8 @@ export function CanvasElement({ id, children, className, style: externalStyle }:
   useEffect(() => {
     if (!selected) return;
     const onOutside = (e: MouseEvent) => {
+      // Ne pas désélectionner si le clic est dans un toolbar portal
+      if ((e.target as HTMLElement).closest("[data-canvas-toolbar]")) return;
       if (!wrapperRef.current?.contains(e.target as Node)) setSelected(false);
     };
     window.addEventListener("mousedown", onOutside);

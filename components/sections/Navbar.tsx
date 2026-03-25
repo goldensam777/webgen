@@ -64,11 +64,13 @@ export function Navbar({
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
           {ctaLabel && (
-            <CanvasElement id="ctaBtn">
-              <a href={ctaHref}>
-                <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
-              </a>
-            </CanvasElement>
+            <a href={ctaHref}>
+              <CanvasElement id="ctaBtn">
+                <Button isDefault={false}>
+                  <EditableText field="ctaLabel" value={ctaLabel} hrefField="ctaHref" hrefValue={ctaHref} />
+                </Button>
+              </CanvasElement>
+            </a>
           )}
         </div>
 

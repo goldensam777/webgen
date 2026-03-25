@@ -12,6 +12,7 @@ export interface SiteTheme {
   text:       string;
   textMuted:  string;
   border:     string;
+  font:       string; // Google Font name, ex: "Inter", "Poppins"
 }
 
 export interface SitePage {
@@ -44,7 +45,10 @@ interface SiteStore {
   updateTheme:     (key: keyof SiteTheme, value: string) => void;
 
   /* section-level (agit sur la page active) */
-  updateSection:   (section: string, data: Record<string, unknown>) => void;
+  updateSection:   (
+    section: string,
+    updater: Record<string, unknown> | ((prev: Record<string, unknown>) => Record<string, unknown>)
+  ) => void;
   addSection:      (section: string) => void;
   removeSection:   (section: string) => void;
   reorderSections: (sections: string[]) => void;
@@ -60,6 +64,7 @@ export const DEFAULT_THEME: SiteTheme = {
   text:       "#111827",
   textMuted:  "#6b7280",
   border:     "#e5e7eb",
+  font:       "Inter",
 };
 
 /* ── Helpers ────────────────────────────────────────────────── */
@@ -136,13 +141,16 @@ export const useSiteStore = create<SiteStore>()(
 
       /* ── sections (page active) ── */
 
-      updateSection: (section, data) => set((s) => {
+      updateSection: (section, updater) => set((s) => {
         if (!s.config) return s;
         const page = activePage(s.config, s.activePageId);
         if (!page) return s;
+        // Toujours lire le dernier state pour éviter les closures périmées
+        const prev    = page.data[section] ?? {};
+        const newData = typeof updater === "function" ? updater(prev) : updater;
         return {
           config: mapPage(s.config, page.id, p => ({
-            ...p, data: { ...p.data, [section]: data },
+            ...p, data: { ...p.data, [section]: newData },
           })),
         };
       }),
@@ -225,6 +233,7 @@ export function apiConfigToSiteConfig(
     text:       isValidHex(raw.text)       ? raw.text       : DEFAULT_THEME.text,
     textMuted:  isValidHex(raw.textMuted)  ? raw.textMuted  : DEFAULT_THEME.textMuted,
     border:     isValidHex(raw.border)     ? raw.border     : DEFAULT_THEME.border,
+    font:       typeof raw.font === "string" && raw.font.trim() ? raw.font : DEFAULT_THEME.font,
   };
 
   // Multi-pages format

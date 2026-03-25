@@ -1,17 +1,24 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useEditable } from "./EditableContext";
 import { FloatingToolbar } from "./FloatingToolbar";
 
 interface Props {
-  field: string;
-  value: string;
+  field:      string;
+  value:      string;
+  hrefField?: string;
+  hrefValue?: string;
 }
 
-export function EditableText({ field, value }: Props) {
+export function EditableText({ field, value, hrefField, hrefValue }: Props) {
   const { isEditing, fieldStyles, onUpdate, onStyleUpdate } = useEditable();
-  const ref = useRef<HTMLSpanElement>(null);
+  const ref              = useRef<HTMLSpanElement>(null);
   const [focused, setFocused] = useState(false);
+
+  /* ── Close-lifecycle refs (never stale, no re-render cost) ── */
+  const pendingTextRef   = useRef("");
+  const closeTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const preventCloseRef  = useRef(false);   // toolbar mousedown sets this BEFORE span blur fires
 
   const customStyle = fieldStyles[field] ?? {};
 
@@ -21,6 +28,41 @@ export function EditableText({ field, value }: Props) {
     }
   }, [value]);
 
+  /* ── Toolbar interaction signals ── */
+
+  // Called from toolbar onMouseDown — fires before span onBlur
+  const onToolbarMouseDown = () => {
+    preventCloseRef.current = true;
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  // Called from toolbar onBlur (focus truly left the toolbar to outside)
+  const onToolbarBlur = () => {
+    preventCloseRef.current = false;
+    setFocused(false);
+    onUpdate(field, pendingTextRef.current);
+  };
+
+  /* ── Span blur handling ── */
+
+  const onSpanBlur = (text: string) => {
+    pendingTextRef.current = text;
+    if (preventCloseRef.current) {
+      // Toolbar intercepted — don't close, reset flag
+      preventCloseRef.current = false;
+      return;
+    }
+    // Normal blur (clicked outside) — close after current event finishes
+    closeTimerRef.current = setTimeout(() => {
+      setFocused(false);
+      onUpdate(field, pendingTextRef.current);
+    }, 0);
+  };
+
+  /* ── Styles ── */
   const appliedStyle: React.CSSProperties = {};
   if (customStyle.fontSize)   appliedStyle.fontSize   = customStyle.fontSize;
   if (customStyle.fontWeight) appliedStyle.fontWeight = customStyle.fontWeight;
@@ -37,6 +79,11 @@ export function EditableText({ field, value }: Props) {
         field={field}
         style={customStyle}
         onStyleChange={(s) => onStyleUpdate(field, s)}
+        hrefField={hrefField}
+        hrefValue={hrefValue}
+        onHrefChange={(f, v) => onUpdate(f, v)}
+        onToolbarMouseDown={onToolbarMouseDown}
+        onToolbarBlur={onToolbarBlur}
       />
       <span
         ref={ref}
@@ -56,16 +103,10 @@ export function EditableText({ field, value }: Props) {
         }}
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.focus(); }}
         onFocus={() => setFocused(true)}
-        onBlur={(e) => {
-          setFocused(false);
-          onUpdate(field, e.currentTarget.textContent ?? "");
-        }}
+        onBlur={(e)   => onSpanBlur(e.currentTarget.textContent ?? "")}
         onKeyDown={(e) => {
-          if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); }
-          if (e.key === "Escape") {
-            e.currentTarget.textContent = value;
-            e.currentTarget.blur();
-          }
+          if (e.key === "Enter")  { e.preventDefault(); e.currentTarget.blur(); }
+          if (e.key === "Escape") { e.currentTarget.textContent = value; e.currentTarget.blur(); }
         }}
       >
         {value}

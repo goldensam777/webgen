@@ -244,34 +244,77 @@ function SiteCarousel() {
    Wave SVG
 ══════════════════════════════════════════════════════════════ */
 function GreenWave() {
+  // Deux couches qui défilent en sens opposés (option 5)
+  // avec easing sinusoïdal (option 4) via calcMode="spline"
+  //
+  // Chaque path = 1 cycle sinusoïdal COMPLET : même y au départ et à l'arrivée,
+  // tangente horizontale aux deux bouts → jointure invisible entre les tiles.
+  // Forme : départ au milieu (y=75), pic (y=30), retour milieu, creux (y=112), retour milieu.
+  const p1 = "M0,75 C160,75 200,30 360,30 C520,30 560,75 720,75 C880,75 920,112 1080,112 C1240,112 1280,75 1440,75 L1440,120 L0,120 Z";
+  // Phase inversée par rapport à p1 : départ au milieu (y=70), creux (y=112), retour, pic (y=22), retour.
+  const p2 = "M0,70 C160,70 200,112 360,112 C520,112 560,70 720,70 C880,70 920,22 1080,22 C1240,22 1280,70 1440,70 L1440,120 L0,120 Z";
+
   return (
     <svg
-      className="wg-wave w-full block"
+      className="w-full block"
       viewBox="0 0 1440 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       preserveAspectRatio="none"
+      overflow="hidden"
     >
       <defs>
-        <linearGradient id="wg-g1" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
+        {/* Gradient étendu sur 2× la largeur pour couvrir le tile */}
+        <linearGradient id="wg-g1" x1="0" y1="0" x2="2880" y2="0" gradientUnits="userSpaceOnUse">
           <stop offset="0%"   stopColor="#10b981" />
-          <stop offset="55%"  stopColor="#059669" />
-          <stop offset="100%" stopColor="#047857" />
-        </linearGradient>
-        <linearGradient id="wg-g2" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#34d399" />
+          <stop offset="50%"  stopColor="#059669" />
           <stop offset="100%" stopColor="#10b981" />
         </linearGradient>
+        <linearGradient id="wg-g2" x1="0" y1="0" x2="2880" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#34d399" />
+          <stop offset="50%"  stopColor="#10b981" />
+          <stop offset="100%" stopColor="#34d399" />
+        </linearGradient>
       </defs>
-      <path
-        d="M0,80 C240,20 480,110 720,60 C960,10 1200,100 1440,45 L1440,120 L0,120 Z"
-        fill="url(#wg-g2)" fillOpacity="0.13"
-      />
-      <path
-        d="M0,60 C360,120 720,5 1080,70 C1260,105 1380,40 1440,30 L1440,120 L0,120 Z"
-        fill="url(#wg-g1)" fillOpacity="0.22"
-      />
+
+      {/* Couche arrière — défile vers la GAUCHE, 9s, ease-in-out sinusoïdal */}
+      <g>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          from="0 0"
+          to="-1440 0"
+          dur="9s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keyTimes="0;1"
+          keySplines="0.37 0 0.63 1"
+        />
+        <path d={p1} fill="url(#wg-g2)" fillOpacity="0.13" />
+        <path d={p1} fill="url(#wg-g2)" fillOpacity="0.13" transform="translate(1440, 0)" />
+      </g>
+
+      {/* Couche avant — défile vers la DROITE, 7s, ease-in-out sinusoïdal */}
+      <g>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          from="-1440 0"
+          to="0 0"
+          dur="7s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keyTimes="0;1"
+          keySplines="0.37 0 0.63 1"
+        />
+        <path d={p2} fill="url(#wg-g1)" fillOpacity="0.22" />
+        <path d={p2} fill="url(#wg-g1)" fillOpacity="0.22" transform="translate(1440, 0)" />
+      </g>
     </svg>
   );
 }
@@ -349,11 +392,12 @@ export default function LandingPage() {
           <SiteCarousel />
         </div>
 
-        {/* Wave */}
-        <div className="mt-12 w-full max-w-4xl">
-          <GreenWave />
-        </div>
       </section>
+
+      {/* Wave — pleine largeur, hors du conteneur centré */}
+      <div className="w-full -mt-2 overflow-hidden">
+        <GreenWave />
+      </div>
 
       {/* ── Features ────────────────────────────────────── */}
       <section

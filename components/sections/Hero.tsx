@@ -82,18 +82,22 @@ export function Hero({
           {(ctaLabel || secondaryCtaLabel) && (
             <div className={`flex flex-wrap gap-3 ${isCenter ? "justify-center" : ""} mt-2`}>
               {ctaLabel && (
-                <CanvasElement id="ctaBtn">
-                  <a href={ctaHref}>
-                    <Button isDefault={false}><EditableText field="ctaLabel" value={ctaLabel} /></Button>
-                  </a>
-                </CanvasElement>
+                <a href={ctaHref}>
+                  <CanvasElement id="ctaBtn">
+                    <Button isDefault={false}>
+                      <EditableText field="ctaLabel" value={ctaLabel} hrefField="ctaHref" hrefValue={ctaHref} />
+                    </Button>
+                  </CanvasElement>
+                </a>
               )}
               {secondaryCtaLabel && (
-                <CanvasElement id="ctaBtnSecondary">
-                  <a href={secondaryCtaHref}>
-                    <Button><EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} /></Button>
-                  </a>
-                </CanvasElement>
+                <a href={secondaryCtaHref}>
+                  <CanvasElement id="ctaBtnSecondary">
+                    <Button>
+                      <EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} hrefField="secondaryCtaHref" hrefValue={secondaryCtaHref} />
+                    </Button>
+                  </CanvasElement>
+                </a>
               )}
             </div>
           )}

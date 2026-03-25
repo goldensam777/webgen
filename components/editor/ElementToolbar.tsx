@@ -38,9 +38,9 @@ export function ElementToolbar({ anchorEl, elementId, style, onStyleChange, onCl
 
   if (!mounted || !anchorEl) return null;
 
-  const radiusVal  = style.borderRadius ? parseInt(style.borderRadius, 10) : 0;
-  const paddingVal = style.padding      ? parseInt(style.padding, 10)      : 0;
-  const opacityVal = style.opacity      ? Math.round(parseFloat(style.opacity) * 100) : 100;
+  const radiusVal  = Math.max(0, parseInt(style.borderRadius ?? "0", 10)  || 0);
+  const paddingVal = Math.max(0, parseInt(style.padding      ?? "0", 10)  || 0);
+  const opacityVal = style.opacity ? Math.round((parseFloat(style.opacity) || 1) * 100) : 100;
 
   const sep = (
     <div className="w-px h-4 mx-0.5" style={{ backgroundColor: "var(--wg-border)" }} />
@@ -48,8 +48,9 @@ export function ElementToolbar({ anchorEl, elementId, style, onStyleChange, onCl
 
   const content = (
     <div
+      data-canvas-toolbar="true"
       style={{ position: "absolute", top: pos.top, left: pos.left, zIndex: 9999 }}
-      onMouseDown={(e) => e.preventDefault()}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       <div
         className="flex flex-wrap items-center gap-1 px-2 py-1.5 rounded-xl shadow-2xl border"
@@ -97,7 +98,7 @@ export function ElementToolbar({ anchorEl, elementId, style, onStyleChange, onCl
             max={50}
             step={1}
             value={radiusVal}
-            onChange={(e) => onStyleChange({ ...style, borderRadius: `${parseInt(e.target.value, 10)}px` })}
+            onChange={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) onStyleChange({ ...style, borderRadius: `${v}px` }); }}
             className="w-12 text-xs text-center rounded border px-1 py-0.5 focus:outline-none"
             style={{
               backgroundColor: "var(--wg-bg)",
@@ -116,7 +117,7 @@ export function ElementToolbar({ anchorEl, elementId, style, onStyleChange, onCl
             max={64}
             step={2}
             value={paddingVal}
-            onChange={(e) => onStyleChange({ ...style, padding: `${parseInt(e.target.value, 10)}px` })}
+            onChange={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) onStyleChange({ ...style, padding: `${v}px` }); }}
             className="w-12 text-xs text-center rounded border px-1 py-0.5 focus:outline-none"
             style={{
               backgroundColor: "var(--wg-bg)",

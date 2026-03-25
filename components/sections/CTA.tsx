@@ -47,21 +47,29 @@ export function CTA({
         )}
 
         <div className={`mt-8 flex flex-wrap gap-3 ${isCenter ? "justify-center" : ""}`}>
-          <CanvasElement id="ctaBtn">
-            <a href={ctaHref}>
-              <Button isDefault={false} className="bg-white text-blue-600 hover:bg-gray-100 border-white">
-                <EditableText field="ctaLabel" value={ctaLabel} />
+          <a href={ctaHref}>
+            <CanvasElement id="ctaBtn">
+              <Button
+                isDefault={false}
+                className="hover:opacity-90"
+                style={{ backgroundColor: "#ffffff", color: "var(--color-primary)", border: "none" }}
+              >
+                <EditableText field="ctaLabel" value={ctaLabel} hrefField="ctaHref" hrefValue={ctaHref} />
               </Button>
-            </a>
-          </CanvasElement>
-          {secondaryCtaLabel && (
-            <CanvasElement id="ctaBtnSecondary">
-              <a href={secondaryCtaHref}>
-                <Button className="border-white/40 text-white hover:bg-white/10 bg-transparent">
-                  <EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} />
-                </Button>
-              </a>
             </CanvasElement>
+          </a>
+          {secondaryCtaLabel && (
+            <a href={secondaryCtaHref}>
+              <CanvasElement id="ctaBtnSecondary">
+                <Button
+                  isDefault={false}
+                  className="hover:opacity-90"
+                  style={{ backgroundColor: "transparent", color: "#ffffff", border: "1px solid rgba(255,255,255,0.5)" }}
+                >
+                  <EditableText field="secondaryCtaLabel" value={secondaryCtaLabel} hrefField="secondaryCtaHref" hrefValue={secondaryCtaHref} />
+                </Button>
+              </CanvasElement>
+            </a>
           )}
         </div>
       </div>

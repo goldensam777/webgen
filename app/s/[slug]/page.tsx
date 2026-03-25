@@ -29,6 +29,8 @@ async function loadConfig(slug: string): Promise<SiteConfig> {
 }
 
 function renderPage(page: SitePage, theme: SiteConfig["theme"]) {
+  const font    = theme.font || "Inter";
+  const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap`;
   const cssVars = `
     :root {
       --color-primary:    ${theme.primary};
@@ -40,7 +42,7 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"]) {
       --color-border:     ${theme.border};
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, sans-serif; }
+    body { font-family: '${font}', system-ui, sans-serif; }
   `;
 
   const title = (page.data.navbar?.logo as string)
@@ -53,6 +55,9 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"]) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{title}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href={fontUrl} rel="stylesheet" />
         <style>{cssVars}</style>
       </head>
       <body>

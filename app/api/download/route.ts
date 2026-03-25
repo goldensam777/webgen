@@ -370,6 +370,7 @@ const RENDERERS: Record<string, (d: SectionData, fs: Record<string, FieldStyle>,
 function buildPageHTML(page: SitePage, theme: SiteTheme, allPages: SitePage[]): string {
   const title = str(page.data.navbar?.logo as unknown) || str(page.data.hero?.title as unknown) || page.name;
 
+  const font = theme.font || "Inter";
   const css = `
     :root {
       --color-primary:    ${theme.primary};
@@ -381,7 +382,7 @@ function buildPageHTML(page: SitePage, theme: SiteTheme, allPages: SitePage[]): 
       --color-border:     ${theme.border};
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: var(--color-background); color: var(--color-text); }
+    body { font-family: '${font}', system-ui, sans-serif; background: var(--color-background); color: var(--color-text); }
     .btn-primary { display:inline-flex;align-items:center;justify-content:center;padding:.625rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;background:var(--color-primary);color:#fff;border:none;cursor:pointer;text-decoration:none;transition:opacity .2s; }
     .btn-primary:hover { opacity:.85; }
     .btn-outline { display:inline-flex;align-items:center;justify-content:center;padding:.625rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;background:transparent;color:var(--color-text);border:1.5px solid var(--color-border);text-decoration:none;transition:background-color .2s; }
@@ -423,6 +424,9 @@ function buildPageHTML(page: SitePage, theme: SiteTheme, allPages: SitePage[]): 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>${css}</style>
 </head>
 <body>
