@@ -269,6 +269,59 @@ export default function CreatePage() {
             </p>
           </div>
 
+          {/* Exemples */}
+          {!description && (
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                {
+                  icon: "🍞",
+                  label: "Boulangerie",
+                  prompt: "Site pour une boulangerie artisanale à Lyon. Style chaleureux et moderne. Sections : accueil, nos spécialités (pains, viennoiseries, gâteaux), avis clients, horaires et contact.",
+                },
+                {
+                  icon: "👨‍⚕️",
+                  label: "Médecin",
+                  prompt: "Site pour un médecin généraliste en cabinet privé à Paris. Style sobre et rassurant. Sections : accueil, services, prendre rendez-vous, informations pratiques.",
+                },
+                {
+                  icon: "💻",
+                  label: "Agence digitale",
+                  prompt: "Site pour une agence web spécialisée en design et développement. Style moderne et créatif. Sections : accueil, services, réalisations, tarifs, contact.",
+                },
+                {
+                  icon: "📸",
+                  label: "Photographe",
+                  prompt: "Portfolio pour un photographe professionnel spécialisé en portraits et événements. Style minimaliste et élégant. Sections : accueil, galerie, à propos, tarifs, contact.",
+                },
+              ].map(ex => (
+                <button
+                  key={ex.label}
+                  onClick={() => setDescription(ex.prompt)}
+                  className="flex items-start gap-3 px-4 py-3 rounded-xl border text-left transition-colors"
+                  style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor     = "var(--wg-green)";
+                    e.currentTarget.style.backgroundColor = "var(--wg-green-muted)";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor     = "var(--wg-border)";
+                    e.currentTarget.style.backgroundColor = "var(--wg-bg-2)";
+                  }}
+                >
+                  <span className="text-xl shrink-0 mt-0.5">{ex.icon}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold" style={{ color: "var(--wg-text)" }}>
+                      {ex.label}
+                    </p>
+                    <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--wg-text-3)" }}>
+                      {ex.prompt}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Textarea */}
           <div
             className="rounded-xl border overflow-hidden transition-shadow"
