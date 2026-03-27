@@ -25,7 +25,7 @@ function formatDate(iso: string) {
 
 export default function DashboardPage() {
   const { user, token, logout } = useAuthStore();
-  const { setConfig }           = useSiteStore();
+  const { setConfig, clearConfig } = useSiteStore();
   const router = useRouter();
 
   const [sites,    setSites]    = useState<Site[]>([]);
@@ -148,15 +148,15 @@ export default function DashboardPage() {
           Webgen
         </Link>
         <div className="flex items-center gap-4">
-          <Link
-            href="/create"
+          <button
+            onClick={() => { clearConfig(); router.push("/create"); }}
             className="btn-green px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Nouveau site
-          </Link>
+          </button>
           <button
             onClick={() => { logout(); router.push("/"); }}
             className="text-sm transition-colors"
@@ -251,9 +251,12 @@ export default function DashboardPage() {
                 <p className="text-sm mb-6" style={{ color: "var(--wg-text-2)" }}>
                   Créez votre premier site en quelques secondes avec l&apos;IA.
                 </p>
-                <Link href="/create" className="btn-green px-6 py-2.5 rounded-xl text-sm font-semibold inline-block">
+                <button
+                  onClick={() => { clearConfig(); router.push("/create"); }}
+                  className="btn-green px-6 py-2.5 rounded-xl text-sm font-semibold"
+                >
                   Créer mon premier site →
-                </Link>
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6"
