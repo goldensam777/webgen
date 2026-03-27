@@ -14,4 +14,5 @@ export type PreviewMsg =
   | { type: "style-update"; sectionId: string; field: string; style: { fontSize?: string; fontWeight?: string } }
   | { type: "element-style-update"; sectionId: string; elementId: string; style: Record<string, unknown> }
   | { type: "undo" }
-  | { type: "redo" };
+  | { type: "redo" }
+  | { type: "ai-patch" };

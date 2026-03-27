@@ -59,20 +59,22 @@ function buildFontUrl(font: string): string {
 }
 
 export function PreviewClient() {
-  const [config,  setConfig]  = useState<SiteConfig | null>(null);
-  const [pageId,  setPageId]  = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [config,      setConfig]    = useState<SiteConfig | null>(null);
+  const [pageId,      setPageId]    = useState<string | null>(null);
+  const [selected,    setSelected]  = useState<string | null>(null);
+  const [transitioning, setTransitioning] = useState(false);
+  const [visiblePageId, setVisiblePageId] = useState<string | null>(null);
 
-  /* ── Relay Ctrl+Z / Ctrl+Y vers le parent quand hors contentEditable ── */
+  /* ── Relay Ctrl+Z / Ctrl+Y / Ctrl+I vers le parent quand hors contentEditable ── */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
       const key = e.key.toLowerCase();
-      if (key !== "z" && key !== "y") return;
-      // Laisser le browser gérer l'undo natif dans les spans contentEditable
+      if (key !== "z" && key !== "y" && key !== "i") return;
       const active = document.activeElement as HTMLElement | null;
       if (active?.isContentEditable) return;
       e.preventDefault();
+      if (key === "i") { window.parent?.postMessage({ type: "ai-patch" }, "*"); return; }
       const type = (key === "z" && !e.shiftKey) ? "undo" : "redo";
       window.parent?.postMessage({ type }, "*");
     };
@@ -86,8 +88,22 @@ export function PreviewClient() {
       const msg = e.data as ParentMsg;
       if (!msg?.type) return;
       if (msg.type === "config") {
+        const newPageId = msg.pageId;
         setConfig(msg.config);
-        setPageId(msg.pageId);
+        setPageId(newPageId);
+        setVisiblePageId(prev => {
+          if (prev === null || prev === newPageId) {
+            // First load or same page — no transition
+            return newPageId;
+          }
+          // Page change → trigger fade transition
+          setTransitioning(true);
+          setTimeout(() => {
+            setVisiblePageId(newPageId);
+            setTransitioning(false);
+          }, 220);
+          return prev; // Keep old page visible during fade-out
+        });
       }
       if (msg.type === "highlight") {
         setSelected(msg.sectionId);
@@ -108,7 +124,7 @@ export function PreviewClient() {
     );
   }
 
-  const page = getPage(config, pageId);
+  const page = getPage(config, visiblePageId ?? pageId);
   if (!page) return null;
 
   return (
@@ -121,7 +137,13 @@ export function PreviewClient() {
         href={buildFontUrl(config.theme.font || "Inter")}
       />
 
-      <div style={{ fontFamily: `'${config.theme.font || "Inter"}', system-ui, sans-serif` }}>
+      <div
+        style={{
+          fontFamily:  `'${config.theme.font || "Inter"}', system-ui, sans-serif`,
+          opacity:     transitioning ? 0 : 1,
+          transition:  "opacity 0.22s ease",
+        }}
+      >
         {page.sections.map((sectionId) => {
           const Component = SECTION_MAP[sectionId];
           if (!Component) return null;

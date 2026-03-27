@@ -160,8 +160,9 @@ export function EditorLayout() {
           },
         }));
       }
-      if (msg.type === "undo") { undo(); }
-      if (msg.type === "redo") { redo(); }
+      if (msg.type === "undo")     { undo(); }
+      if (msg.type === "redo")     { redo(); }
+      if (msg.type === "ai-patch") { setAiPatchOpen(o => !o); }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
