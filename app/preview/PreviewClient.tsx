@@ -8,6 +8,8 @@ import {
   Navbar, Hero, Features, Pricing, FAQ, Footer,
   Stats, Testimonials, CTA, Contact, Blog, ChatWidget,
 } from "@/components";
+import { AnimationWrapper } from "@/components/AnimationWrapper";
+import "@/lib/animations.css";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SECTION_MAP: Record<string, React.ComponentType<any>> = {
@@ -130,7 +132,8 @@ export function PreviewClient() {
           const componentData = Object.fromEntries(
             Object.entries(data).filter(([k]) => !k.startsWith("_"))
           );
-          const isSelected = selected === sectionId;
+          const isSelected  = selected === sectionId;
+          const sectionAnims = page.animations?.[sectionId] ?? [];
 
           return (
             <div
@@ -218,7 +221,16 @@ export function PreviewClient() {
                   },
                 }}
               >
-                <Component {...componentData} />
+                {sectionAnims.length > 0 ? (
+                  sectionAnims.reduce(
+                    (children, anim) => (
+                      <AnimationWrapper key={anim.id} cfg={anim}>{children}</AnimationWrapper>
+                    ),
+                    <Component {...componentData} /> as React.ReactNode
+                  )
+                ) : (
+                  <Component {...componentData} />
+                )}
               </EditableContext.Provider>
             </div>
           );

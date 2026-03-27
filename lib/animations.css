@@ -1,0 +1,137 @@
+/* ─────────────────────────────────────────────
+   Webgen — Animation catalogue
+   All keyframes used by AnimationWrapper.
+   ───────────────────────────────────────────── */
+
+/* Entrances */
+@keyframes wg-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes wg-fadeUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes wg-fadeDown {
+  from { opacity: 0; transform: translateY(-32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes wg-fadeLeft {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes wg-fadeRight {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes wg-scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes wg-scaleUp {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes wg-rotateIn {
+  from { opacity: 0; transform: rotate(-8deg) scale(0.9); }
+  to   { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+@keyframes wg-blurIn {
+  from { opacity: 0; filter: blur(12px); }
+  to   { opacity: 1; filter: blur(0); }
+}
+@keyframes wg-slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Continuous */
+@keyframes wg-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes wg-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.06); }
+}
+@keyframes wg-bounce {
+  0%, 100% { transform: translateY(0); animation-timing-function: ease-in; }
+  50%       { transform: translateY(-20px); animation-timing-function: ease-out; }
+}
+@keyframes wg-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes wg-wiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50%       { transform: rotate(4deg); }
+}
+@keyframes wg-shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+
+/* Utility classes ─────────────────────────── */
+
+/* Entrance (one-shot, paused until JS adds .wg-play) */
+.wg-anim          { animation-fill-mode: both; animation-play-state: paused; }
+.wg-anim.wg-play  { animation-play-state: running; }
+
+.wg-fadeIn    { animation-name: wg-fadeIn; }
+.wg-fadeUp    { animation-name: wg-fadeUp; }
+.wg-fadeDown  { animation-name: wg-fadeDown; }
+.wg-fadeLeft  { animation-name: wg-fadeLeft; }
+.wg-fadeRight { animation-name: wg-fadeRight; }
+.wg-scaleIn   { animation-name: wg-scaleIn; }
+.wg-scaleUp   { animation-name: wg-scaleUp; }
+.wg-rotateIn  { animation-name: wg-rotateIn; }
+.wg-blurIn    { animation-name: wg-blurIn; }
+.wg-slideUp   { animation-name: wg-slideUp; }
+
+/* Continuous (always running) */
+.wg-float   { animation: wg-float   3s ease-in-out infinite; }
+.wg-pulse   { animation: wg-pulse   2s ease-in-out infinite; }
+.wg-bounce  { animation: wg-bounce  1.2s infinite; }
+.wg-spin    { animation: wg-spin    2s linear infinite; }
+.wg-wiggle  { animation: wg-wiggle  0.6s ease-in-out infinite; }
+
+/* Duration helpers */
+.wg-dur-200  { animation-duration: 200ms; }
+.wg-dur-300  { animation-duration: 300ms; }
+.wg-dur-400  { animation-duration: 400ms; }
+.wg-dur-500  { animation-duration: 500ms; }
+.wg-dur-600  { animation-duration: 600ms; }
+.wg-dur-700  { animation-duration: 700ms; }
+.wg-dur-800  { animation-duration: 800ms; }
+.wg-dur-1000 { animation-duration: 1000ms; }
+.wg-dur-1200 { animation-duration: 1200ms; }
+
+/* Delay helpers */
+.wg-delay-0    { animation-delay: 0ms; }
+.wg-delay-100  { animation-delay: 100ms; }
+.wg-delay-150  { animation-delay: 150ms; }
+.wg-delay-200  { animation-delay: 200ms; }
+.wg-delay-300  { animation-delay: 300ms; }
+.wg-delay-400  { animation-delay: 400ms; }
+.wg-delay-500  { animation-delay: 500ms; }
+.wg-delay-600  { animation-delay: 600ms; }
+.wg-delay-800  { animation-delay: 800ms; }
+.wg-delay-1000 { animation-delay: 1000ms; }
+
+/* Easing helpers */
+.wg-ease-linear  { animation-timing-function: linear; }
+.wg-ease-in      { animation-timing-function: ease-in; }
+.wg-ease-out     { animation-timing-function: ease-out; }
+.wg-ease-in-out  { animation-timing-function: ease-in-out; }
+.wg-ease-spring  { animation-timing-function: cubic-bezier(0.34,1.56,0.64,1); }
+.wg-ease-back    { animation-timing-function: cubic-bezier(0.36,0.07,0.19,0.97); }
+
+/* Hover triggers */
+.wg-hover-float:hover  { animation: wg-float  1s ease-in-out infinite; }
+.wg-hover-pulse:hover  { animation: wg-pulse  0.6s ease-in-out infinite; }
+.wg-hover-bounce:hover { animation: wg-bounce 0.6s; }
+.wg-hover-wiggle:hover { animation: wg-wiggle 0.4s ease-in-out; }
+.wg-hover-scaleUp:hover {
+  transform: scale(1.04);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}

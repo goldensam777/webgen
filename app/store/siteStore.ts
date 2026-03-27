@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { SectionAnimation } from "@/lib/animations";
 
 /* ── Types ──────────────────────────────────────────────────── */
 
@@ -16,11 +17,13 @@ export interface SiteTheme {
 }
 
 export interface SitePage {
-  id:       string;
-  name:     string;   // ex: "Accueil"
-  slug:     string;   // ex: "accueil" (vide = page d'accueil)
-  sections: string[];
-  data:     Record<string, Record<string, unknown>>;
+  id:         string;
+  name:       string;   // ex: "Accueil"
+  slug:       string;   // ex: "accueil" (vide = page d'accueil)
+  sections:   string[];
+  data:       Record<string, Record<string, unknown>>;
+  /** animations[sectionKey] = list of SectionAnimation configs */
+  animations?: Record<string, SectionAnimation[]>;
 }
 
 export interface SiteConfig {
@@ -60,6 +63,10 @@ interface SiteStore {
   addSection:      (section: string) => void;
   removeSection:   (section: string) => void;
   reorderSections: (sections: string[]) => void;
+
+  /* animations */
+  setAnimation:    (section: string, anim: SectionAnimation) => void;
+  removeAnimation: (section: string, animId: string) => void;
 }
 
 /* ── Defaults ───────────────────────────────────────────────── */
@@ -161,8 +168,9 @@ export const useSiteStore = create<SiteStore>()(
           .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
         const page: SitePage = {
           id: uid(), name, slug,
-          sections: ["navbar", "hero", "footer"],
-          data: {},
+          sections:   ["navbar", "hero", "footer"],
+          data:       {},
+          animations: {},
         };
         return {
           ...snapshot(s),
@@ -240,6 +248,41 @@ export const useSiteStore = create<SiteStore>()(
         };
       }),
 
+      setAnimation: (section, anim) => set((s) => {
+        if (!s.config) return s;
+        const page = activePage(s.config, s.activePageId);
+        if (!page) return s;
+        const prev    = page.animations?.[section] ?? [];
+        const exists  = prev.findIndex(a => a.id === anim.id);
+        const updated = exists >= 0
+          ? prev.map(a => a.id === anim.id ? anim : a)
+          : [...prev, anim];
+        return {
+          ...snapshot(s),
+          config: mapPage(s.config, page.id, p => ({
+            ...p,
+            animations: { ...(p.animations ?? {}), [section]: updated },
+          })),
+        };
+      }),
+
+      removeAnimation: (section, animId) => set((s) => {
+        if (!s.config) return s;
+        const page = activePage(s.config, s.activePageId);
+        if (!page) return s;
+        const prev = page.animations?.[section] ?? [];
+        return {
+          ...snapshot(s),
+          config: mapPage(s.config, page.id, p => ({
+            ...p,
+            animations: {
+              ...(p.animations ?? {}),
+              [section]: prev.filter(a => a.id !== animId),
+            },
+          })),
+        };
+      }),
+
       /* expose pour les composants */
       _getActivePage: () => {
         const s = get();
@@ -302,11 +345,12 @@ export function apiConfigToSiteConfig(
         if (p[key]) data[key] = p[key] as Record<string, unknown>;
       }
       return {
-        id:   uid(),
-        name: (p.name as string) ?? "Page",
-        slug: (p.slug as string) ?? "",
+        id:         uid(),
+        name:       (p.name as string) ?? "Page",
+        slug:       (p.slug as string) ?? "",
         sections,
         data,
+        animations: (p.animations as Record<string, SectionAnimation[]>) ?? {},
       };
     });
     return { pages, theme };
@@ -319,7 +363,7 @@ export function apiConfigToSiteConfig(
     if (apiConfig[key]) data[key] = apiConfig[key] as Record<string, unknown>;
   }
   return {
-    pages: [{ id: uid(), name: "Accueil", slug: "", sections, data }],
+    pages: [{ id: uid(), name: "Accueil", slug: "", sections, data, animations: {} }],
     theme,
   };
 }

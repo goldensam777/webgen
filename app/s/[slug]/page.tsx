@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { readFileSync } from "fs";
+import path from "path";
 import { supabase } from "@/lib/supabase";
 import {
   Navbar, Hero, Features, Pricing, FAQ, Footer,
@@ -7,6 +9,33 @@ import {
 import { EditableContext } from "@/components/editor/EditableContext";
 import type { FieldStyle, ElementStyle } from "@/components/editor/EditableContext";
 import type { SiteConfig, SitePage } from "@/app/store/siteStore";
+import { buildAnimClass } from "@/lib/animations";
+import type { SectionAnimation } from "@/lib/animations";
+
+/* Inline animation CSS once at build/request time */
+const ANIM_CSS = (() => {
+  try {
+    return readFileSync(path.join(process.cwd(), "lib/animations.css"), "utf8");
+  } catch { return ""; }
+})();
+
+/* Inline scroll-observer script for entrance animations */
+const SCROLL_SCRIPT = `
+(function(){
+  var els = document.querySelectorAll('.wg-anim');
+  if(!els.length) return;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting) { e.target.classList.add('wg-play'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(function(el){ io.observe(el); });
+  // load-triggered: play immediately
+  document.querySelectorAll('.wg-anim[data-trigger="load"]').forEach(function(el){
+    el.classList.add('wg-play');
+  });
+})();
+`;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SECTION_MAP: Record<string, React.ComponentType<any>> = {
@@ -62,6 +91,7 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"], slug: string) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href={fontUrl} rel="stylesheet" />
         <style>{cssVars}</style>
+        <style>{ANIM_CSS}</style>
       </head>
       <body>
         {page.sections.map((section) => {
@@ -78,23 +108,30 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"], slug: string) {
           const slugSections = new Set(["contact", "blog", "chatwidget"]);
           const extraProps = slugSections.has(section) ? { siteSlug: slug } : {};
 
+          const sectionAnims: SectionAnimation[] = page.animations?.[section] ?? [];
+          const animClass = sectionAnims.map(a => buildAnimClass(a)).filter(Boolean).join(" ");
+          const trigger   = sectionAnims[0]?.trigger ?? "scroll";
+
           return (
-            <EditableContext.Provider
-              key={section}
-              value={{
-                isEditing: false,
-                canvasMode: false,
-                fieldStyles,
-                elementStyles,
-                onUpdate: () => {},
-                onStyleUpdate: () => {},
-                onElementStyleUpdate: () => {},
-              }}
-            >
-              <Component {...cleanData} {...extraProps} />
-            </EditableContext.Provider>
+            <div key={section} className={animClass || undefined}
+              {...(animClass ? { "data-trigger": trigger } : {})}>
+              <EditableContext.Provider
+                value={{
+                  isEditing: false,
+                  canvasMode: false,
+                  fieldStyles,
+                  elementStyles,
+                  onUpdate: () => {},
+                  onStyleUpdate: () => {},
+                  onElementStyleUpdate: () => {},
+                }}
+              >
+                <Component {...cleanData} {...extraProps} />
+              </EditableContext.Provider>
+            </div>
           );
         })}
+        <script dangerouslySetInnerHTML={{ __html: SCROLL_SCRIPT }} />
       </body>
     </html>
   );
