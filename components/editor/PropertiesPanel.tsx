@@ -2,6 +2,10 @@
 import React, { useState } from "react";
 import { SECTION_FIELDS, type FieldDef } from "@/lib/section-fields";
 import { useSiteStore, useActivePage } from "@/app/store/siteStore";
+import {
+  ANIMATIONS, ANIMATION_MAP,
+  type SectionAnimation, type AnimationTrigger, type AnimationEasing,
+} from "@/lib/animations";
 
 interface Props {
   section:    string | null;
@@ -11,9 +15,12 @@ interface Props {
   onClose:    () => void;
 }
 
+type PanelTab = "props" | "anims";
+
 export function PropertiesPanel({ section, onMoveUp, onMoveDown, onRemove, onClose }: Props) {
-  const activePage        = useActivePage();
-  const { updateSection } = useSiteStore();
+  const activePage                      = useActivePage();
+  const { updateSection, setAnimation, removeAnimation } = useSiteStore();
+  const [panelTab, setPanelTab]         = useState<PanelTab>("props");
 
   /* ── État vide ── */
   if (!section || !activePage) {
@@ -61,47 +68,67 @@ export function PropertiesPanel({ section, onMoveUp, onMoveDown, onRemove, onClo
     <div className="flex flex-col h-full overflow-hidden">
 
       {/* ── En-tête ── */}
-      <div
-        className="shrink-0 flex items-center gap-2 px-4 py-3 border-b"
-        style={{ borderColor: "var(--wg-border)" }}
-      >
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
-            Section sélectionnée
-          </p>
-          <p className="text-sm font-semibold truncate" style={{ color: "var(--wg-text)" }}>
-            {def?.label ?? section}
-          </p>
+      <div className="shrink-0 border-b" style={{ borderColor: "var(--wg-border)" }}>
+        {/* Titre + actions */}
+        <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+              Section sélectionnée
+            </p>
+            <p className="text-sm font-semibold truncate" style={{ color: "var(--wg-text)" }}>
+              {def?.label ?? section}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <ActionBtn title="Monter" onClick={onMoveUp}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </ActionBtn>
+            <ActionBtn title="Descendre" onClick={onMoveDown}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </ActionBtn>
+            <ActionBtn title="Supprimer" danger onClick={onRemove}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </ActionBtn>
+            <div className="w-px h-4 mx-0.5" style={{ backgroundColor: "var(--wg-border)" }} />
+            <ActionBtn title="Fermer" onClick={onClose}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </ActionBtn>
+          </div>
         </div>
-
-        <div className="flex items-center gap-1 shrink-0">
-          <ActionBtn title="Monter" onClick={onMoveUp}>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
-          </ActionBtn>
-          <ActionBtn title="Descendre" onClick={onMoveDown}>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </ActionBtn>
-          <ActionBtn title="Supprimer" danger onClick={onRemove}>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </ActionBtn>
-          <div className="w-px h-4 mx-0.5" style={{ backgroundColor: "var(--wg-border)" }} />
-          <ActionBtn title="Fermer" onClick={onClose}>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </ActionBtn>
+        {/* Tabs Propriétés | Animations */}
+        <div className="flex px-4 gap-1 pb-0">
+          {(["props", "anims"] as PanelTab[]).map(t => (
+            <button
+              key={t}
+              onClick={() => setPanelTab(t)}
+              className="px-3 py-1.5 text-xs font-semibold rounded-t transition-colors"
+              style={{
+                color:           panelTab === t ? "var(--wg-green)"  : "var(--wg-text-3)",
+                borderBottom:    panelTab === t ? "2px solid var(--wg-green)" : "2px solid transparent",
+              }}
+            >
+              {t === "props" ? "Propriétés" : "⚡ Animations"}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ── Champs éditables ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-5">
+      {/* ── Onglet Animations ── */}
+      {panelTab === "anims" && (
+        <AnimationsTab section={section} />
+      )}
+
+      {/* ── Onglet Propriétés / Champs éditables ── */}
+      {panelTab === "props" && <div className="flex-1 overflow-y-auto px-4 py-5 flex flex-col gap-5">
 
         {!def ? (
           <p className="text-xs" style={{ color: "var(--wg-text-3)" }}>
@@ -210,7 +237,193 @@ export function PropertiesPanel({ section, onMoveUp, onMoveDown, onRemove, onClo
             );
           })
         )}
-      </div>
+      </div>}
+    </div>
+  );
+}
+
+/* ── AnimationsTab ───────────────────────────────────────────── */
+
+const TRIGGERS: { value: AnimationTrigger; label: string }[] = [
+  { value: "scroll", label: "Au scroll" },
+  { value: "load",   label: "Au chargement" },
+  { value: "hover",  label: "Au survol" },
+];
+const EASINGS: { value: AnimationEasing; label: string }[] = [
+  { value: "ease-out",    label: "Ease out" },
+  { value: "ease-in-out", label: "Ease in-out" },
+  { value: "spring",      label: "Spring" },
+  { value: "back",        label: "Back" },
+  { value: "linear",      label: "Linear" },
+];
+
+function AnimationsTab({ section }: { section: string }) {
+  const activePage = useActivePage();
+  const { setAnimation, removeAnimation } = useSiteStore();
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft]   = useState<Omit<SectionAnimation, "id">>({
+    animation: "fadeUp", trigger: "scroll", duration: 600, delay: 0,
+    easing: "ease-out", repeat: false,
+  });
+
+  const anims: SectionAnimation[] = activePage?.animations?.[section] ?? [];
+  const def = ANIMATION_MAP[draft.animation];
+
+  function saveDraft() {
+    setAnimation(section, { id: crypto.randomUUID(), ...draft });
+    setAdding(false);
+    setDraft({ animation: "fadeUp", trigger: "scroll", duration: 600, delay: 0, easing: "ease-out", repeat: false });
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto flex flex-col gap-2 px-4 py-4">
+
+      {/* Liste des animations actives */}
+      {anims.length === 0 && !adding && (
+        <p className="text-xs py-2 text-center" style={{ color: "var(--wg-text-3)" }}>
+          Aucune animation sur cette section.
+        </p>
+      )}
+
+      {anims.map(a => {
+        const d = ANIMATION_MAP[a.animation];
+        return (
+          <div key={a.id} className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg"
+            style={{ background: "var(--wg-bg-3)", border: "1px solid var(--wg-border)" }}>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold truncate" style={{ color: "var(--wg-text)" }}>
+                {d?.label ?? a.animation}
+              </p>
+              <p className="text-[10px]" style={{ color: "var(--wg-text-3)" }}>
+                {TRIGGERS.find(t => t.value === a.trigger)?.label}
+                {d?.kind === "entrance" ? ` · ${a.duration}ms${a.delay > 0 ? ` +${a.delay}ms` : ""}` : ""}
+              </p>
+            </div>
+            <button onClick={() => removeAnimation(section, a.id)}
+              className="shrink-0 text-xs transition-colors"
+              style={{ color: "var(--wg-text-3)" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#ef4444")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-3)")}
+            >✕</button>
+          </div>
+        );
+      })}
+
+      {/* Formulaire ajout */}
+      {adding ? (
+        <div className="flex flex-col gap-3 p-3 rounded-lg"
+          style={{ background: "var(--wg-bg-3)", border: "1px solid var(--wg-border)" }}>
+
+          {/* Animation */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+              Animation
+            </label>
+            <select value={draft.animation}
+              onChange={e => setDraft(d => ({ ...d, animation: e.target.value }))}
+              className="text-xs rounded px-2 py-1.5"
+              style={{ background: "var(--wg-bg)", border: "1px solid var(--wg-border)", color: "var(--wg-text)" }}>
+              <optgroup label="Entrées">
+                {ANIMATIONS.filter(a => a.kind === "entrance").map(a => (
+                  <option key={a.className} value={a.className}>{a.label}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Continues">
+                {ANIMATIONS.filter(a => a.kind === "continuous").map(a => (
+                  <option key={a.className} value={a.className}>{a.label}</option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
+
+          {/* Trigger */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+              Déclencheur
+            </label>
+            <div className="flex gap-1 flex-wrap">
+              {TRIGGERS.filter(t => def?.triggers.includes(t.value) ?? true).map(t => (
+                <button key={t.value} onClick={() => setDraft(d => ({ ...d, trigger: t.value }))}
+                  className="text-xs px-2 py-1 rounded transition-colors"
+                  style={{
+                    background: draft.trigger === t.value ? "var(--wg-green)" : "var(--wg-bg)",
+                    color:      draft.trigger === t.value ? "#fff" : "var(--wg-text-2)",
+                    border:     "1px solid var(--wg-border)",
+                  }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Duration + Delay (entrance only) */}
+          {def?.kind === "entrance" && (
+            <div className="flex gap-2">
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+                  Durée (ms)
+                </label>
+                <input type="number" min={100} max={2000} step={100} value={draft.duration}
+                  onChange={e => setDraft(d => ({ ...d, duration: Number(e.target.value) }))}
+                  className="text-xs rounded px-2 py-1.5 w-full"
+                  style={{ background: "var(--wg-bg)", border: "1px solid var(--wg-border)", color: "var(--wg-text)" }} />
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+                  Délai (ms)
+                </label>
+                <input type="number" min={0} max={2000} step={50} value={draft.delay}
+                  onChange={e => setDraft(d => ({ ...d, delay: Number(e.target.value) }))}
+                  className="text-xs rounded px-2 py-1.5 w-full"
+                  style={{ background: "var(--wg-bg)", border: "1px solid var(--wg-border)", color: "var(--wg-text)" }} />
+              </div>
+            </div>
+          )}
+
+          {/* Easing */}
+          {def?.kind === "entrance" && draft.trigger !== "hover" && (
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--wg-text-3)" }}>
+                Easing
+              </label>
+              <select value={draft.easing}
+                onChange={e => setDraft(d => ({ ...d, easing: e.target.value as AnimationEasing }))}
+                className="text-xs rounded px-2 py-1.5"
+                style={{ background: "var(--wg-bg)", border: "1px solid var(--wg-border)", color: "var(--wg-text)" }}>
+                {EASINGS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Repeat (continuous) */}
+          {def?.kind === "continuous" && draft.trigger !== "hover" && (
+            <label className="flex items-center gap-2 text-xs" style={{ color: "var(--wg-text-2)" }}>
+              <input type="checkbox" checked={draft.repeat}
+                onChange={e => setDraft(d => ({ ...d, repeat: e.target.checked }))} />
+              Répéter indéfiniment
+            </label>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button onClick={saveDraft}
+              className="flex-1 text-xs py-1.5 rounded font-semibold"
+              style={{ background: "var(--wg-green)", color: "#fff" }}>
+              + Ajouter
+            </button>
+            <button onClick={() => setAdding(false)}
+              className="flex-1 text-xs py-1.5 rounded"
+              style={{ background: "var(--wg-bg)", color: "var(--wg-text-2)", border: "1px solid var(--wg-border)" }}>
+              Annuler
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setAdding(true)}
+          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
+          style={{ color: "var(--wg-green)", border: "1px dashed var(--wg-green)", background: "var(--wg-green-muted)" }}>
+          ⚡ Ajouter une animation
+        </button>
+      )}
     </div>
   );
 }
