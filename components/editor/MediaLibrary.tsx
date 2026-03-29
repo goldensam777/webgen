@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useHydrated } from "@/lib/use-hydrated";
 
 interface MediaFile {
   filename:   string;
@@ -62,10 +63,8 @@ export function MediaLibrary({ onSelect, onClose, accept }: Props) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
-  const [mounted,  setMounted]  = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { setMounted(true); }, []);
+  const hydrated = useHydrated();
 
   const load = useCallback(async () => {
     const r = await fetch("/api/media");
@@ -109,7 +108,7 @@ export function MediaLibrary({ onSelect, onClose, accept }: Props) {
 
   const visible = files.filter(f => filter === "all" || f.type === filter);
 
-  if (!mounted) return null;
+  if (!hydrated) return null;
 
   return createPortal(
     <div

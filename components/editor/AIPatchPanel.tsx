@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useSiteStore, useActivePage } from "@/app/store/siteStore";
+import { normalizeSectionData, normalizeSectionKey } from "@/lib/site-schema";
 
 interface Props {
   selectedSection: string | null;
@@ -64,20 +65,33 @@ export function AIPatchPanel({ selectedSection, onClose }: Props) {
       const parsed = extractJSON(rawText);
 
       if (kind === "page") {
-        const { sections, data: newData } = parsed as {
-          sections: string[];
-          data: Record<string, Record<string, unknown>>;
+        const pagePatch = parsed as {
+          sections?: string[];
+          data?: Record<string, Record<string, unknown>>;
         };
+        const nextSections = Array.isArray(pagePatch.sections) && pagePatch.sections.length > 0
+          ? Array.from(new Set(pagePatch.sections.map(normalizeSectionKey)))
+          : activePage.sections;
+        const patchedData = pagePatch.data ?? {};
+        const nextData = Object.fromEntries(
+          nextSections.map((section) => [
+            section,
+            normalizeSectionData(
+              section,
+              patchedData[section] ?? activePage.data[section] ?? {}
+            ),
+          ])
+        );
         const updatedPages = config.pages.map(p =>
           p.id === activePage.id
-            ? { ...p, sections: sections ?? p.sections, data: newData ?? p.data }
+            ? { ...p, sections: nextSections, data: nextData }
             : p
         );
         setConfig({ ...config, pages: updatedPages });
       } else {
         // Section mode — merge parsed result with internal keys (_styles, _elStyles…)
         const updatedData = {
-          ...(parsed as Record<string, unknown>),
+          ...normalizeSectionData(selectedSection!, parsed as Record<string, unknown>),
           ...internalData,
         };
         updateSection(selectedSection!, updatedData);

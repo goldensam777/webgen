@@ -9,13 +9,14 @@ interface Props {
   nav: { category: string; items: DocMeta[] }[];
 }
 
-export function DocsSidebar({ nav }: Props) {
-  const pathname   = usePathname();
-  const [open, setOpen] = useState(false);
+interface SidebarContentProps {
+  nav: { category: string; items: DocMeta[] }[];
+  currentSlug: string;
+  onNavigate: () => void;
+}
 
-  const currentSlug = pathname.replace(/^\/docs\/?/, "") || "introduction";
-
-  const SidebarContent = () => (
+function DocsSidebarContent({ nav, currentSlug, onNavigate }: SidebarContentProps) {
+  return (
     <nav className="flex flex-col gap-6 py-8 px-4">
       {nav.map(({ category, items }) => (
         <div key={category}>
@@ -32,7 +33,7 @@ export function DocsSidebar({ nav }: Props) {
                 <li key={slug}>
                   <Link
                     href={`/docs/${slug}`}
-                    onClick={() => setOpen(false)}
+                    onClick={onNavigate}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
                     style={{
                       backgroundColor: active ? "var(--wg-green-muted)" : "transparent",
@@ -59,6 +60,13 @@ export function DocsSidebar({ nav }: Props) {
       ))}
     </nav>
   );
+}
+
+export function DocsSidebar({ nav }: Props) {
+  const pathname   = usePathname();
+  const [open, setOpen] = useState(false);
+
+  const currentSlug = pathname.replace(/^\/docs\/?/, "") || "introduction";
 
   return (
     <>
@@ -86,7 +94,7 @@ export function DocsSidebar({ nav }: Props) {
             style={{ backgroundColor: "var(--wg-bg-2)", borderRight: "1px solid var(--wg-border)" }}
             onClick={e => e.stopPropagation()}
           >
-            <SidebarContent />
+            <DocsSidebarContent nav={nav} currentSlug={currentSlug} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}
@@ -96,7 +104,7 @@ export function DocsSidebar({ nav }: Props) {
         className="hidden lg:block w-60 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto border-r"
         style={{ borderColor: "var(--wg-border)" }}
       >
-        <SidebarContent />
+        <DocsSidebarContent nav={nav} currentSlug={currentSlug} onNavigate={() => setOpen(false)} />
       </aside>
     </>
   );

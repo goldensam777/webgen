@@ -61,20 +61,20 @@ export function Hero({
           )}
 
           <h1
-            className="text-4xl md:text-6xl font-bold leading-tight tracking-tight"
+            className="text-4xl md:text-6xl font-bold leading-tight tracking-tight break-words"
             style={{ color: titleColor }}
           >
             <EditableText field="title" value={title} />
           </h1>
 
           {subtitle && (
-            <p className="text-xl md:text-2xl font-medium" style={{ color: subtitleColor }}>
+            <p className="text-xl md:text-2xl font-medium break-words" style={{ color: subtitleColor }}>
               <EditableText field="subtitle" value={subtitle} />
             </p>
           )}
 
           {description && (
-            <p className="text-base md:text-lg max-w-2xl" style={{ color: descriptionColor }}>
+            <p className="text-base md:text-lg max-w-2xl break-words" style={{ color: descriptionColor }}>
               <EditableText field="description" value={description} />
             </p>
           )}

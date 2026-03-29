@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useEditable } from "./EditableContext";
 import { ElementToolbar } from "./ElementToolbar";
 import type { ElementStyle } from "./EditableContext";
+import { useHydrated } from "@/lib/use-hydrated";
 
 interface Props {
   id: string;
@@ -29,11 +30,10 @@ export function CanvasElement({ id, children, className, style: externalStyle }:
   const [hovered,  setHovered]  = useState(false);
   const [selected, setSelected] = useState(false);
   const [rect,     setRect]     = useState<DOMRect | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [childRadius, setChildRadius] = useState("4px");
-  const [mounted,  setMounted]  = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => { setMounted(true); }, []);
+  const hydrated = useHydrated();
 
   const elStyle     = elementStyles[id] ?? {};
   const appliedStyle = buildAppliedStyle(elStyle);
@@ -45,22 +45,29 @@ export function CanvasElement({ id, children, className, style: externalStyle }:
   /* ── Rect tracking pour l'overlay portal ── */
   const updateRect = useCallback(() => {
     const child = wrapperRef.current?.firstElementChild as HTMLElement | null;
-    if (!child) return;
+    if (!child) {
+      setAnchorEl(null);
+      return;
+    }
+    setAnchorEl(child);
     setRect(child.getBoundingClientRect());
     setChildRadius(getComputedStyle(child).borderRadius || "4px");
   }, []);
 
   useEffect(() => {
-    if (!isEditing || !canvasMode || (!hovered && !selected)) {
-      setRect(null);
-      return;
-    }
-    updateRect();
-    window.addEventListener("scroll",  updateRect, true);
-    window.addEventListener("resize",  updateRect);
+    if (!isEditing || !canvasMode || (!hovered && !selected)) return;
+    let frame = 0;
+    const syncRect = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateRect);
+    };
+    syncRect();
+    window.addEventListener("scroll",  syncRect, true);
+    window.addEventListener("resize",  syncRect);
     return () => {
-      window.removeEventListener("scroll",  updateRect, true);
-      window.removeEventListener("resize",  updateRect);
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll",  syncRect, true);
+      window.removeEventListener("resize",  syncRect);
     };
   }, [isEditing, canvasMode, hovered, selected, updateRect]);
 
@@ -100,7 +107,7 @@ export function CanvasElement({ id, children, className, style: externalStyle }:
     }
   }
 
-  const showOverlay = mounted && rect && (hovered || selected);
+  const showOverlay = hydrated && rect && (hovered || selected);
 
   return (
     <>
@@ -144,9 +151,9 @@ export function CanvasElement({ id, children, className, style: externalStyle }:
       )}
 
       {/* Toolbar */}
-      {selected && (
+      {selected && anchorEl && (
         <ElementToolbar
-          anchorEl={wrapperRef.current?.firstElementChild as HTMLElement | null}
+          anchorEl={anchorEl}
           elementId={id}
           style={elStyle}
           onStyleChange={(s) => onElementStyleUpdate(id, s)}

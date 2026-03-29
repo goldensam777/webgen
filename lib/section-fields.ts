@@ -163,15 +163,36 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
       { key: "title",    label: "Titre",      type: "text"     },
       { key: "subtitle", label: "Sous-titre", type: "textarea" },
       { key: "email",    label: "Email",      type: "text"     },
+      { key: "phone",    label: "Téléphone",  type: "text"     },
+      { key: "address",  label: "Adresse",    type: "textarea" },
+      { key: "ctaLabel", label: "Bouton",     type: "text"     },
     ],
   },
 
   footer: {
     label: "Footer",
     fields: [
-      { key: "logo",      label: "Nom / Logo", type: "text" },
-      { key: "tagline",   label: "Tagline",    type: "text" },
-      { key: "copyright", label: "Copyright",  type: "text" },
+      { key: "logo",        label: "Nom / Logo", type: "text"     },
+      { key: "description", label: "Description", type: "textarea" },
+      { key: "copyright",   label: "Copyright",  type: "text"     },
+    ],
+  },
+
+  blog: {
+    label: "Blog",
+    fields: [
+      { key: "title",    label: "Titre",      type: "text"     },
+      { key: "subtitle", label: "Sous-titre", type: "textarea" },
+      { key: "ctaLabel", label: "Bouton",     type: "text"     },
+    ],
+  },
+
+  chatwidget: {
+    label: "Chat IA",
+    fields: [
+      { key: "greeting",    label: "Message d'accueil", type: "textarea" },
+      { key: "placeholder", label: "Placeholder",       type: "text"     },
+      { key: "buttonLabel", label: "Label bouton",      type: "text"     },
     ],
   },
 };

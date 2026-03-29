@@ -2,6 +2,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import type { FieldStyle } from "./EditableContext";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const FIELD_LABELS: Record<string, string> = {
   title: "Titre", subtitle: "Sous-titre", description: "Description",
@@ -28,10 +29,9 @@ export function FloatingToolbar({
   onToolbarMouseDown, onToolbarBlur,
 }: Props) {
   const [pos,       setPos]       = useState({ top: 0, left: 0 });
-  const [mounted,   setMounted]   = useState(false);
   const [localHref, setLocalHref] = useState(hrefValue);
+  const hydrated = useHydrated();
 
-  useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setLocalHref(hrefValue); }, [hrefValue]);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export function FloatingToolbar({
     };
   }, [anchorEl]);
 
-  if (!mounted || !anchorEl) return null;
+  if (!hydrated || !anchorEl) return null;
 
   const currentSize = style.fontSize
     ? parseInt(style.fontSize, 10)

@@ -1,4 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeSitePayload } from "@/lib/site-schema";
+
+const VISUAL_DIRECTIONS = [
+  "éditorial premium",
+  "minimal rassurant",
+  "bold contrasté",
+  "tech productisé",
+  "lifestyle chaleureux",
+  "atelier artisanal",
+  "corporate net",
+  "magazine visuel",
+] as const;
+
+const CONTENT_TONES = [
+  "direct et confiant",
+  "expert mais accessible",
+  "chaleureux et humain",
+  "haut de gamme et sobre",
+  "pédagogique et rassurant",
+  "énergique et orienté résultats",
+] as const;
+
+const SECTION_RHYTHMS = [
+  "dense avec preuve sociale rapide",
+  "aéré avec gros blocs narratifs",
+  "très orienté conversion",
+  "équilibré entre information et preuve",
+] as const;
+
+const CTA_STYLES = [
+  "prise de rendez-vous",
+  "demande de devis",
+  "appel découverte",
+  "essai gratuit",
+  "contact direct",
+  "réservation",
+] as const;
+
+function pickRandom<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function buildVariationPack() {
+  return {
+    directionVisuelle: pickRandom(VISUAL_DIRECTIONS),
+    tonEditorial: pickRandom(CONTENT_TONES),
+    rythmeDePage: pickRandom(SECTION_RHYTHMS),
+    styleDeCTA: pickRandom(CTA_STYLES),
+  };
+}
 
 const SYSTEM_PROMPT = `Tu es un générateur de sites web professionnel multi-pages.
 L'utilisateur décrit son site en langage naturel.
@@ -31,6 +81,12 @@ RÈGLES COULEURS :
 - Les fonds clairs ont text="#111827" ou "#1c1917", surface="#ffffff" ou légèrement différent du background.
 - Assure-toi que primary est lisible en blanc ou en noir dessus.
 
+RÈGLES DE VARIÉTÉ DE CONTENU :
+- Varie la forme des titres: bénéfice, promesse, preuve, question, formulation éditoriale.
+- Évite les phrases génériques du type "Des solutions innovantes pour votre croissance".
+- Varie le rythme des sections, la densité des blocs et le ton rédactionnel.
+- Donne des détails crédibles propres au secteur au lieu de formulations vagues.
+
 HERO ALIGNMENT :
 - Utilise "left" pour les sites pro/tech/B2B. Utilise "center" pour food/beauté/lifestyle/éducation.
 - Ne mets JAMAIS "center" par défaut pour tout.
@@ -38,14 +94,14 @@ HERO ALIGNMENT :
 ══════════════════════════════════════════════
 RÈGLES DE SÉLECTION DES SECTIONS
 ══════════════════════════════════════════════
-Sections disponibles : navbar, hero, features, stats, testimonials, pricing, faq, cta, contact, footer
+Sections disponibles : navbar, hero, features, stats, testimonials, pricing, faq, cta, contact, blog, footer
 
 Choisis les sections en fonction du secteur et du contenu :
 - SaaS / Produit tech : navbar, hero, features, stats, pricing, testimonials, faq, cta, footer
 - Service local / artisan : navbar, hero, features, testimonials, contact, footer
 - Restaurant : navbar, hero, features (menu/spécialités), stats, testimonials, contact, footer
 - Formation / coaching : navbar, hero, features, pricing, testimonials, faq, cta, footer
-- Blog / portfolio : navbar, hero, features, cta, footer (simple)
+- Blog / portfolio : navbar, hero, features, blog, cta, footer
 - Page Contact / À propos : navbar, hero, contact, footer (max 4 sections)
 N'inclus jamais une section vide ou artificielle. Ajoute "stats" uniquement si des chiffres réels ont du sens.
 Ajoute "testimonials" uniquement si des avis clients sont pertinents.
@@ -86,7 +142,8 @@ STRUCTURE JSON ATTENDUE
       },
       "testimonials": {
         "title": "string",
-        "items": [{ "name": "string", "role": "string", "content": "string", "avatar": "" }]
+        "subtitle": "string",
+        "items": [{ "quote": "string", "name": "string", "role": "string", "avatarSrc": "" }]
       },
       "pricing": {
         "title": "string",
@@ -103,20 +160,24 @@ STRUCTURE JSON ATTENDUE
       },
       "faq": {
         "title": "string",
-        "items": [{ "question": "string", "answer": "string" }]
+        "subtitle": "string",
+        "items": [{ "title": "string", "content": "string" }]
       },
       "cta": {
         "title": "string",
-        "subtitle": "string",
-        "primaryCta": "string",
-        "secondaryCta": "string"
+        "description": "string",
+        "ctaLabel": "string",
+        "ctaHref": "string",
+        "secondaryCtaLabel": "string",
+        "secondaryCtaHref": "string"
       },
       "contact": {
         "title": "string",
         "subtitle": "string",
         "email": "string",
         "phone": "string",
-        "address": "string"
+        "address": "string",
+        "ctaLabel": "string"
       },
       "footer": {
         "logo": "string",
@@ -147,7 +208,12 @@ RÈGLES GÉNÉRALES
 - Le navbar de chaque page doit avoir des liens cohérents vers toutes les pages du site
 - Le champ "font" dans theme doit toujours être renseigné avec une police de la liste ci-dessus
 - Génère des contenus réalistes, précis et professionnels. Pas de lorem ipsum. Textes adaptés au vrai secteur.
-- Les titres hero doivent être percutants (max 8 mots), les descriptions concises (max 2 phrases).`;
+- Les titres hero doivent être percutants (max 8 mots), les descriptions concises (max 2 phrases).
+- Tous les liens et CTA doivent être utiles et cohérents. N'utilise "#" qu'en dernier recours absolu.
+- Pour les ancres internes, utilise seulement ces ids si la section existe sur la page: "#features", "#pricing", "#faq", "#contact", "#blog", "#testimonials", "#stats".
+- Pour les liens de pages internes, utilise "/" pour l'accueil et "/slug-de-page" pour les autres pages existantes.
+- Les boutons principaux doivent pointer vers une destination crédible: prise de contact, FAQ, tarifs, blog, réservation, devis, essai, page contact.
+- Ne mélange jamais plusieurs schémas de clés pour une même section.`;
 
 /* ── Route POST ─────────────────────────────────────────────── */
 
@@ -168,8 +234,13 @@ export async function POST(req: NextRequest) {
 
   /* ── Construction du message utilisateur ── */
   const contextBlocks = summaries.map((s) => ({ type: "text" as const, text: s }));
+  const variationPack = buildVariationPack();
   const userContent = [
     ...contextBlocks,
+    {
+      type: "text" as const,
+      text: `Contraintes créatives supplémentaires pour cette génération : ${JSON.stringify(variationPack)}`,
+    },
     { type: "text" as const, text: description },
   ];
 
@@ -228,7 +299,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const clean  = text.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-    const config = JSON.parse(clean);
+    const config = normalizeSitePayload(JSON.parse(clean));
     return NextResponse.json({ config });
   } catch {
     return NextResponse.json({ error: "JSON invalide dans la réponse IA", raw: text.slice(0, 500) }, { status: 500 });

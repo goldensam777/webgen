@@ -73,7 +73,7 @@ export function Contact({
       <div className={`max-w-5xl mx-auto ${hasInfo ? "grid md:grid-cols-2 gap-14 items-start" : "max-w-xl"}`}>
 
         {/* Left: info + header */}
-        <div>
+        <div className="min-w-0">
           {(title || subtitle) && (
             <div className="mb-10">
               {title && (
@@ -82,7 +82,7 @@ export function Contact({
                 </h2>
               )}
               {subtitle && (
-                <p className="mt-4 text-lg" style={{ color: subtitleColor }}>
+                <p className="mt-4 text-lg break-words" style={{ color: subtitleColor }}>
                   <EditableText field="subtitle" value={subtitle} />
                 </p>
               )}
@@ -132,7 +132,7 @@ export function Contact({
 
         {/* Right: form */}
         <CanvasElement id="form">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 min-w-0">
             <Input
               label="Nom"
               value={name}

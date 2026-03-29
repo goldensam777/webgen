@@ -70,9 +70,10 @@ export function ChatWidget({
       <div
         style={{
           position:   "fixed",
-          bottom:     24,
-          right:      24,
+          bottom:     16,
+          right:      16,
           zIndex:     1000,
+          maxWidth:   "calc(100vw - 24px)",
         }}
       >
         <button
@@ -104,7 +105,7 @@ export function ChatWidget({
               position:        "absolute",
               bottom:          64,
               right:           0,
-              width:           340,
+              width:           "min(340px, calc(100vw - 24px))",
               maxHeight:       480,
               borderRadius:    16,
               backgroundColor: "var(--color-surface, #fff)",

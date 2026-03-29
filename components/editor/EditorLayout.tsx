@@ -56,7 +56,7 @@ function IconMedia() {
 
 /* ── Composant principal ────────────────────────────────────── */
 export function EditorLayout() {
-  const { config, activePageId, setActivePage, addPage, removePage, undo, redo, past, future } = useSiteStore();
+  const { config, activePageId, setActivePage, addPage, removePage, undo, redo } = useSiteStore();
   const activePage = useActivePage();
 
   const [tab,             setTab]             = useState<Tab>("sections");
@@ -157,26 +157,28 @@ export function EditorLayout() {
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [config, activePageId, isMobile, undo, redo]);
-
-  if (!config || !activePage) return null;
+  }, [config, activePageId, isMobile, redo, setActivePage, undo, updateSection]);
 
   /* ── Section helpers ── */
   const moveUp = useCallback((section: string) => {
+    if (!activePage) return;
     const arr = [...activePage.sections];
     const i   = arr.indexOf(section);
     if (i <= 0) return;
     [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
     reorderSections(arr);
-  }, [activePage.sections, reorderSections]);
+  }, [activePage, reorderSections]);
 
   const moveDown = useCallback((section: string) => {
+    if (!activePage) return;
     const arr = [...activePage.sections];
     const i   = arr.indexOf(section);
     if (i >= arr.length - 1) return;
     [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
     reorderSections(arr);
-  }, [activePage.sections, reorderSections]);
+  }, [activePage, reorderSections]);
+
+  if (!config || !activePage) return null;
 
   /* ── Page helpers ── */
   const handleAddPage = () => {

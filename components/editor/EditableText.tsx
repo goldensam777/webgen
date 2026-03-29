@@ -14,6 +14,7 @@ export function EditableText({ field, value, hrefField, hrefValue }: Props) {
   const { isEditing, fieldStyles, onUpdate, onStyleUpdate } = useEditable();
   const ref              = useRef<HTMLSpanElement>(null);
   const [focused, setFocused] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLSpanElement | null>(null);
 
   /* ── Close-lifecycle refs (never stale, no re-render cost) ── */
   const pendingTextRef   = useRef("");
@@ -43,6 +44,7 @@ export function EditableText({ field, value, hrefField, hrefValue }: Props) {
   const onToolbarBlur = () => {
     preventCloseRef.current = false;
     setFocused(false);
+    setAnchorEl(null);
     onUpdate(field, pendingTextRef.current);
   };
 
@@ -58,6 +60,7 @@ export function EditableText({ field, value, hrefField, hrefValue }: Props) {
     // Normal blur (clicked outside) — close after current event finishes
     closeTimerRef.current = setTimeout(() => {
       setFocused(false);
+      setAnchorEl(null);
       onUpdate(field, pendingTextRef.current);
     }, 0);
   };
@@ -75,7 +78,7 @@ export function EditableText({ field, value, hrefField, hrefValue }: Props) {
   return (
     <>
       <FloatingToolbar
-        anchorEl={focused ? ref.current : null}
+        anchorEl={focused ? anchorEl : null}
         field={field}
         style={customStyle}
         onStyleChange={(s) => onStyleUpdate(field, s)}
@@ -102,7 +105,7 @@ export function EditableText({ field, value, hrefField, hrefValue }: Props) {
           transition:      "outline 0.1s, background-color 0.1s",
         }}
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.focus(); }}
-        onFocus={() => setFocused(true)}
+        onFocus={(e) => { setFocused(true); setAnchorEl(e.currentTarget); }}
         onBlur={(e)   => onSpanBlur(e.currentTarget.textContent ?? "")}
         onKeyDown={(e) => {
           if (e.key === "Enter")  { e.preventDefault(); e.currentTarget.blur(); }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 import { EditableText } from "../editor/EditableText";
 import { CanvasElement } from "../editor/CanvasElement";
@@ -43,11 +44,11 @@ export function Footer({
           {/* Brand */}
           <CanvasElement id="brand">
             <div className="flex flex-col gap-4">
-              <a href="/" className="font-bold text-xl" style={{ color: logoColor }}>
+              <Link href="/" className="font-bold text-xl" style={{ color: logoColor }}>
                 {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
-              </a>
+              </Link>
               {description && (
-                <p className="text-sm leading-relaxed max-w-xs" style={{ color: descriptionColor }}>
+                <p className="text-sm leading-relaxed max-w-xs break-words" style={{ color: descriptionColor }}>
                   <EditableText field="description" value={description} />
                 </p>
               )}

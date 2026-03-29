@@ -19,7 +19,7 @@ type PanelTab = "props" | "anims";
 
 export function PropertiesPanel({ section, onMoveUp, onMoveDown, onRemove, onClose }: Props) {
   const activePage                      = useActivePage();
-  const { updateSection, setAnimation, removeAnimation } = useSiteStore();
+  const { updateSection } = useSiteStore();
   const [panelTab, setPanelTab]         = useState<PanelTab>("props");
 
   /* ── État vide ── */

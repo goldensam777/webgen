@@ -9,6 +9,7 @@ import { DataTable }    from "@/components/ui/DataTable";
 import { ActivityFeed } from "@/components/ui/ActivityFeed";
 import { StatusBadge }  from "@/components/ui/StatusBadge";
 import type { TableColumn } from "@/components/ui/DataTable";
+import { useHydrated } from "@/lib/use-hydrated";
 
 interface Site {
   slug:        string;
@@ -30,8 +31,8 @@ export default function DashboardPage() {
 
   const [sites,    setSites]    = useState<Site[]>([]);
   const [loading,  setLoading]  = useState(true);
-  const [mounted,  setMounted]  = useState(false);
   const [resuming, setResuming] = useState<string | null>(null);
+  const hydrated                = useHydrated();
 
   const handleEdit = async (slug: string) => {
     setResuming(slug);
@@ -50,10 +51,8 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => { setMounted(true); }, []);
-
   useEffect(() => {
-    if (!mounted) return;
+    if (!hydrated) return;
     if (!user) { router.push("/auth"); return; }
 
     fetch("/api/dashboard/sites", {
@@ -62,9 +61,9 @@ export default function DashboardPage() {
       .then(r => r.json())
       .then(d => { setSites(d.sites ?? []); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [mounted, user, token, router]);
+  }, [hydrated, user, token, router]);
 
-  if (!mounted) return null;
+  if (!hydrated) return null;
 
   const lastSite = sites[0];
   const greeting = (() => {

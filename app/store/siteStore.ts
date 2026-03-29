@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { SectionAnimation } from "@/lib/animations";
+import { normalizeSitePayload, sanitizePageSlug } from "@/lib/site-schema";
 
 /* ── Types ──────────────────────────────────────────────────── */
 
@@ -163,9 +164,7 @@ export const useSiteStore = create<SiteStore>()(
 
       addPage: (name) => set((s) => {
         if (!s.config) return s;
-        const slug = name.toLowerCase()
-          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        const slug = sanitizePageSlug(name, name);
         const page: SitePage = {
           id: uid(), name, slug,
           sections:   ["navbar", "hero", "footer"],
@@ -323,8 +322,10 @@ function isValidHex(v: unknown): v is string {
 export function apiConfigToSiteConfig(
   apiConfig: Record<string, unknown>
 ): SiteConfig {
+  const normalizedApiConfig = normalizeSitePayload(apiConfig);
+
   // Merge theme
-  const raw = (apiConfig.theme ?? {}) as Record<string, unknown>;
+  const raw = (normalizedApiConfig.theme ?? {}) as Record<string, unknown>;
   const theme: SiteTheme = {
     primary:    isValidHex(raw.primary)    ? raw.primary    : DEFAULT_THEME.primary,
     secondary:  isValidHex(raw.secondary)  ? raw.secondary  : DEFAULT_THEME.secondary,
@@ -337,17 +338,18 @@ export function apiConfigToSiteConfig(
   };
 
   // Multi-pages format
-  if (Array.isArray(apiConfig.pages)) {
-    const pages: SitePage[] = (apiConfig.pages as Record<string, unknown>[]).map(p => {
+  if (Array.isArray(normalizedApiConfig.pages)) {
+    const pages: SitePage[] = (normalizedApiConfig.pages as Record<string, unknown>[]).map((p, index) => {
       const sections = (p.sections as string[]) ?? [];
+      const dataRecord = (p.data ?? {}) as Record<string, Record<string, unknown>>;
       const data: Record<string, Record<string, unknown>> = {};
       for (const key of sections) {
-        if (p[key]) data[key] = p[key] as Record<string, unknown>;
+        if (dataRecord[key]) data[key] = dataRecord[key];
       }
       return {
         id:         uid(),
-        name:       (p.name as string) ?? "Page",
-        slug:       (p.slug as string) ?? "",
+        name:       (p.name as string) ?? (index === 0 ? "Accueil" : "Page"),
+        slug:       sanitizePageSlug(p.slug, p.name, index === 0),
         sections,
         data,
         animations: (p.animations as Record<string, SectionAnimation[]>) ?? {},
@@ -357,10 +359,12 @@ export function apiConfigToSiteConfig(
   }
 
   // Fallback: ancien format mono-page
-  const sections = (apiConfig.sections as string[]) ?? [];
+  const sections = (normalizedApiConfig.sections as string[]) ?? [];
   const data: Record<string, Record<string, unknown>> = {};
   for (const key of sections) {
-    if (apiConfig[key]) data[key] = apiConfig[key] as Record<string, unknown>;
+    if ((normalizedApiConfig.data as Record<string, unknown> | undefined)?.[key]) {
+      data[key] = (normalizedApiConfig.data as Record<string, Record<string, unknown>>)[key];
+    }
   }
   return {
     pages: [{ id: uid(), name: "Accueil", slug: "", sections, data, animations: {} }],

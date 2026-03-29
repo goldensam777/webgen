@@ -45,7 +45,6 @@ export function Sidebar({
   activeColor = "bg-blue-50",
   activeTextColor = "text-blue-600",
   inactiveTextColor = "text-gray-600",
-  labelColor = "text-gray-900",
   iconColor = "text-gray-400",
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);

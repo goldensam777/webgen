@@ -35,6 +35,13 @@ export function Pricing({
   titleColor = "var(--color-text)",
   subtitleColor = "var(--color-text-muted)",
 }: PricingProps) {
+  const colStyles = {
+    1: "grid-cols-1",
+    2: "grid-cols-1 sm:grid-cols-2",
+    3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  } as const;
+  const gridClass = colStyles[Math.min(Math.max(plans.length, 1), 3) as 1 | 2 | 3];
+
   return (
     <section id={id} className="py-20 px-6" style={{ backgroundColor: bgColor }}>
       <div className="max-w-6xl mx-auto">
@@ -53,7 +60,7 @@ export function Pricing({
           </div>
         )}
 
-        <div className={`grid grid-cols-1 sm:grid-cols-${Math.min(plans.length, 3)} gap-6`}>
+        <div className={`grid gap-6 ${gridClass}`}>
           {plans.map((plan, i) => {
             const isHighlighted = plan.highlighted;
             return (
@@ -85,7 +92,7 @@ export function Pricing({
 
                 <div className="mb-4">
                   <span
-                    className="text-4xl font-bold"
+                    className="text-4xl font-bold break-words"
                     style={{ color: isHighlighted ? "#ffffff" : "var(--color-text)" }}
                   >
                     {typeof plan.price === "number" ? `$${plan.price}` : plan.price}
@@ -102,7 +109,7 @@ export function Pricing({
 
                 {plan.description && (
                   <p
-                    className="text-sm mb-6"
+                    className="text-sm mb-6 break-words"
                     style={{ color: isHighlighted ? "rgba(255,255,255,0.7)" : "var(--color-text-muted)" }}
                   >
                     {plan.description}
@@ -119,7 +126,7 @@ export function Pricing({
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span style={{ color: isHighlighted ? "rgba(255,255,255,0.85)" : "var(--color-text-muted)" }}>
+                      <span className="break-words" style={{ color: isHighlighted ? "rgba(255,255,255,0.85)" : "var(--color-text-muted)" }}>
                         {feature}
                       </span>
                     </li>

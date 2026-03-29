@@ -11,6 +11,7 @@ import type { FieldStyle, ElementStyle } from "@/components/editor/EditableConte
 import type { SiteConfig, SitePage } from "@/app/store/siteStore";
 import { buildAnimClass } from "@/lib/animations";
 import type { SectionAnimation } from "@/lib/animations";
+import { normalizeSectionData, rewriteSectionLinks, sectionAnchorId } from "@/lib/site-schema";
 
 /* Inline animation CSS once at build/request time */
 const ANIM_CSS = (() => {
@@ -60,7 +61,12 @@ async function loadConfig(slug: string): Promise<SiteConfig> {
   return data.config as SiteConfig;
 }
 
-function renderPage(page: SitePage, theme: SiteConfig["theme"], slug: string) {
+function renderPage(
+  page: SitePage,
+  theme: SiteConfig["theme"],
+  slug: string,
+  sitePages: SitePage[]
+) {
   const font    = theme.font || "Inter";
   const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap`;
   const cssVars = `
@@ -74,7 +80,8 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"], slug: string) {
       --color-border:     ${theme.border};
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: '${font}', system-ui, sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { font-family: '${font}', system-ui, sans-serif; overflow-x: hidden; }
   `;
 
   const title = (page.data.navbar?.logo as string)
@@ -96,13 +103,17 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"], slug: string) {
       <body>
         {page.sections.map((section) => {
           const Component   = SECTION_MAP[section];
-          const sectionData = (page.data[section] ?? {}) as Record<string, unknown>;
+          const sectionData = normalizeSectionData(section, page.data[section] ?? {});
           if (!Component) return null;
 
           const fieldStyles   = ((sectionData._styles   ?? {}) as Record<string, FieldStyle>);
           const elementStyles = ((sectionData._elStyles  ?? {}) as Record<string, ElementStyle>);
-          const cleanData     = Object.fromEntries(
-            Object.entries(sectionData).filter(([k]) => !k.startsWith("_"))
+          const cleanData = rewriteSectionLinks(
+            Object.fromEntries(
+              Object.entries(sectionData).filter(([k]) => !k.startsWith("_"))
+            ),
+            sitePages,
+            slug
           );
 
           const slugSections = new Set(["contact", "blog", "chatwidget"]);
@@ -113,7 +124,7 @@ function renderPage(page: SitePage, theme: SiteConfig["theme"], slug: string) {
           const trigger   = sectionAnims[0]?.trigger ?? "scroll";
 
           return (
-            <div key={section} className={animClass || undefined}
+            <div key={section} id={sectionAnchorId(section)} className={animClass || undefined}
               {...(animClass ? { "data-trigger": trigger } : {})}>
               <EditableContext.Provider
                 value={{
@@ -157,13 +168,13 @@ export default async function SitePage({ params }: PageProps) {
       sections: raw.sections,
       data:     raw.data ?? {},
     };
-    return renderPage(page, config.theme ?? raw.theme, slug);
+    return renderPage(page, config.theme ?? raw.theme, slug, [page]);
   }
 
   const homePage = config.pages[0];
   if (!homePage) notFound();
 
-  return renderPage(homePage, config.theme, slug);
+  return renderPage(homePage, config.theme, slug, config.pages);
 }
 
 export async function generateMetadata({ params }: PageProps) {

@@ -10,6 +10,12 @@ import {
 } from "@/components";
 import { AnimationWrapper } from "@/components/AnimationWrapper";
 import "@/lib/animations.css";
+import {
+  findPageForHref,
+  normalizeSectionData,
+  rewriteSectionLinks,
+  sectionAnchorId,
+} from "@/lib/site-schema";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SECTION_MAP: Record<string, React.ComponentType<any>> = {
@@ -50,6 +56,8 @@ function buildCSSVars(config: SiteConfig): string {
     html, body {
       background-color: ${t.background};
       font-family: '${t.font || "Inter"}', system-ui, sans-serif;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
     }
   `;
 }
@@ -148,11 +156,14 @@ export function PreviewClient() {
           const Component = SECTION_MAP[sectionId];
           if (!Component) return null;
 
-          const data          = page.data[sectionId] ?? {};
+          const data = normalizeSectionData(sectionId, page.data[sectionId] ?? {});
           const fieldStyles   = (data._styles  ?? {}) as Record<string, FieldStyle>;
           const elementStyles = (data._elStyles ?? {}) as Record<string, ElementStyle>;
-          const componentData = Object.fromEntries(
-            Object.entries(data).filter(([k]) => !k.startsWith("_"))
+          const componentData = rewriteSectionLinks(
+            Object.fromEntries(
+              Object.entries(data).filter(([k]) => !k.startsWith("_"))
+            ),
+            config.pages
           );
           const isSelected  = selected === sectionId;
           const sectionAnims = page.animations?.[sectionId] ?? [];
@@ -160,6 +171,7 @@ export function PreviewClient() {
           return (
             <div
               key={sectionId}
+              id={sectionAnchorId(sectionId)}
               style={{
                 position:      "relative",
                 outline:       isSelected ? "2px solid #10b981" : "none",
@@ -172,14 +184,26 @@ export function PreviewClient() {
                 if (a) {
                   e.preventDefault();
                   const href = (a as HTMLAnchorElement).getAttribute("href") ?? "";
+                  if (href.startsWith("#")) {
+                    const targetId = sectionAnchorId(href.slice(1));
+                    const targetSection = page.sections.find(
+                      (candidate) => sectionAnchorId(candidate) === targetId
+                    );
+                    document.getElementById(targetId)?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                    if (targetSection) {
+                      setSelected(targetSection);
+                      window.parent?.postMessage({ type: "select", sectionId: targetSection }, "*");
+                    }
+                    return;
+                  }
                   // Lien interne → naviguer vers la page correspondante
                   if (href && !href.startsWith("http") && !href.startsWith("//") && !href.startsWith("#")) {
-                    const slug = href.replace(/^\//, "");
-                    const page = config.pages.find(
-                      (p) => p.slug === slug || (slug === "" && p.slug === "")
-                    );
-                    if (page) {
-                      window.parent?.postMessage({ type: "navigate", pageId: page.id }, "*");
+                    const targetPage = findPageForHref(href, config.pages);
+                    if (targetPage) {
+                      window.parent?.postMessage({ type: "navigate", pageId: targetPage.id }, "*");
                     }
                   }
                   return;

@@ -1,10 +1,11 @@
 // app/create/page.tsx
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { EditorLayout } from "@/components/editor/EditorLayout";
 import { PublishModal } from "@/components/editor/PublishModal";
 import { useSiteStore, apiConfigToSiteConfig } from "@/app/store/siteStore";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function CreatePage() {
   const [description, setDescription]   = useState("");
@@ -14,10 +15,10 @@ export default function CreatePage() {
   const [publishOpen, setPublishOpen]   = useState(false);
   const [confirmNew,  setConfirmNew]    = useState(false);
   const [downloading, setDownloading]   = useState(false);
-  const [mounted, setMounted]           = useState(false);
   const [files, setFiles]               = useState<File[]>([]);
   const fileInputRef                    = useRef<HTMLInputElement>(null);
   const { config, setConfig, clearConfig, undo, redo, past, future } = useSiteStore();
+  const hydrated                        = useHydrated();
 
   const handleDownload = async () => {
     if (!config) return;
@@ -44,8 +45,7 @@ export default function CreatePage() {
     }
   };
 
-  useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return (
+  if (!hydrated) return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--wg-bg)" }} />
   );
 

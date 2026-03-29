@@ -69,7 +69,7 @@ export function FAQ({
                       color: "var(--color-text)",
                     }}
                   >
-                    <span className="font-medium text-sm">{item.title}</span>
+                    <span className="font-medium text-sm break-words">{item.title}</span>
                     <svg
                       className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                       style={{ color: "var(--color-text-muted)" }}
@@ -82,7 +82,7 @@ export function FAQ({
                   </button>
                   {isOpen && (
                     <div
-                      className="px-5 py-4 text-sm"
+                      className="px-5 py-4 text-sm break-words"
                       style={{
                         backgroundColor: "var(--color-background)",
                         color: "var(--color-text-muted)",

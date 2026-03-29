@@ -40,7 +40,7 @@ export function Blog({
             <EditableText field="title" value={title} />
           </h2>
           {subtitle && (
-            <p className="text-lg" style={{ color: "var(--color-text-muted)" }}>
+            <p className="text-lg break-words" style={{ color: "var(--color-text-muted)" }}>
               <EditableText field="subtitle" value={subtitle} />
             </p>
           )}
@@ -79,11 +79,11 @@ export function Blog({
                         })}
                       </p>
                     )}
-                    <h3 className="font-semibold text-base mb-1 leading-snug" style={{ color: titleColor }}>
+                    <h3 className="font-semibold text-base mb-1 leading-snug break-words" style={{ color: titleColor }}>
                       {post.title}
                     </h3>
                     {post.excerpt && (
-                      <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                      <p className="text-sm break-words" style={{ color: "var(--color-text-muted)" }}>
                         {post.excerpt}
                       </p>
                     )}

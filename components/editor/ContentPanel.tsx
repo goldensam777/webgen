@@ -149,7 +149,8 @@ export function ContentPanel({ section, onBack }: ContentPanelProps) {
   const toggleItem = (fieldKey: string, index: number) =>
     setExpandedItems((prev) => {
       const set = new Set(prev[fieldKey] ?? []);
-      set.has(index) ? set.delete(index) : set.add(index);
+      if (set.has(index)) set.delete(index);
+      else set.add(index);
       return { ...prev, [fieldKey]: set };
     });
 

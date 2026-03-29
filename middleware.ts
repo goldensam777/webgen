@@ -7,6 +7,8 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 const PROTECTED = ["/create", "/dashboard", "/manage"];
+const INTERNAL_PREFIXES = ["/_next", "/api"];
+const PUBLIC_FILE = /\.[^/]+$/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,8 +17,18 @@ export async function middleware(request: NextRequest) {
   const host  = request.headers.get("host") ?? "";
   const match = host.match(/^([a-z0-9-]+)\.webgen\.app$/);
   if (match && match[1] !== "www") {
+    if (
+      pathname.startsWith("/s/") ||
+      INTERNAL_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+      PUBLIC_FILE.test(pathname)
+    ) {
+      return NextResponse.next();
+    }
+
     const url      = request.nextUrl.clone();
-    url.pathname   = `/s/${match[1]}`;
+    url.pathname   = pathname === "/"
+      ? `/s/${match[1]}`
+      : `/s/${match[1]}${pathname}`;
     return NextResponse.rewrite(url);
   }
 

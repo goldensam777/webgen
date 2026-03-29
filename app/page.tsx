@@ -1,15 +1,15 @@
 // app/page.tsx — Landing page Webgen
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/app/store/authStore";
+import { useHydrated } from "@/lib/use-hydrated";
 
 /* ── Smart CTA : dashboard si connecté, sinon auth ─────────── */
 function SmartCTA({ label, className }: { label: string; className?: string }) {
-  const [mounted, setMounted] = useState(false);
+  const hydrated = useHydrated();
   const { user } = useAuthStore();
-  useEffect(() => { setMounted(true); }, []);
-  const href = mounted && user ? "/dashboard" : "/auth";
+  const href = hydrated && user ? "/dashboard" : "/auth";
   return (
     <Link href={href} className={className}>
       {label}
@@ -344,6 +344,8 @@ const FEATURES = [
    Page
 ══════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
+  const featuresTitleId = useId();
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -405,7 +407,7 @@ export default function LandingPage() {
         style={{ backgroundColor: "var(--wg-bg-3)" }}
       >
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center" style={{ color: "var(--wg-text)" }}>
+          <h2 id={featuresTitleId} className="text-3xl font-bold text-center" style={{ color: "var(--wg-text)" }}>
             Comment ça marche
           </h2>
           <p className="mt-3 text-center text-base max-w-xl mx-auto" style={{ color: "var(--wg-text-2)" }}>
@@ -481,7 +483,7 @@ export default function LandingPage() {
             </span>
             {[
               { label: "Créer un site", href: "/create" },
-              { label: "Fonctionnalités", href: "#features" },
+              { label: "Fonctionnalités", href: `#${featuresTitleId}` },
               { label: "Tarifs", href: "#pricing" },
             ].map(l => (
               <Link

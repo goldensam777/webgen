@@ -165,7 +165,13 @@ export function AuthForm({
         )}
 
         {/* Form */}
-        <div className="flex flex-col gap-4">
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSubmit();
+          }}
+        >
           {mode === "register" && (
             <Input
               label="Nom complet"
@@ -216,7 +222,7 @@ export function AuthForm({
             </div>
           )}
 
-          <Button isDefault={false} className="w-full justify-center mt-1">
+          <Button isDefault={false} className="w-full justify-center mt-1" type="submit">
             {loading
               ? "Chargement..."
               : mode === "login"
@@ -226,7 +232,7 @@ export function AuthForm({
                   : "Envoyer le lien"
             }
           </Button>
-        </div>
+        </form>
 
         {/* Toggle */}
         {showToggle && (
@@ -238,7 +244,7 @@ export function AuthForm({
                   onClick={() => setMode("register")}
                   className={`${linkColor} font-medium hover:underline`}
                 >
-                  S'inscrire
+                  S&apos;inscrire
                 </button>
               </>
             ) : mode === "register" ? (

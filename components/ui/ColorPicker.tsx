@@ -91,6 +91,7 @@ export function ColorPicker({
   const [open, setOpen] = useState(false);
   const [hsl, setHsl] = useState(() => hexToHsl(value));
   const [inputVal, setInputVal] = useState(value);
+  const [panelPos, setPanelPos] = useState({ top: "0px", left: "0px" });
   const ref = useRef<HTMLDivElement>(null);
   const gradientRef = useRef<HTMLDivElement>(null);
   const hueRef = useRef<HTMLDivElement>(null);
@@ -151,8 +152,6 @@ export function ColorPicker({
   };
 
   const currentHex = hslToHex(hsl.h, hsl.s, hsl.l);
-  const thumbX = hsl.s;
-  const thumbY = 100 - (hsl.l / (hsl.s === 0 ? 1 : 1) * (100 - hsl.s / 2) / 50) * 100;
 
   return (
     <div ref={ref} className="relative inline-flex flex-col gap-1">
@@ -165,7 +164,7 @@ export function ColorPicker({
         disabled={disabled}
         onClick={(e) => {
           if (!disabled) {
-            const rect = (e.target as HTMLElement).getBoundingClientRect();
+            const rect = e.currentTarget.getBoundingClientRect();
             const panelW = 256; // w-64
             // Ouvre à droite du trigger ; si ça dépasse à droite, recule
             let left = rect.right + 8;
@@ -174,10 +173,7 @@ export function ColorPicker({
             }
             // Dernier recours : centré sur le trigger
             if (left < 8) left = Math.max(8, rect.left);
-            if (ref.current) {
-              ref.current.style.setProperty('--picker-top', `${rect.top}px`);
-              ref.current.style.setProperty('--picker-left', `${left}px`);
-            }
+            setPanelPos({ top: `${rect.top}px`, left: `${left}px` });
             setOpen((v) => !v);
           }
         }}
@@ -194,8 +190,8 @@ export function ColorPicker({
             border ${borderColor} ${bgColor} shadow-xl p-4 flex flex-col gap-3
             animate-in fade-in zoom-in-95 duration-150`}
           style={{
-            top:  ref.current?.style.getPropertyValue('--picker-top')  ?? '0px',
-            left: ref.current?.style.getPropertyValue('--picker-left') ?? '0px',
+            top: panelPos.top,
+            left: panelPos.left,
           }}
         >
 

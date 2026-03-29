@@ -30,7 +30,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   };
 
   // Si on publie pour la première fois, on fixe la date
-  let extra: Record<string, unknown> = {};
+  const extra: Record<string, unknown> = {};
   if (body.published === true) {
     const { data: existing } = await supabase
       .from("posts")

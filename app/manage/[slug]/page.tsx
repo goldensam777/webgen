@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 interface Post {
@@ -15,7 +15,6 @@ interface Post {
 
 export default function ManageDashboard() {
   const { slug }  = useParams<{ slug: string }>();
-  const router    = useRouter();
   const [posts, setPosts]     = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);

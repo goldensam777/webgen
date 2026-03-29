@@ -1,9 +1,10 @@
 // app/auth/page.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/app/store/authStore";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type Mode = "login" | "register";
 
@@ -14,21 +15,19 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
-  const [mounted, setMounted]   = useState(false);
 
   const { user, setAuth } = useAuthStore();
   const router       = useRouter();
   const searchParams = useSearchParams();
   const redirectTo   = searchParams.get("redirect") ?? "/dashboard";
-
-  useEffect(() => { setMounted(true); }, []);
+  const hydrated     = useHydrated();
 
   // Redirect already-logged-in users
   useEffect(() => {
-    if (mounted && user) router.replace(redirectTo);
-  }, [mounted, user, router, redirectTo]);
+    if (hydrated && user) router.replace(redirectTo);
+  }, [hydrated, user, router, redirectTo]);
 
-  if (!mounted) return <div className="min-h-screen" style={{ backgroundColor: "var(--wg-bg)" }} />;
+  if (!hydrated) return <div className="min-h-screen" style={{ backgroundColor: "var(--wg-bg)" }} />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

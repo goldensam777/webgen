@@ -34,14 +34,14 @@ export function CTA({
     <section className="py-20 px-6" style={{ backgroundColor: bgColor }}>
       <div className={`max-w-3xl mx-auto ${isCenter ? "text-center" : "text-left"}`}>
         <h2
-          className="text-3xl md:text-4xl font-bold leading-tight"
+          className="text-3xl md:text-4xl font-bold leading-tight break-words"
           style={{ color: titleColor }}
         >
           <EditableText field="title" value={title} />
         </h2>
 
         {description && (
-          <p className="mt-4 text-lg" style={{ color: descriptionColor }}>
+          <p className="mt-4 text-lg break-words" style={{ color: descriptionColor }}>
             <EditableText field="description" value={description} />
           </p>
         )}

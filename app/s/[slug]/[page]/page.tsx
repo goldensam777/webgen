@@ -1,16 +1,48 @@
 import { notFound } from "next/navigation";
+import { readFileSync } from "fs";
+import path from "path";
 import { supabase } from "@/lib/supabase";
 import {
   Navbar, Hero, Features, Pricing, FAQ, Footer,
-  Stats, Testimonials, CTA, Contact,
+  Stats, Testimonials, CTA, Contact, Blog, ChatWidget,
 } from "@/components";
+import { EditableContext } from "@/components/editor/EditableContext";
+import type { FieldStyle, ElementStyle } from "@/components/editor/EditableContext";
 import type { SiteConfig, SitePage } from "@/app/store/siteStore";
+import { buildAnimClass } from "@/lib/animations";
+import type { SectionAnimation } from "@/lib/animations";
+import { normalizeSectionData, rewriteSectionLinks, sectionAnchorId } from "@/lib/site-schema";
+
+const ANIM_CSS = (() => {
+  try {
+    return readFileSync(path.join(process.cwd(), "lib/animations.css"), "utf8");
+  } catch {
+    return "";
+  }
+})();
+
+const SCROLL_SCRIPT = `
+(function(){
+  var els = document.querySelectorAll('.wg-anim');
+  if(!els.length) return;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting) { e.target.classList.add('wg-play'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(function(el){ io.observe(el); });
+  document.querySelectorAll('.wg-anim[data-trigger="load"]').forEach(function(el){
+    el.classList.add('wg-play');
+  });
+})();
+`;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SECTION_MAP: Record<string, React.ComponentType<any>> = {
   navbar: Navbar, hero: Hero, features: Features, stats: Stats,
   testimonials: Testimonials, pricing: Pricing, faq: FAQ,
   cta: CTA, contact: Contact, footer: Footer,
+  blog: Blog, chatwidget: ChatWidget,
 };
 
 interface PageProps {
@@ -38,6 +70,8 @@ export default async function SiteSubPage({ params }: PageProps) {
   const title = (page.data.navbar?.logo as string)
              || (page.data.hero?.title as string)
              || page.name;
+  const font = theme.font || "Inter";
+  const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap`;
 
   return (
     <html lang="fr">
@@ -45,6 +79,9 @@ export default async function SiteSubPage({ params }: PageProps) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{title}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href={fontUrl} rel="stylesheet" />
         <style>{`
           :root {
             --color-primary:    ${theme.primary};
@@ -56,16 +93,57 @@ export default async function SiteSubPage({ params }: PageProps) {
             --color-border:     ${theme.border};
           }
           *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-          body { font-family: system-ui, -apple-system, sans-serif; }
+          html { scroll-behavior: smooth; }
+          body { font-family: '${font}', system-ui, sans-serif; overflow-x: hidden; }
         `}</style>
+        <style>{ANIM_CSS}</style>
       </head>
       <body>
         {page.sections.map((section) => {
           const Component   = SECTION_MAP[section];
-          const sectionData = (page.data[section] ?? {}) as Record<string, unknown>;
+          const sectionData = normalizeSectionData(section, page.data[section] ?? {});
           if (!Component) return null;
-          return <Component key={section} {...sectionData} />;
+
+          const fieldStyles = (sectionData._styles ?? {}) as Record<string, FieldStyle>;
+          const elementStyles = (sectionData._elStyles ?? {}) as Record<string, ElementStyle>;
+          const cleanData = rewriteSectionLinks(
+            Object.fromEntries(
+              Object.entries(sectionData).filter(([key]) => !key.startsWith("_"))
+            ),
+            config.pages,
+            slug
+          );
+          const extraProps = ["contact", "blog", "chatwidget"].includes(section)
+            ? { siteSlug: slug }
+            : {};
+          const sectionAnims: SectionAnimation[] = page.animations?.[section] ?? [];
+          const animClass = sectionAnims.map((anim) => buildAnimClass(anim)).filter(Boolean).join(" ");
+          const trigger = sectionAnims[0]?.trigger ?? "scroll";
+
+          return (
+            <div
+              key={section}
+              id={sectionAnchorId(section)}
+              className={animClass || undefined}
+              {...(animClass ? { "data-trigger": trigger } : {})}
+            >
+              <EditableContext.Provider
+                value={{
+                  isEditing: false,
+                  canvasMode: false,
+                  fieldStyles,
+                  elementStyles,
+                  onUpdate: () => {},
+                  onStyleUpdate: () => {},
+                  onElementStyleUpdate: () => {},
+                }}
+              >
+                <Component {...cleanData} {...extraProps} />
+              </EditableContext.Provider>
+            </div>
+          );
         })}
+        <script dangerouslySetInnerHTML={{ __html: SCROLL_SCRIPT }} />
       </body>
     </html>
   );

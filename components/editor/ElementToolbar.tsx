@@ -2,6 +2,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import type { ElementStyle } from "./EditableContext";
+import { useHydrated } from "@/lib/use-hydrated";
 
 interface Props {
   anchorEl: HTMLElement | null;
@@ -13,9 +14,7 @@ interface Props {
 
 export function ElementToolbar({ anchorEl, elementId, style, onStyleChange, onClose }: Props) {
   const [pos, setPos] = useState({ top: 0, left: 0 });
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
+  const hydrated = useHydrated();
 
   useEffect(() => {
     if (!anchorEl) return;
@@ -36,7 +35,7 @@ export function ElementToolbar({ anchorEl, elementId, style, onStyleChange, onCl
     };
   }, [anchorEl]);
 
-  if (!mounted || !anchorEl) return null;
+  if (!hydrated || !anchorEl) return null;
 
   const radiusVal  = Math.max(0, parseInt(style.borderRadius ?? "0", 10)  || 0);
   const paddingVal = Math.max(0, parseInt(style.padding      ?? "0", 10)  || 0);

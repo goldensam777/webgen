@@ -4,6 +4,21 @@ import type { SiteTheme, SitePage } from "@/app/store/siteStore";
 const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
 const MODEL         = "claude-haiku-4-5-20251001";
 
+const SECTION_SCHEMA_HINTS: Record<string, string> = {
+  navbar: 'Schéma canonique navbar: { "logo": string, "links": [{ "label": string, "href": string }], "ctaLabel": string, "ctaHref": string }',
+  hero: 'Schéma canonique hero: { "title": string, "subtitle": string, "description": string, "badgeLabel": string, "ctaLabel": string, "ctaHref": string, "secondaryCtaLabel": string, "secondaryCtaHref": string, "align": "left" | "center" }',
+  features: 'Schéma canonique features: { "title": string, "subtitle": string, "items": [{ "title": string, "description": string }] }',
+  stats: 'Schéma canonique stats: { "title": string, "subtitle": string, "items": [{ "value": string, "label": string, "description": string }] }',
+  testimonials: 'Schéma canonique testimonials: { "title": string, "subtitle": string, "items": [{ "quote": string, "name": string, "role": string, "avatarSrc": string }] }',
+  pricing: 'Schéma canonique pricing: { "title": string, "subtitle": string, "plans": [{ "name": string, "price": string, "period": string, "description": string, "features": [string], "ctaLabel": string, "ctaHref": string, "highlighted": boolean }] }',
+  faq: 'Schéma canonique faq: { "title": string, "subtitle": string, "items": [{ "title": string, "content": string }] }',
+  cta: 'Schéma canonique cta: { "title": string, "description": string, "ctaLabel": string, "ctaHref": string, "secondaryCtaLabel": string, "secondaryCtaHref": string }',
+  contact: 'Schéma canonique contact: { "title": string, "subtitle": string, "email": string, "phone": string, "address": string, "ctaLabel": string }',
+  footer: 'Schéma canonique footer: { "logo": string, "description": string, "copyright": string, "linkGroups": [{ "section": string, "items": [{ "label": string, "href": string }] }] }',
+  blog: 'Schéma canonique blog: { "title": string, "subtitle": string, "ctaLabel": string }',
+  chatwidget: 'Schéma canonique chatwidget: { "title": string, "subtitle": string, "greeting": string, "placeholder": string, "buttonLabel": string }',
+};
+
 /* ── Prompts ─────────────────────────────────────────────────── */
 
 function buildCtx(body: {
@@ -34,11 +49,14 @@ Section : "${sectionKey}"
 Thème : ${JSON.stringify(theme)}
 Données actuelles : ${JSON.stringify(displayData, null, 2)}
 Instruction : "${instruction}"
+${SECTION_SCHEMA_HINTS[sectionKey] ? `\n${SECTION_SCHEMA_HINTS[sectionKey]}` : ""}
 
 Règles :
 - UNIQUEMENT un objet JSON valide
 - Ne modifie que ce que l'instruction demande
 - Garde la même structure et les mêmes clés
+- Utilise uniquement le schéma canonique de cette section
+- Préserve les href internes utiles au lieu de les remplacer par "#"
 - Pour les tableaux tu peux ajouter/modifier/supprimer des éléments`,
     };
   }
@@ -58,6 +76,8 @@ Instruction : "${instruction}"
 Règles :
 - Retourne exactement { "sections": [...], "data": {...} }
 - Tu peux modifier données, ordre, ajouter/supprimer des sections
+- Dans "data", chaque section doit respecter son schéma canonique (faq.title/content, testimonials.quote, cta.description/ctaLabel/ctaHref, etc.)
+- Préserve les href internes utiles au lieu de les remplacer par "#"
 - Préserve les clés commençant par "_"`,
     };
   }

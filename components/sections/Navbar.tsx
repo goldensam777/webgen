@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
@@ -43,17 +44,17 @@ export function Navbar({
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a href="/" className="font-bold text-xl" style={{ color: logoColor }}>
+        <Link href="/" className="font-bold text-xl min-w-0 break-words" style={{ color: logoColor }}>
           {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
-        </a>
+        </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8 min-w-0">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium hover:opacity-80 transition-opacity"
+              className="text-sm font-medium hover:opacity-80 transition-opacity break-words"
               style={{ color: textColor }}
             >
               {link.label}
@@ -100,7 +101,7 @@ export function Navbar({
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium hover:opacity-80"
+              className="text-sm font-medium hover:opacity-80 break-words"
               style={{ color: textColor }}
               onClick={() => setMenuOpen(false)}
             >

@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { useId, useMemo } from "react";
 
 interface MiniChartProps {
   data:        number[];
@@ -28,6 +28,7 @@ export function MiniChart({
   bgColor    = "var(--color-surface)",
   filled     = true,
 }: MiniChartProps) {
+  const gradId = useId().replace(/:/g, "");
   const W = 400;
   const H = height;
   const PAD = { top: 8, right: 8, bottom: showLabels ? 24 : 8, left: 8 };
@@ -54,8 +55,6 @@ export function MiniChart({
   }, [data, chartW, chartH, PAD.left, PAD.top]);
 
   if (!data.length) return null;
-
-  const gradId = `grad-${Math.random().toString(36).slice(2, 7)}`;
 
   return (
     <div
