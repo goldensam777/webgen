@@ -44,15 +44,31 @@ function pickRandom<T>(items: readonly T[]): T {
 function buildVariationPack() {
   return {
     directionVisuelle: pickRandom(VISUAL_DIRECTIONS),
-    tonEditorial: pickRandom(CONTENT_TONES),
-    rythmeDePage: pickRandom(SECTION_RHYTHMS),
-    styleDeCTA: pickRandom(CTA_STYLES),
+    tonEditorial:      pickRandom(CONTENT_TONES),
+    rythmeDePage:      pickRandom(SECTION_RHYTHMS),
+    styleDeCTA:        pickRandom(CTA_STYLES),
   };
 }
 
-const SYSTEM_PROMPT = `Tu es un générateur de sites web professionnel multi-pages.
+/* ── System prompt dynamique ─────────────────────────────────── */
+
+function buildSystemPrompt(variation: ReturnType<typeof buildVariationPack>): string {
+  return `Tu es un générateur de sites web professionnel multi-pages.
 L'utilisateur décrit son site en langage naturel.
 Tu dois retourner UNIQUEMENT un objet JSON valide, sans markdown, sans backticks, sans explication.
+
+══════════════════════════════════════════════
+DIRECTIVE DE GÉNÉRATION ACTIVE — PRIORITÉ ABSOLUE
+══════════════════════════════════════════════
+Pour ce site précis, tu DOIS impérativement appliquer ces 4 directives.
+Elles priment sur tes tendances par défaut et sur les règles générales ci-dessous.
+
+  Direction visuelle : ${variation.directionVisuelle}
+  Ton éditorial      : ${variation.tonEditorial}
+  Rythme de page     : ${variation.rythmeDePage}
+  Style de CTA       : ${variation.styleDeCTA}
+
+Ces directives définissent l'identité de ce site. Aucune génération ne doit les ignorer.
 
 ══════════════════════════════════════════════
 RÈGLES DE VARIÉTÉ VISUELLE — OBLIGATOIRES
@@ -214,6 +230,7 @@ RÈGLES GÉNÉRALES
 - Pour les liens de pages internes, utilise "/" pour l'accueil et "/slug-de-page" pour les autres pages existantes.
 - Les boutons principaux doivent pointer vers une destination crédible: prise de contact, FAQ, tarifs, blog, réservation, devis, essai, page contact.
 - Ne mélange jamais plusieurs schémas de clés pour une même section.`;
+}
 
 /* ── Route POST ─────────────────────────────────────────────── */
 
@@ -232,15 +249,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Description requise" }, { status: 400 });
   }
 
+  /* ── Variation + system prompt dynamique ── */
+  const variationPack = buildVariationPack();
+  const systemPrompt  = buildSystemPrompt(variationPack);
+
   /* ── Construction du message utilisateur ── */
   const contextBlocks = summaries.map((s) => ({ type: "text" as const, text: s }));
-  const variationPack = buildVariationPack();
   const userContent = [
     ...contextBlocks,
-    {
-      type: "text" as const,
-      text: `Contraintes créatives supplémentaires pour cette génération : ${JSON.stringify(variationPack)}`,
-    },
     { type: "text" as const, text: description },
   ];
 
@@ -256,7 +272,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model:      "claude-sonnet-4-6",
         max_tokens: 8000,
-        system:     SYSTEM_PROMPT,
+        system:     systemPrompt,
         messages:   [{ role: "user", content: userContent }],
       }),
     });
@@ -282,7 +298,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Réponse Anthropic non-JSON" }, { status: 502 });
   }
 
-  // Avertir si la réponse a été coupée par la limite de tokens
   if ((data.stop_reason as string) === "max_tokens") {
     return NextResponse.json(
       { error: "La description est trop longue — le JSON généré a été tronqué. Réduisez le contenu ou simplifiez la demande." },
