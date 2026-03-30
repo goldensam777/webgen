@@ -1,4 +1,4 @@
-# Webgen
+# WebgenX 
 
 Plateforme SaaS de génération de sites web propulsée par l'IA, construite sur **Premier.js** — le framework de composants React écrit à la main.
 
