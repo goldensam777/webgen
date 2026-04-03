@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
+const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 type Params = { params: Promise<{ siteSlug: string }> };
 
@@ -45,28 +45,28 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const systemPrompt = siteContext;
 
-  const res = await fetch(ANTHROPIC_API, {
+  const res = await fetch(`${GEMINI_API}?key=${process.env.GEMINI_API_KEY ?? ""}`, {
     method:  "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "x-api-key":         process.env.ANTHROPIC_API_KEY ?? "",
-      "anthropic-version": "2023-06-01",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model:      "claude-haiku-4-5-20251001",
-      max_tokens: 512,
-      system:     systemPrompt,
-      messages:   messages.map(m => ({ role: m.role, content: m.content })),
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: messages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.content }]
+      })),
+      generationConfig: { maxOutputTokens: 512 },
     }),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    return NextResponse.json({ error: `Anthropic ${res.status}: ${err}` }, { status: 500 });
+    return NextResponse.json({ error: `Gemini ${res.status}: ${err}` }, { status: 500 });
   }
 
-  const aiData = await res.json() as { content: { text: string }[] };
-  const reply = aiData.content[0].text.trim();
+  const aiData = await res.json() as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
+  };
+  const reply = aiData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
 
   // Persister le message (optionnel — pas bloquant)
   if (sessionId) {

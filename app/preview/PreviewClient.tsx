@@ -63,6 +63,7 @@ function buildCSSVars(config: SiteConfig): string {
 }
 
 function buildFontUrl(font: string): string {
+  // Load weights 400 (regular), 500 (medium), 600 (semibold), 700 (bold), 800 (extrabold)
   return `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap`;
 }
 
@@ -165,19 +166,22 @@ export function PreviewClient() {
             ),
             config.pages
           );
-          const isSelected  = selected === sectionId;
+          const isSelected   = selected === sectionId;
           const sectionAnims = page.animations?.[sectionId] ?? [];
+          /* Section-level background override — set via AI or style panel */
+          const sectionBg    = (data.bgColor as string | undefined) || undefined;
 
           return (
             <div
               key={sectionId}
               id={sectionAnchorId(sectionId)}
               style={{
-                position:      "relative",
-                outline:       isSelected ? "2px solid #10b981" : "none",
-                outlineOffset: "-2px",
-                cursor:        "pointer",
-                transition:    "outline 0.1s",
+                position:        "relative",
+                outline:         isSelected ? "2px solid #10b981" : "none",
+                outlineOffset:   "-2px",
+                cursor:          "pointer",
+                transition:      "outline 0.1s",
+                backgroundColor: sectionBg,
               }}
               onClick={(e) => {
                 const a = (e.target as HTMLElement).closest("a[href]");

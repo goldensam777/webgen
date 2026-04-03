@@ -194,9 +194,9 @@ export async function generateMetadata({ params }: PageProps) {
     const description = String(
       page?.data?.hero?.description ||
       page?.data?.hero?.subtitle    ||
-      `Site web créé avec Webgen — ${title}`
+      `Site web créé avec Webgenx — ${title}`
     );
-    const siteUrl = `https://webgen.app/s/${slug}`;
+    const siteUrl = `https://webgenx.app/s/${slug}`;
 
     return {
       title,

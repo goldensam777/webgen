@@ -1,3 +1,4 @@
+// components/ui/Button.tsx
 import React from "react";
 
 interface ButtonWp {
@@ -7,21 +8,21 @@ interface ButtonWp {
   style?: React.CSSProperties;
   onClick?: () => void;
   disabled?: boolean;
-  type?: "button" | "submit" | "reset";
+  type?: "button" | "submit";
 }
 
 export function Button({
   children,
   isDefault = true,
   className = "",
-  style,
+  style = {},
   onClick,
   disabled = false,
   type = "button",
 }: ButtonWp) {
-  const defaultStyle = "bg-white border border-gray-300 text-gray-800 hover:border-black hover:bg-gray-50";
-  const primaryStyle = "bg-blue-600 text-white hover:bg-blue-700";
-  const buttonStyle = isDefault ? defaultStyle : primaryStyle;
+  const buttonStyle = isDefault
+    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-[1.02] active:scale-[0.98]"
+    : "glass border-white/10 hover:bg-white/10";
 
   return (
     <button
@@ -29,9 +30,10 @@ export function Button({
       onClick={onClick}
       disabled={disabled}
       style={style}
-      className={`inline-flex items-center justify-center text-center whitespace-normal break-words
-        px-6 py-2 rounded-lg transition-all duration-200
-        disabled:opacity-50 disabled:cursor-not-allowed
+      className={`
+        inline-flex items-center text-center whitespace-normal break-words
+        px-6 py-2.5 rounded-2xl font-bold text-sm transition-all duration-300
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100
         ${buttonStyle} ${className}`}
     >
       {children}

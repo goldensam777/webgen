@@ -23,6 +23,11 @@
 
   /* Green gradient (primary) */
   --wg-grad: linear-gradient(135deg, #10b981 0%, #059669 55%, #047857 100%);
+
+  /* Glassmorphism */
+  --wg-glass-bg: rgba(255, 255, 255, 0.7);
+  --wg-glass-border: rgba(255, 255, 255, 0.3);
+  --wg-blur: blur(12px);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,7 +40,8 @@
     --wg-text-3: #475569;
     --wg-border: #1e2d3d;
     --wg-green-muted: rgba(16, 185, 129, 0.08);
-    /* --wg-green, --wg-green-hover, --wg-green-2, --wg-grad : invariants */
+    --wg-glass-bg: rgba(15, 23, 42, 0.65);
+    --wg-glass-border: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -46,6 +52,40 @@ body {
   background-color: var(--wg-bg);
   color: var(--wg-text);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* ── Modern UI Utils ───────────────────────────────────────── */
+.glass {
+  background: var(--wg-glass-bg);
+  backdrop-filter: var(--wg-blur);
+  -webkit-backdrop-filter: var(--wg-blur);
+  border: 1px solid var(--wg-glass-border);
+}
+
+.text-gradient {
+  background: var(--wg-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.reveal {
+  animation: reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes reveal {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Green wave animation ──────────────────────────────────── */

@@ -1,4 +1,4 @@
-// components/editor/EditorLayout.tsx
+// components/editor/EditorLayout.tsx — Professional UI Redesign
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { StylePanel }       from "./StylePanel";
@@ -9,68 +9,55 @@ import { AIPatchPanel }     from "./AIPatchPanel";
 import { useSiteStore, useActivePage } from "@/app/store/siteStore";
 import type { PreviewMsg } from "@/lib/preview-bridge";
 
-type Tab         = "pages" | "sections" | "styles" | "media";
-type MobileSheet = Tab | "properties" | null;
+type Tab = "sections" | "styles" | "media" | "pages";
+type Viewport = "desktop" | "tablet" | "mobile";
 
-/* ── Icônes ────────────────────────────────────────────────── */
-function IconPages() {
-  return (
+/* ── Icons ───────────────── */
+const Icons = {
+  Sections: () => (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
     </svg>
-  );
-}
-function IconSections() {
-  return (
+  ),
+  Styles: () => (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
     </svg>
-  );
-}
-function IconStyles() {
-  return (
+  ),
+  Media: () => (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
-  );
-}
-function IconProps() {
-  return (
+  ),
+  Pages: () => (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
-  );
-}
-function IconMedia() {
-  return (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  ),
+  Desktop: () => (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h6l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
-  );
-}
+  ),
+  Mobile: () => (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+    </svg>
+  ),
+};
 
-/* ── Composant principal ────────────────────────────────────── */
 export function EditorLayout() {
-  const { config, activePageId, setActivePage, addPage, removePage, undo, redo } = useSiteStore();
+  const { config, activePageId, setActivePage, undo, redo, updateSection, removeSection, reorderSections } = useSiteStore();
   const activePage = useActivePage();
 
-  const [tab,             setTab]             = useState<Tab>("sections");
+  const [tab, setTab] = useState<Tab>("sections");
+  const [viewport, setViewport] = useState<Viewport>("desktop");
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const [addingPage,      setAddingPage]      = useState(false);
-  const [newPageName,     setNewPageName]     = useState("");
-  const [isMobile,        setIsMobile]        = useState(false);
-  const [mobileSheet,     setMobileSheet]     = useState<MobileSheet>(null);
-  const [aiPatchOpen,     setAiPatchOpen]     = useState(false);
-
-  const { removeSection, reorderSections, updateSection } = useSiteStore();
+  const [aiPatchOpen, setAiPatchOpen] = useState(false);
+  
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  /* ── Raccourcis clavier Ctrl+Z / Ctrl+Y / Ctrl+I ── */
+  /* ── Sync & Events ── */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
@@ -83,87 +70,42 @@ export function EditorLayout() {
     return () => window.removeEventListener("keydown", handler);
   }, [undo, redo]);
 
-  /* ── Détection mobile ── */
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 1024);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  /* ── Sync config → iframe (debounce 60ms) ── */
   useEffect(() => {
     if (!config || !activePageId) return;
     const t = setTimeout(() => {
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: "config", config, pageId: activePageId },
-        "*"
-      );
+      iframeRef.current?.contentWindow?.postMessage({ type: "config", config, pageId: activePageId }, "*");
     }, 60);
     return () => clearTimeout(t);
   }, [config, activePageId]);
 
-  /* ── Sync section sélectionnée → iframe ── */
   useEffect(() => {
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: "highlight", sectionId: selectedSection },
-      "*"
-    );
+    iframeRef.current?.contentWindow?.postMessage({ type: "highlight", sectionId: selectedSection }, "*");
   }, [selectedSection]);
 
-  /* ── Messages venant de l'iframe ── */
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       const msg = e.data as PreviewMsg;
       if (!msg?.type) return;
       if (msg.type === "ready" && config && activePageId) {
-        iframeRef.current?.contentWindow?.postMessage(
-          { type: "config", config, pageId: activePageId },
-          "*"
-        );
+        iframeRef.current?.contentWindow?.postMessage({ type: "config", config, pageId: activePageId }, "*");
       }
-      if (msg.type === "select") {
-        setSelectedSection(msg.sectionId);
-        if (isMobile) setMobileSheet("properties");
-      }
-      if (msg.type === "navigate") {
-        setActivePage(msg.pageId);
-        setSelectedSection(null);
-      }
-      if (msg.type === "update") {
-        updateSection(msg.sectionId, (d) => ({ ...d, [msg.field]: msg.value }));
-      }
-      if (msg.type === "style-update") {
-        updateSection(msg.sectionId, (d) => ({
-          ...d,
-          _styles: {
-            ...((d._styles ?? {}) as Record<string, unknown>),
-            [msg.field]: msg.style,
-          },
-        }));
-      }
-      if (msg.type === "element-style-update") {
-        updateSection(msg.sectionId, (d) => ({
-          ...d,
-          _elStyles: {
-            ...((d._elStyles ?? {}) as Record<string, unknown>),
-            [msg.elementId]: msg.style,
-          },
-        }));
-      }
-      if (msg.type === "undo")     { undo(); }
-      if (msg.type === "redo")     { redo(); }
-      if (msg.type === "ai-patch") { setAiPatchOpen(o => !o); }
+      if (msg.type === "select") setSelectedSection(msg.sectionId);
+      if (msg.type === "navigate") { setActivePage(msg.pageId); setSelectedSection(null); }
+      if (msg.type === "update") updateSection(msg.sectionId, (d) => ({ ...d, [msg.field]: msg.value }));
+      if (msg.type === "style-update") updateSection(msg.sectionId, (d) => ({ ...d, _styles: { ...((d._styles ?? {}) as Record<string, unknown>), [msg.field]: msg.style } }));
+      if (msg.type === "element-style-update") updateSection(msg.sectionId, (d) => ({ ...d, _elStyles: { ...((d._elStyles ?? {}) as Record<string, unknown>), [msg.elementId]: msg.style } }));
+      if (msg.type === "undo") undo();
+      if (msg.type === "redo") redo();
+      if (msg.type === "ai-patch") setAiPatchOpen(o => !o);
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [config, activePageId, isMobile, redo, setActivePage, undo, updateSection]);
+  }, [config, activePageId, redo, setActivePage, undo, updateSection]);
 
-  /* ── Section helpers ── */
   const moveUp = useCallback((section: string) => {
     if (!activePage) return;
     const arr = [...activePage.sections];
-    const i   = arr.indexOf(section);
+    const i = arr.indexOf(section);
     if (i <= 0) return;
     [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
     reorderSections(arr);
@@ -172,7 +114,7 @@ export function EditorLayout() {
   const moveDown = useCallback((section: string) => {
     if (!activePage) return;
     const arr = [...activePage.sections];
-    const i   = arr.indexOf(section);
+    const i = arr.indexOf(section);
     if (i >= arr.length - 1) return;
     [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
     reorderSections(arr);
@@ -180,297 +122,165 @@ export function EditorLayout() {
 
   if (!config || !activePage) return null;
 
-  /* ── Page helpers ── */
-  const handleAddPage = () => {
-    const name = newPageName.trim();
-    if (!name) return;
-    addPage(name);
-    setNewPageName("");
-    setAddingPage(false);
-    setTab("sections");
-    if (isMobile) setMobileSheet(null);
-  };
+  return (
+    <div className="flex flex-1 overflow-hidden" style={{ backgroundColor: "var(--wg-bg-3)" }}>
+      {aiPatchOpen && <AIPatchPanel selectedSection={selectedSection} onClose={() => setAiPatchOpen(false)} />}
 
-  /* ── Pages list ── */
-  const renderPagesContent = () => (
-    <div className="flex flex-col gap-1 pt-2">
-      <p className="text-xs font-semibold uppercase tracking-wide px-4 pt-2 pb-1"
-        style={{ color: "var(--wg-text-3)" }}>
-        Pages du site
-      </p>
-      {config.pages.map((page, idx) => (
-        <div
-          key={page.id}
-          className="flex items-center gap-2 px-3 py-2 mx-1 rounded-lg cursor-pointer transition-colors"
-          style={{
-            backgroundColor: page.id === activePageId ? "var(--wg-green-muted)" : "transparent",
-            border: page.id === activePageId ? "1px solid var(--wg-green)" : "1px solid transparent",
-          }}
-          onClick={() => {
-            setActivePage(page.id);
-            setTab("sections");
-            setSelectedSection(null);
-            if (isMobile) setMobileSheet(null);
-          }}
-          onMouseEnter={(e) => { if (page.id !== activePageId) e.currentTarget.style.backgroundColor = "var(--wg-bg-3)"; }}
-          onMouseLeave={(e) => { if (page.id !== activePageId) e.currentTarget.style.backgroundColor = "transparent"; }}
-        >
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate"
-              style={{ color: page.id === activePageId ? "var(--wg-green)" : "var(--wg-text)" }}>
-              {page.name}
-            </p>
-            <p className="text-xs truncate" style={{ color: "var(--wg-text-3)" }}>
-              {idx === 0 ? "/ (accueil)" : `/${page.slug}`}
-            </p>
-          </div>
-          {config.pages.length > 1 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); removePage(page.id); }}
-              className="shrink-0"
-              style={{ color: "var(--wg-text-3)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--wg-text-3)")}
+      {/* ── Mini Left Sidebar ── */}
+      <aside className="w-16 shrink-0 flex flex-col items-center py-4 gap-4 border-r"
+        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}>
+        <SidebarTab icon={<Icons.Sections />} active={tab === "sections"} onClick={() => setTab("sections")} label="Sections" />
+        <SidebarTab icon={<Icons.Styles />} active={tab === "styles"} onClick={() => setTab("styles")} label="Styles" />
+        <SidebarTab icon={<Icons.Media />} active={tab === "media"} onClick={() => setTab("media")} label="Médias" />
+        <SidebarTab icon={<Icons.Pages />} active={tab === "pages"} onClick={() => setTab("pages")} label="Pages" />
+      </aside>
+
+      {/* ── Sub Sidebar (Panel Content) ── */}
+      <aside className="w-64 shrink-0 flex flex-col border-r overflow-hidden"
+        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}>
+        <div className="h-12 flex items-center px-4 border-b font-black text-[10px] uppercase tracking-widest opacity-40"
+          style={{ borderColor: "var(--wg-border)" }}>
+          {tab}
+        </div>
+        <div className="flex-1 overflow-y-auto pb-10">
+          {tab === "sections" && <SectionPanel />}
+          {tab === "styles" && <StylePanel />}
+          {tab === "media" && <MediaPanel />}
+          {tab === "pages" && <PagesPanel />}
+        </div>
+      </aside>
+
+      {/* ── Main Canvas Area ── */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Canvas Toolbar */}
+        <div className="h-12 shrink-0 border-b flex items-center justify-between px-4"
+          style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}>
+          
+          <div className="flex items-center gap-4">
+            <select 
+              value={activePageId || ""} 
+              onChange={e => setActivePage(e.target.value)}
+              className="bg-transparent text-xs font-bold focus:outline-none cursor-pointer hover:text-emerald-500 transition-colors"
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              {config.pages.map(p => (
+                <option key={p.id} value={p.id}>{p.name} {p.slug === "" ? "(Accueil)" : `/${p.slug}`}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center glass rounded-xl p-0.5 border" style={{ borderColor: "var(--wg-border)" }}>
+            <ViewportBtn active={viewport === "desktop"} onClick={() => setViewport("desktop")} icon={<Icons.Desktop />} />
+            <ViewportBtn active={viewport === "mobile"} onClick={() => setViewport("mobile")} icon={<Icons.Mobile />} />
+          </div>
+
+          <div className="w-24" /> {/* Spacer */}
+        </div>
+
+        {/* Iframe Wrapper */}
+        <div className="flex-1 overflow-auto p-8 flex justify-center bg-slate-100 dark:bg-slate-950/20">
+          <div 
+            className="transition-all duration-500 shadow-2xl bg-white dark:bg-black overflow-hidden"
+            style={{ 
+              width: viewport === "desktop" ? "100%" : "375px",
+              height: viewport === "desktop" ? "100%" : "667px",
+              borderRadius: viewport === "desktop" ? "0" : "32px",
+              border: viewport === "desktop" ? "none" : "12px solid #1e293b"
+            }}
+          >
+            <iframe ref={iframeRef} src="/preview" title="Aperçu" className="w-full h-full border-none block" />
+          </div>
+        </div>
+      </main>
+
+      {/* ── Right Sidebar (Properties) ── */}
+      <aside className="w-72 shrink-0 flex flex-col border-l overflow-hidden"
+        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}>
+        <div className="flex-1 overflow-y-auto">
+          <PropertiesPanel
+            section={selectedSection}
+            onMoveUp={() => selectedSection && moveUp(selectedSection)}
+            onMoveDown={() => selectedSection && moveDown(selectedSection)}
+            onRemove={() => { if (selectedSection) { removeSection(selectedSection); setSelectedSection(null); } }}
+            onClose={() => setSelectedSection(null)}
+          />
+        </div>
+        
+        {/* AI Quick Access */}
+        <div className="p-4 border-t" style={{ borderColor: "var(--wg-border)" }}>
+          <button
+            onClick={() => setAiPatchOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-xs font-black uppercase tracking-widest bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-transform"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" /></svg>
+            Magic Patch
+            <kbd className="opacity-40 text-[10px] ml-1">⌘I</kbd>
+          </button>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+/* ── Helper Components ── */
+
+function SidebarTab({ icon, active, onClick, label }: { icon: React.ReactNode; active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 ${
+        active ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "opacity-40 hover:opacity-100 hover:bg-slate-100 dark:hover:bg-white/5"
+      }`}
+    >
+      {icon}
+    </button>
+  );
+}
+
+function ViewportBtn({ active, onClick, icon }: { active: boolean; onClick: () => void; icon: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`p-1.5 rounded-lg transition-all ${active ? "bg-emerald-500 text-white shadow-sm" : "opacity-30 hover:opacity-60"}`}
+    >
+      {icon}
+    </button>
+  );
+}
+
+function PagesPanel() {
+  const { config, activePageId, setActivePage, addPage, removePage } = useSiteStore();
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+
+  if (!config) return null;
+
+  return (
+    <div className="flex flex-col gap-1 p-2">
+      {config.pages.map(page => (
+        <div key={page.id} onClick={() => setActivePage(page.id)}
+          className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+            page.id === activePageId ? "bg-emerald-500/10 text-emerald-500" : "hover:bg-slate-100 dark:hover:bg-white/5"
+          }`}>
+          <span className="text-sm font-bold truncate">{page.name}</span>
+          {config.pages.length > 1 && (
+            <button onClick={(e) => { e.stopPropagation(); removePage(page.id); }} className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           )}
         </div>
       ))}
-
-      {addingPage ? (
-        <div className="flex gap-2 px-3 mx-1 mt-2">
-          <input
-            autoFocus
-            value={newPageName}
-            onChange={(e) => setNewPageName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter")  handleAddPage();
-              if (e.key === "Escape") { setAddingPage(false); setNewPageName(""); }
-            }}
-            placeholder="Ex: Services"
-            className="flex-1 text-xs px-2 py-1.5 rounded border focus:outline-none"
-            style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-green)", color: "var(--wg-text)" }}
-          />
-          <button onClick={handleAddPage} className="btn-green px-2 py-1 rounded text-xs font-semibold shrink-0">
-            OK
-          </button>
+      <button onClick={() => setAdding(true)} className="mt-4 flex items-center gap-2 px-3 text-xs font-black uppercase tracking-widest text-emerald-500 opacity-60 hover:opacity-100">
+        + Nouvelle page
+      </button>
+      {adding && (
+        <div className="px-2 mt-2 flex gap-2">
+          <input autoFocus value={name} onChange={e => setName(e.target.value)} 
+            placeholder="Nom..." className="flex-1 bg-transparent border-b border-emerald-500 text-sm focus:outline-none" />
+          <button onClick={() => { if(name.trim()) { addPage(name.trim()); setName(""); setAdding(false); } }} 
+            className="text-xs font-bold text-emerald-500">OK</button>
         </div>
-      ) : (
-        <button
-          onClick={() => setAddingPage(true)}
-          className="flex items-center gap-1.5 px-4 py-2 mx-1 rounded-lg text-xs font-semibold"
-          style={{ color: "var(--wg-green)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--wg-green-muted)")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Nouvelle page
-        </button>
       )}
-    </div>
-  );
-
-  /* ── Iframe preview ── */
-  const renderIframe = () => (
-    <iframe
-      ref={iframeRef}
-      src="/preview"
-      title="Aperçu du site"
-      style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-    />
-  );
-
-  /* ── PropertiesPanel avec callbacks de section ── */
-  const renderProperties = () => (
-    <PropertiesPanel
-      section={selectedSection}
-      onMoveUp={()   => selectedSection && moveUp(selectedSection)}
-      onMoveDown={()  => selectedSection && moveDown(selectedSection)}
-      onRemove={() => { if (selectedSection) { removeSection(selectedSection); setSelectedSection(null); } }}
-      onClose={()   => setSelectedSection(null)}
-    />
-  );
-
-  /* ── Mobile ─────────────────────────────────────────────── */
-  if (isMobile) {
-    const MOBILE_TABS: { key: MobileSheet; label: string; icon: React.ReactNode }[] = [
-      { key: "pages",      label: "Pages",    icon: <IconPages /> },
-      { key: "sections",   label: "Sections", icon: <IconSections /> },
-      { key: "styles",     label: "Styles",   icon: <IconStyles /> },
-      { key: "media",      label: "Médias",   icon: <IconMedia /> },
-      { key: "properties", label: "Éditer",   icon: <IconProps /> },
-    ];
-
-    return (
-      <div className="flex flex-col" style={{ height: "calc(100vh - 56px)" }}>
-        {aiPatchOpen && (
-          <AIPatchPanel
-            selectedSection={selectedSection}
-            onClose={() => setAiPatchOpen(false)}
-          />
-        )}
-
-        {/* Iframe plein écran */}
-        <main className="flex-1 overflow-hidden" style={{ backgroundColor: "var(--wg-bg-3)" }}>
-          {config.pages.length > 1 && (
-            <div
-              className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 border-b text-xs font-semibold"
-              style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
-            >
-              <span style={{ color: "var(--wg-text-3)" }}>Aperçu :</span>
-              <span style={{ color: "var(--wg-green)" }}>{activePage.name}</span>
-            </div>
-          )}
-          <div style={{ height: "100%" }}>{renderIframe()}</div>
-        </main>
-
-        {/* Bottom sheet */}
-        {mobileSheet && (
-          <div
-            className="fixed inset-0 z-40"
-            style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
-            onClick={() => setMobileSheet(null)}
-          >
-            <div
-              className="absolute bottom-14 left-0 right-0 rounded-t-2xl border-t overflow-hidden flex flex-col"
-              style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)", maxHeight: "65vh" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-center pt-3 pb-1 shrink-0">
-                <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "var(--wg-border)" }} />
-              </div>
-              <div className="flex-1 overflow-y-auto pb-4">
-                {mobileSheet === "pages"      && renderPagesContent()}
-                {mobileSheet === "sections"   && <SectionPanel />}
-                {mobileSheet === "styles"     && <StylePanel />}
-                {mobileSheet === "media"      && <MediaPanel />}
-                {mobileSheet === "properties" && renderProperties()}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab bar */}
-        <nav
-          className="shrink-0 flex border-t z-50"
-          style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)", height: "56px" }}
-        >
-          {MOBILE_TABS.map((t) => (
-            <button
-              key={String(t.key)}
-              onClick={() => setMobileSheet((s) => s === t.key ? null : t.key)}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5"
-              style={{ color: mobileSheet === t.key ? "var(--wg-green)" : "var(--wg-text-3)" }}
-            >
-              {t.icon}
-              <span className="text-[9px] font-semibold uppercase tracking-wide">{t.label}</span>
-            </button>
-          ))}
-          {/* Bouton IA */}
-          <button
-            onClick={() => setAiPatchOpen(o => !o)}
-            className="flex-1 flex flex-col items-center justify-center gap-0.5"
-            style={{ color: aiPatchOpen ? "var(--wg-green)" : "var(--wg-text-3)" }}
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
-            </svg>
-            <span className="text-[9px] font-semibold uppercase tracking-wide">IA</span>
-          </button>
-        </nav>
-      </div>
-    );
-  }
-
-  /* ── Desktop ─────────────────────────────────────────────── */
-  return (
-    <div className="flex h-[calc(100vh-56px)] overflow-hidden">
-      {aiPatchOpen && (
-        <AIPatchPanel
-          selectedSection={selectedSection}
-          onClose={() => setAiPatchOpen(false)}
-        />
-      )}
-
-      {/* Sidebar gauche — pages / sections / styles */}
-      <aside
-        className="w-64 shrink-0 flex flex-col border-r overflow-hidden"
-        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
-      >
-        <div className="flex shrink-0 border-b" style={{ borderColor: "var(--wg-border)" }}>
-          {(["pages", "sections", "styles", "media"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-wide transition-colors"
-              style={tab === t
-                ? { color: "var(--wg-green)", borderBottom: "2px solid var(--wg-green)" }
-                : { color: "var(--wg-text-3)" }
-              }
-            >
-              {t === "pages" ? "Pages" : t === "sections" ? "Sections" : t === "styles" ? "Styles" : "Médias"}
-            </button>
-          ))}
-        </div>
-        <div className="flex-1 overflow-y-auto overflow-x-visible pb-4">
-          {tab === "pages"    && renderPagesContent()}
-          {tab === "sections" && <SectionPanel />}
-          {tab === "styles"   && <StylePanel />}
-          {tab === "media"      && <MediaPanel />}
-        </div>
-      </aside>
-
-      {/* Centre — iframe */}
-      <main
-        className="flex-1 overflow-hidden flex flex-col"
-        style={{ backgroundColor: "var(--wg-bg-3)" }}
-      >
-        {config.pages.length > 1 && (
-          <div
-            className="shrink-0 flex items-center gap-2 px-4 py-2 border-b text-xs font-semibold"
-            style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
-          >
-            <span style={{ color: "var(--wg-text-3)" }}>Aperçu :</span>
-            <span style={{ color: "var(--wg-green)" }}>{activePage.name}</span>
-            <span style={{ color: "var(--wg-text-3)" }}>
-              {activePage.slug === "" ? "/ (accueil)" : `/${activePage.slug}`}
-            </span>
-          </div>
-        )}
-        <div className="flex-1 overflow-hidden">{renderIframe()}</div>
-      </main>
-
-      {/* Panel droit — propriétés */}
-      <aside
-        className="w-72 shrink-0 flex flex-col border-l overflow-hidden"
-        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
-      >
-        {renderProperties()}
-        {/* Bouton IA */}
-        <div className="shrink-0 p-3 border-t" style={{ borderColor: "var(--wg-border)" }}>
-          <button
-            onClick={() => setAiPatchOpen(o => !o)}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all"
-            style={{
-              backgroundColor: aiPatchOpen ? "var(--wg-green)" : "var(--wg-green-muted)",
-              color: aiPatchOpen ? "#fff" : "var(--wg-green)",
-            }}
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
-            </svg>
-            Modifier avec l&apos;IA
-            <kbd className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: "rgba(0,0,0,0.15)" }}>
-              Ctrl+I
-            </kbd>
-          </button>
-        </div>
-      </aside>
     </div>
   );
 }

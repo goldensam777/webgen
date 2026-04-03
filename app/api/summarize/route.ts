@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 /* ── Prompts ──────────────────────────────────────────────────── */
 
-const PDF_PROMPT = `Tu analyses un document pour aider à créer un site web professionnel.
+const DOCUMENT_PROMPT = `Tu analyses un document pour aider à créer un site web professionnel.
 Extrais et résume les informations clés : identité, titre/poste, spécialités, expériences, réalisations, services proposés, chiffres marquants, citations, coordonnées.
 Réponds en français, structuré et concis (350 mots max).
 Ne génère pas de site — uniquement le résumé du contenu utile.`;
@@ -62,30 +62,37 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
   return result.text.slice(0, 20_000).trim();
 }
 
-/* ── Appel Claude ───────────────────────────────────────────────── */
+/* ── Appel Gemini ───────────────────────────────────────────────── */
 
-async function callClaude(content: ContentBlock[]): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "x-api-key":         process.env.ANTHROPIC_API_KEY ?? "",
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model:      "claude-haiku-4-5-20251001",  // rapide + économique pour résumer
-      max_tokens: 1000,
-      messages:   [{ role: "user", content }],
-    }),
-  });
+async function callGemini(textPrompt: string, imageBase64?: string, mediaType?: string): Promise<string> {
+  const parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> = [];
+  
+  if (imageBase64 && mediaType) {
+    parts.push({ inlineData: { mimeType: mediaType, data: imageBase64 } });
+  }
+  parts.push({ text: textPrompt });
+  
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY ?? ""}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts }],
+        generationConfig: { maxOutputTokens: 1000 },
+      }),
+    }
+  );
 
   if (!res.ok) {
     const err = await res.text().catch(() => "");
-    throw new Error(`Anthropic ${res.status}: ${err.slice(0, 200)}`);
+    throw new Error(`Gemini ${res.status}: ${err.slice(0, 200)}`);
   }
 
-  const data = await res.json();
-  return (data.content as Array<{ type: string; text?: string }>)?.[0]?.text ?? "";
+  const data = await res.json() as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
+  };
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 /* ── Route POST ─────────────────────────────────────────────────── */
@@ -105,6 +112,14 @@ export async function POST(req: NextRequest) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
 
+  const TEXT_MIME_TYPES = new Set([
+    "text/markdown", "text/plain", "text/csv", "text/html", "text/xml",
+    "application/json", "application/xml", "application/x-markdown",
+  ]);
+
+  const isTextByName = (name: string) =>
+    /\.(md|txt|csv|json|xml|html|htm)$/i.test(name);
+
   try {
     /* ── PDF ── */
     if (file.type === "application/pdf") {
@@ -112,23 +127,35 @@ export async function POST(req: NextRequest) {
       if (!rawText) {
         return NextResponse.json({ error: "PDF vide ou non lisible" }, { status: 422 });
       }
-      const summary = await callClaude([
-        { type: "text", text: rawText },
-        { type: "text", text: PDF_PROMPT },
-      ]);
+      const summary = await callGemini(
+        `${rawText.slice(0, 20_000)}\n\n${DOCUMENT_PROMPT}`
+      );
       return NextResponse.json({ summary, type: "pdf", filename: file.name });
     }
 
     /* ── Image ── */
     if (file.type.startsWith("image/")) {
-      const summary = await callClaude([
-        { type: "image", source: { type: "base64", media_type: file.type, data: buffer.toString("base64") } },
-        { type: "text", text: IMAGE_PROMPT },
-      ]);
+      const summary = await callGemini(
+        IMAGE_PROMPT,
+        buffer.toString("base64"),
+        file.type
+      );
       return NextResponse.json({ summary, type: "image", filename: file.name });
     }
 
-    return NextResponse.json({ error: `Type non supporté : ${file.type}` }, { status: 415 });
+    /* ── Texte (md, txt, csv, json, xml, html…) ── */
+    if (TEXT_MIME_TYPES.has(file.type) || isTextByName(file.name)) {
+      const rawText = buffer.toString("utf8").slice(0, 20_000).trim();
+      if (!rawText) {
+        return NextResponse.json({ error: "Fichier texte vide" }, { status: 422 });
+      }
+      const summary = await callGemini(
+        `${rawText}\n\n${DOCUMENT_PROMPT}`
+      );
+      return NextResponse.json({ summary, type: "text", filename: file.name });
+    }
+
+    return NextResponse.json({ error: `Format non supporté : ${file.type || file.name}` }, { status: 415 });
 
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });

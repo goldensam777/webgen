@@ -1,9 +1,15 @@
 "use client";
-import Link from "next/link";
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
 import { CanvasElement } from "../editor/CanvasElement";
+
+function LogoRender({ logo, logoSrc }: { logo: string; logoSrc?: string }) {
+  if (logoSrc) return <img src={logoSrc} alt={logo} className="h-8" />;
+  if (logo.trimStart().startsWith("<svg"))
+    return <span dangerouslySetInnerHTML={{ __html: logo }} />;
+  return <EditableText field="logo" value={logo} />;
+}
 
 interface NavLink {
   label: string;
@@ -44,20 +50,20 @@ export function Navbar({
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="font-bold text-xl min-w-0 break-words" style={{ color: logoColor }}>
-          {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
-        </Link>
+        <a href="/" className="font-bold text-xl min-w-0 break-words" style={{ color: logoColor }}>
+          <LogoRender logo={logo} logoSrc={logoSrc} />
+        </a>
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8 min-w-0">
-          {links.map((link) => (
+          {links.map((link, i) => (
             <a
-              key={link.href}
+              key={i}
               href={link.href}
               className="text-sm font-medium hover:opacity-80 transition-opacity break-words"
               style={{ color: textColor }}
             >
-              {link.label}
+              <EditableText field={`links.${i}.label`} value={link.label} hrefField={`links.${i}.href`} hrefValue={link.href} />
             </a>
           ))}
         </div>

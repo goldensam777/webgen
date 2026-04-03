@@ -59,5 +59,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Erreur lors de la publication." }, { status: 500 });
   }
 
-  return NextResponse.json({ url: `https://${slug}.webgen.app` });
+  return NextResponse.json({ url: `https://${slug}.webgenx.app` });
 }

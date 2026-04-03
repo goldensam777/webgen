@@ -1,14 +1,12 @@
+// app/dashboard/page.tsx — Pro Redesign
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuthStore } from "@/app/store/authStore";
 import { useSiteStore, apiConfigToSiteConfig } from "@/app/store/siteStore";
 import { StatCard }     from "@/components/ui/StatCard";
-import { DataTable }    from "@/components/ui/DataTable";
 import { ActivityFeed } from "@/components/ui/ActivityFeed";
-import { StatusBadge }  from "@/components/ui/StatusBadge";
-import type { TableColumn } from "@/components/ui/DataTable";
+import { SiteCard }     from "@/components/dashboard/SiteCard";
 import { useHydrated } from "@/lib/use-hydrated";
 
 interface Site {
@@ -18,20 +16,15 @@ interface Site {
   url:         string;
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("fr-FR", {
-    day: "2-digit", month: "short", year: "numeric",
-  });
-}
-
 export default function DashboardPage() {
-  const { user, token, logout } = useAuthStore();
+  const { user, token } = useAuthStore();
   const { setConfig, clearConfig } = useSiteStore();
   const router = useRouter();
 
   const [sites,    setSites]    = useState<Site[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [resuming, setResuming] = useState<string | null>(null);
+  const [search,   setSearch]   = useState("");
   const hydrated                = useHydrated();
 
   const handleEdit = async (slug: string) => {
@@ -65,7 +58,10 @@ export default function DashboardPage() {
 
   if (!hydrated) return null;
 
-  const lastSite = sites[0];
+  const filteredSites = sites.filter(s => 
+    (s.title || s.slug).toLowerCase().includes(search.toLowerCase())
+  );
+
   const greeting = (() => {
     const h = new Date().getHours();
     if (h < 12) return "Bonjour";
@@ -73,53 +69,7 @@ export default function DashboardPage() {
     return "Bonsoir";
   })();
 
-  const columns: TableColumn[] = [
-    {
-      key: "title", label: "Site", sortable: true,
-      render: (v, row) => (
-        <div>
-          <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
-            {String(v || row.slug)}
-          </p>
-          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>/{String(row.slug)}</p>
-        </div>
-      ),
-    },
-    {
-      key: "publishedAt", label: "Publié le", sortable: true,
-      render: (v) => <span className="text-sm">{formatDate(String(v))}</span>,
-    },
-    {
-      key: "status", label: "Statut",
-      render: () => <StatusBadge status="success" label="En ligne" size="sm" />,
-    },
-    {
-      key: "url", label: "Actions",
-      render: (v, row) => (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleEdit(String(row.slug))}
-            disabled={resuming === String(row.slug)}
-            className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors disabled:opacity-50"
-            style={{ color: "var(--color-primary)", borderColor: "var(--color-border)" }}
-          >
-            {resuming === String(row.slug) ? "…" : "✏ Modifier"}
-          </button>
-          <a
-            href={String(v)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors"
-            style={{ color: "var(--color-text-muted)", borderColor: "var(--color-border)" }}
-          >
-            Voir →
-          </a>
-        </div>
-      ),
-    },
-  ];
-
-  const feedItems = sites.slice(0, 6).map(s => ({
+  const feedItems = sites.slice(0, 5).map(s => ({
     id:          s.slug,
     title:       `${s.title || s.slug} publié`,
     description: s.url,
@@ -127,164 +77,126 @@ export default function DashboardPage() {
     status:      "success" as const,
   }));
 
-  const tableData = sites.map(s => ({
-    title:       s.title || s.slug,
-    slug:        s.slug,
-    publishedAt: s.publishedAt,
-    url:         s.url,
-    status:      "online",
-  }));
-
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--wg-bg)" }}>
-
-      {/* ── Top nav ── */}
-      <header
-        className="sticky top-0 z-30 border-b px-6 h-14 flex items-center justify-between"
-        style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
-      >
-        <Link href="/" className="font-bold text-lg" style={{ color: "var(--wg-green)" }}>
-          Webgen
-        </Link>
-        <div className="flex items-center gap-4">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto">
+      
+      {/* ── Page Header ── */}
+      <header className="px-8 pt-8 pb-6 border-b sticky top-0 z-20 backdrop-blur-md flex flex-col gap-6"
+        style={{ backgroundColor: "rgba(var(--wg-bg-rgb), 0.8)", borderColor: "var(--wg-border)" }}>
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: "var(--wg-text)" }}>
+              {greeting}, {user?.name?.split(" ")[0]} 👋
+            </h1>
+            <p className="text-sm opacity-50 font-medium">Gérez vos créations et lancez de nouveaux projets.</p>
+          </div>
           <button
             onClick={() => { clearConfig(); router.push("/create"); }}
-            className="btn-green px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5"
+            className="btn-green px-6 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
-            Nouveau site
+            Nouveau projet
           </button>
-          <button
-            onClick={() => { logout(); router.push("/"); }}
-            className="text-sm transition-colors"
-            style={{ color: "var(--wg-text-3)" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "var(--wg-text)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "var(--wg-text-3)")}
-          >
-            Déconnexion
-          </button>
+        </div>
+
+        {/* Search & Stats Bar */}
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="relative flex-1 w-full">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input 
+              type="text"
+              placeholder="Rechercher un site..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-11 pr-4 py-2.5 rounded-2xl border text-sm focus:outline-none transition-all focus:ring-2 focus:ring-emerald-500/20"
+              style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)" }}
+            />
+          </div>
+          <div className="flex items-center gap-6 px-4">
+            <div className="text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Projets</p>
+              <p className="text-lg font-black">{sites.length}</p>
+            </div>
+            <div className="w-px h-8 bg-slate-200 dark:bg-white/10" />
+            <div className="text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Plan</p>
+              <p className="text-lg font-black text-emerald-500">BETA</p>
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-
-        {/* ── Page header ── */}
-        <div className="mb-8">
-          <p className="text-sm mb-1" style={{ color: "var(--wg-text-3)" }}>
-            {new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-          </p>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--wg-text)" }}>
-            {greeting}, {user?.name?.split(" ")[0]} 👋
-          </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--wg-text-2)" }}>
-            Voici l&apos;état de vos sites publiés.
-          </p>
-        </div>
-
-        {loading ? (
-          /* ── Skeleton ── */
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-28 rounded-2xl animate-pulse"
-                style={{ backgroundColor: "var(--wg-bg-2)" }} />
-            ))}
-          </div>
-        ) : (
-          <>
-            {/* ── KPI cards ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8"
-              style={{ "--color-surface": "var(--wg-bg-2)", "--color-border": "var(--wg-border)",
-                "--color-text": "var(--wg-text)", "--color-text-muted": "var(--wg-text-2)" } as React.CSSProperties}
-            >
-              <StatCard
-                label="Sites publiés"
-                value={sites.length}
-                color="green"
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                  </svg>
-                }
-              />
-              <StatCard
-                label="Dernier publié"
-                value={lastSite ? formatDate(lastSite.publishedAt) : "—"}
-                color="blue"
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                }
-              />
-              <StatCard
-                label="Slug récent"
-                value={lastSite ? `/${lastSite.slug}` : "—"}
-                color="purple"
-                icon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                }
-              />
+      <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10">
+        
+        {/* ── Main Content ── */}
+        <section>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-72 rounded-3xl animate-pulse"
+                  style={{ backgroundColor: "var(--wg-bg-2)" }} />
+              ))}
             </div>
-
-            {sites.length === 0 ? (
-              /* ── Empty state ── */
-              <div
-                className="rounded-2xl border p-16 text-center"
-                style={{ borderColor: "var(--wg-border)", backgroundColor: "var(--wg-bg-2)" }}
-              >
-                <svg className="w-14 h-14 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                  style={{ color: "var(--wg-text-3)" }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          ) : filteredSites.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center glass rounded-[3rem] border-dashed border-2"
+              style={{ borderColor: "var(--wg-border)" }}>
+              <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-white/5 flex items-center justify-center mb-6">
+                <svg className="w-8 h-8 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <p className="text-lg font-semibold mb-2" style={{ color: "var(--wg-text)" }}>
-                  Aucun site publié
-                </p>
-                <p className="text-sm mb-6" style={{ color: "var(--wg-text-2)" }}>
-                  Créez votre premier site en quelques secondes avec l&apos;IA.
-                </p>
-                <button
-                  onClick={() => { clearConfig(); router.push("/create"); }}
-                  className="btn-green px-6 py-2.5 rounded-xl text-sm font-semibold"
-                >
-                  Créer mon premier site →
-                </button>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6"
-                style={{
-                  "--color-surface":    "var(--wg-bg-2)",
-                  "--color-background": "var(--wg-bg)",
-                  "--color-border":     "var(--wg-border)",
-                  "--color-text":       "var(--wg-text)",
-                  "--color-text-muted": "var(--wg-text-2)",
-                  "--color-primary":    "var(--wg-green)",
-                } as React.CSSProperties}
+              <h3 className="text-xl font-bold mb-2">Aucun projet trouvé</h3>
+              <p className="text-sm opacity-50 mb-8 max-w-xs">Commencez par créer votre premier site avec l&apos;intelligence artificielle.</p>
+              <button
+                onClick={() => { clearConfig(); router.push("/create"); }}
+                className="btn-green px-8 py-3 rounded-2xl font-bold text-sm"
               >
-                <DataTable
-                  title="Mes sites"
-                  columns={columns}
-                  data={tableData}
-                  searchable
-                  pageSize={8}
-                  emptyMessage="Aucun site trouvé."
+                Créer mon premier site →
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {filteredSites.map(site => (
+                <SiteCard
+                  key={site.slug}
+                  title={site.title || site.slug}
+                  slug={site.slug}
+                  url={site.url}
+                  publishedAt={site.publishedAt}
+                  onEdit={() => handleEdit(site.slug)}
+                  isResuming={resuming === site.slug}
                 />
-                <ActivityFeed
-                  title="Activité"
-                  items={feedItems}
-                  maxItems={6}
-                />
-              </div>
-            )}
-          </>
-        )}
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* ── Sidebar Info ── */}
+        <aside className="flex flex-col gap-8">
+          <div className="glass rounded-[2rem] p-6 border" style={{ borderColor: "var(--wg-border)" }}>
+            <h4 className="text-xs font-black uppercase tracking-widest mb-6 opacity-40">Activité récente</h4>
+            <ActivityFeed
+              items={feedItems}
+              maxItems={5}
+              title=""
+            />
+          </div>
+
+          <div className="rounded-[2.5rem] p-8 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+            <h4 className="font-black text-xl mb-2 relative z-10">Webgenx Pro</h4>
+            <p className="text-sm opacity-80 mb-6 relative z-10">Bientôt : domaines personnalisés, SEO avancé et analytics temps réel.</p>
+            <button className="w-full bg-white text-emerald-600 py-3 rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg hover:scale-[1.02] transition-transform">
+              En savoir plus
+            </button>
+          </div>
+        </aside>
+
       </div>
     </div>
   );

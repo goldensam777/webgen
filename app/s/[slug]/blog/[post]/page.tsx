@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import sanitizeHtml from "sanitize-html";
 import { supabase } from "@/lib/supabase";
 import type { SiteConfig } from "@/app/store/siteStore";
 
@@ -104,7 +105,20 @@ export default async function BlogPostPage({ params }: Props) {
           {post.excerpt && <p className="post-excerpt">{post.excerpt}</p>}
           <div
             className="post-content"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(post.content, {
+                allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+                  "img", "h1", "h2", "h3", "h4", "h5", "h6",
+                  "pre", "code", "blockquote",
+                ]),
+                allowedAttributes: {
+                  ...sanitizeHtml.defaults.allowedAttributes,
+                  img: ["src", "alt", "width", "height"],
+                  a:   ["href", "target", "rel"],
+                  "*": ["class"],
+                },
+              }),
+            }}
           />
         </main>
       </body>

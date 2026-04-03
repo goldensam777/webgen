@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthStore>()(
       },
     }),
     {
-      name:    "webgen-auth",
+      name:    "webgenx-auth",
       storage: createJSONStorage(() => localStorage),
     }
   )

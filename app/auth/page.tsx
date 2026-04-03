@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/app/store/authStore";
 import { useHydrated } from "@/lib/use-hydrated";
+import { getBrowserSupabaseClient } from "@/lib/supabase-browser";
 
 type Mode = "login" | "register";
 
@@ -15,6 +16,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
   const { user, setAuth } = useAuthStore();
   const router       = useRouter();
@@ -26,6 +28,46 @@ export default function AuthPage() {
   useEffect(() => {
     if (hydrated && user) router.replace(redirectTo);
   }, [hydrated, user, router, redirectTo]);
+
+  // Handle Google OAuth callback (?code=...)
+  useEffect(() => {
+    if (!hydrated || user) return;
+    const code = searchParams.get("code");
+    if (!code) return;
+
+    const run = async () => {
+      setOauthLoading(true);
+      setError("");
+      try {
+        const client = getBrowserSupabaseClient();
+        if (!client) {
+          throw new Error("Configuration Supabase incomplète (clé anon manquante).");
+        }
+
+        const { data, error: exchangeError } = await client.auth.exchangeCodeForSession(code);
+        if (exchangeError || !data.session?.access_token) {
+          throw new Error(exchangeError?.message ?? "Connexion Google impossible.");
+        }
+
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken: data.session.access_token }),
+        });
+        const payload = await res.json();
+        if (!res.ok) throw new Error(payload.error ?? "Connexion Google impossible.");
+
+        setAuth(payload.user, payload.token);
+        router.replace(redirectTo);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Connexion Google impossible.");
+      } finally {
+        setOauthLoading(false);
+      }
+    };
+
+    void run();
+  }, [hydrated, user, searchParams, setAuth, router, redirectTo]);
 
   if (!hydrated) return <div className="min-h-screen" style={{ backgroundColor: "var(--wg-bg)" }} />;
 
@@ -64,6 +106,27 @@ export default function AuthPage() {
     setName("");
   };
 
+  const signInWithGoogle = async () => {
+    setError("");
+    setOauthLoading(true);
+    try {
+      const client = getBrowserSupabaseClient();
+      if (!client) {
+        throw new Error("Configuration Supabase incomplète (clé anon manquante).");
+      }
+
+      const redirectUrl = `${window.location.origin}/auth?redirect=${encodeURIComponent(redirectTo)}`;
+      const { error } = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: redirectUrl },
+      });
+      if (error) throw new Error(error.message);
+    } catch (e: unknown) {
+      setOauthLoading(false);
+      setError(e instanceof Error ? e.message : "Impossible de lancer Google.");
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -75,7 +138,7 @@ export default function AuthPage() {
         style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
       >
         <Link href="/" className="font-bold text-xl" style={{ color: "var(--wg-green)" }}>
-          Webgen
+          Webgenx
         </Link>
       </header>
 
@@ -116,8 +179,28 @@ export default function AuthPage() {
           <p className="text-sm mb-6" style={{ color: "var(--wg-text-2)" }}>
             {mode === "login"
               ? "Connectez-vous pour accéder à vos sites."
-              : "Rejoignez Webgen et créez des sites en secondes."}
+              : "Rejoignez Webgenx et créez des sites en secondes."}
           </p>
+
+          <button
+            type="button"
+            onClick={signInWithGoogle}
+            disabled={loading || oauthLoading}
+            className="w-full py-2.5 rounded-lg text-sm font-semibold border transition-opacity hover:opacity-90 disabled:opacity-60"
+            style={{
+              borderColor: "var(--wg-border)",
+              backgroundColor: "var(--wg-bg)",
+              color: "var(--wg-text)",
+            }}
+          >
+            {oauthLoading ? "Connexion Google…" : "Continuer avec Google"}
+          </button>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1" style={{ backgroundColor: "var(--wg-border)" }} />
+            <span className="text-xs" style={{ color: "var(--wg-text-3)" }}>ou</span>
+            <div className="h-px flex-1" style={{ backgroundColor: "var(--wg-border)" }} />
+          </div>
 
           <form onSubmit={submit} className="flex flex-col gap-4">
             {mode === "register" && (
@@ -196,7 +279,7 @@ export default function AuthPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || oauthLoading}
               className="btn-green w-full py-2.5 rounded-lg text-sm font-semibold mt-2"
             >
               {loading

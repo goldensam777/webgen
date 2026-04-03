@@ -57,17 +57,17 @@ export function Stats({
               <CanvasElement id={`stat-${i}`}>
                 <div className="flex flex-col items-center text-center px-10 py-6">
                   <span className="text-4xl md:text-5xl font-bold" style={{ color: valueColor }}>
-                    {item.value}
+                    <EditableText field={`items.${i}.value`} value={item.value} />
                   </span>
                   <span
                     className="mt-1 text-sm font-semibold uppercase tracking-wide"
                     style={{ color: labelColor }}
                   >
-                    {item.label}
+                    <EditableText field={`items.${i}.label`} value={item.label} />
                   </span>
                   {item.description && (
                     <span className="mt-1 text-xs max-w-[140px]" style={{ color: descriptionColor }}>
-                      {item.description}
+                      <EditableText field={`items.${i}.description`} value={item.description} />
                     </span>
                   )}
                 </div>

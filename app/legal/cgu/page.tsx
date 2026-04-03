@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Conditions Générales d'Utilisation — Webgen",
-  description: "Les conditions d'utilisation du service Webgen.",
+  title: "Conditions Générales d'Utilisation — Webgenx",
+  description: "Les conditions d'utilisation du service Webgenx.",
   robots: { index: true, follow: true },
 };
 
@@ -15,7 +15,7 @@ export default function CGUPage() {
         style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
       >
         <Link href="/" className="font-bold text-xl" style={{ color: "var(--wg-green)" }}>
-          Webgen
+          Webgenx
         </Link>
         <Link href="/" className="text-sm hover:opacity-70 transition-opacity" style={{ color: "var(--wg-text-2)" }}>
           ← Retour
@@ -30,12 +30,12 @@ export default function CGUPage() {
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>1. Objet</h2>
-            <p>Les présentes Conditions Générales d&apos;Utilisation (CGU) régissent l&apos;accès et l&apos;utilisation du service Webgen, plateforme de création de sites web par intelligence artificielle. En créant un compte ou en utilisant le service, vous acceptez ces CGU dans leur intégralité.</p>
+            <p>Les présentes Conditions Générales d&apos;Utilisation (CGU) régissent l&apos;accès et l&apos;utilisation du service Webgenx, plateforme de création de sites web par intelligence artificielle. En créant un compte ou en utilisant le service, vous acceptez ces CGU dans leur intégralité.</p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>2. Description du service</h2>
-            <p>Webgen permet de générer, personnaliser et publier des sites web en décrivant son projet en langage naturel. Le service est fourni &quot;tel quel&quot; et peut être modifié ou interrompu à tout moment, avec un préavis raisonnable.</p>
+            <p>Webgenx permet de générer, personnaliser et publier des sites web en décrivant son projet en langage naturel. Le service est fourni &quot;tel quel&quot; et peut être modifié ou interrompu à tout moment, avec un préavis raisonnable.</p>
           </section>
 
           <section>
@@ -45,7 +45,7 @@ export default function CGUPage() {
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>4. Utilisation acceptable</h2>
-            <p className="mb-3">Vous vous engagez à ne pas utiliser Webgen pour :</p>
+            <p className="mb-3">Vous vous engagez à ne pas utiliser Webgenx pour :</p>
             <ul className="list-disc list-inside flex flex-col gap-2 ml-2">
               <li>Créer des contenus illégaux, diffamatoires, frauduleux ou portant atteinte à des droits tiers</li>
               <li>Distribuer des logiciels malveillants ou du spam</li>
@@ -56,18 +56,18 @@ export default function CGUPage() {
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>5. Propriété intellectuelle</h2>
-            <p>Les sites et contenus que vous créez via Webgen vous appartiennent. Vous conservez tous les droits sur vos textes, images et données. En utilisant le service, vous accordez à Webgen une licence limitée pour stocker et afficher votre contenu dans le cadre du service.</p>
-            <p className="mt-2">Le code source de Webgen, ses interfaces et son infrastructure restent la propriété exclusive de leurs auteurs.</p>
+            <p>Les sites et contenus que vous créez via Webgenx vous appartiennent. Vous conservez tous les droits sur vos textes, images et données. En utilisant le service, vous accordez à Webgenx une licence limitée pour stocker et afficher votre contenu dans le cadre du service.</p>
+            <p className="mt-2">Le code source de Webgenx, ses interfaces et son infrastructure restent la propriété exclusive de leurs auteurs.</p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>6. Limitation de responsabilité</h2>
-            <p>Webgen ne peut être tenu responsable des dommages indirects résultant de l&apos;utilisation ou de l&apos;impossibilité d&apos;utiliser le service. La responsabilité totale de Webgen est limitée au montant payé par l&apos;utilisateur au cours des 12 derniers mois.</p>
+            <p>Webgenx ne peut être tenu responsable des dommages indirects résultant de l&apos;utilisation ou de l&apos;impossibilité d&apos;utiliser le service. La responsabilité totale de Webgenx est limitée au montant payé par l&apos;utilisateur au cours des 12 derniers mois.</p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>7. Résiliation</h2>
-            <p>Vous pouvez supprimer votre compte à tout moment depuis votre tableau de bord. Webgen se réserve le droit de suspendre ou supprimer tout compte en cas de violation des présentes CGU, sans préavis.</p>
+            <p>Vous pouvez supprimer votre compte à tout moment depuis votre tableau de bord. Webgenx se réserve le droit de suspendre ou supprimer tout compte en cas de violation des présentes CGU, sans préavis.</p>
           </section>
 
           <section>
@@ -82,7 +82,7 @@ export default function CGUPage() {
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>10. Contact</h2>
-            <p>Pour toute question relative aux présentes CGU : <strong>contact@webgen.app</strong></p>
+            <p>Pour toute question relative aux présentes CGU : <strong>contact@webgenx.app</strong></p>
           </section>
 
         </div>

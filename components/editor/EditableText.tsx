@@ -14,6 +14,7 @@ export function EditableText({ field, value, hrefField, hrefValue }: Props) {
   const { isEditing, fieldStyles, onUpdate, onStyleUpdate } = useEditable();
   const ref              = useRef<HTMLSpanElement>(null);
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLSpanElement | null>(null);
 
   /* ── Close-lifecycle refs (never stale, no re-render cost) ── */
@@ -94,17 +95,26 @@ export function EditableText({ field, value, hrefField, hrefValue }: Props) {
         suppressContentEditableWarning
         style={{
           ...appliedStyle,
-          outline:         focused ? "2px solid #10b981" : "1.5px dashed rgba(16,185,129,0.5)",
+          color:           "inherit",
+          font:            "inherit",
+          lineHeight:      "inherit",
+          outline:         focused
+            ? "2px solid #10b981"
+            : hovered
+              ? "1px dashed rgba(16,185,129,0.45)"
+              : "1px solid transparent",
           outlineOffset:   "2px",
           borderRadius:    "3px",
           cursor:          "text",
           minWidth:        "1em",
           display:         "inline",
           whiteSpace:      "pre-wrap",
-          backgroundColor: focused ? "rgba(16,185,129,0.06)" : "transparent",
-          transition:      "outline 0.1s, background-color 0.1s",
+          backgroundColor: "transparent",
+          transition:      "outline 0.1s",
         }}
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.focus(); }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         onFocus={(e) => { setFocused(true); setAnchorEl(e.currentTarget); }}
         onBlur={(e)   => onSpanBlur(e.currentTarget.textContent ?? "")}
         onKeyDown={(e) => {

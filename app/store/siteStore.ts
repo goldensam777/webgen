@@ -65,6 +65,9 @@ interface SiteStore {
   removeSection:   (section: string) => void;
   reorderSections: (sections: string[]) => void;
 
+  /* patch page without resetting activePageId or history */
+  patchActivePage: (sections: string[], data: Record<string, Record<string, unknown>>) => void;
+
   /* animations */
   setAnimation:    (section: string, anim: SectionAnimation) => void;
   removeAnimation: (section: string, animId: string) => void;
@@ -204,7 +207,7 @@ export const useSiteStore = create<SiteStore>()(
         const page = activePage(s.config, s.activePageId);
         if (!page) return s;
         const prev    = page.data[section] ?? {};
-        const newData = typeof updater === "function" ? updater(prev) : updater;
+        const newData = typeof updater === "function" ? updater(prev) : { ...prev, ...updater };
         return {
           ...snapshot(s),
           config: mapPage(s.config, page.id, p => ({
@@ -234,6 +237,16 @@ export const useSiteStore = create<SiteStore>()(
           config: mapPage(s.config, page.id, p => ({
             ...p, sections: p.sections.filter(v => v !== section),
           })),
+        };
+      }),
+
+      patchActivePage: (sections, data) => set((s) => {
+        if (!s.config) return s;
+        const page = activePage(s.config, s.activePageId);
+        if (!page) return s;
+        return {
+          ...snapshot(s),
+          config: mapPage(s.config, page.id, p => ({ ...p, sections, data })),
         };
       }),
 

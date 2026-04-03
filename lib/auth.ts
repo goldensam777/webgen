@@ -7,7 +7,7 @@ const JWT_SECRET = new TextEncoder().encode(
 
 /** Lit le JWT depuis le cookie httpOnly ou le header Authorization Bearer */
 export async function getUserId(req: NextRequest): Promise<string | null> {
-  const fromCookie = req.cookies.get("webgen-token")?.value ?? null;
+  const fromCookie = req.cookies.get("webgenx-token")?.value ?? null;
   const fromHeader = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/, "") || null;
   const token = fromCookie ?? fromHeader;
 

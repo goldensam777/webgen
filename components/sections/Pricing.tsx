@@ -75,7 +75,7 @@ export function Pricing({
                     className="font-semibold text-sm"
                     style={{ color: isHighlighted ? "rgba(255,255,255,0.85)" : "var(--color-text-muted)" }}
                   >
-                    {plan.name}
+                    <EditableText field={`plans.${i}.name`} value={plan.name} />
                   </span>
                   {plan.badgeLabel && (
                     <span
@@ -85,7 +85,7 @@ export function Pricing({
                         color: "#ffffff",
                       }}
                     >
-                      {plan.badgeLabel}
+                      <EditableText field={`plans.${i}.badgeLabel`} value={plan.badgeLabel} />
                     </span>
                   )}
                 </div>
@@ -95,14 +95,14 @@ export function Pricing({
                     className="text-4xl font-bold break-words"
                     style={{ color: isHighlighted ? "#ffffff" : "var(--color-text)" }}
                   >
-                    {typeof plan.price === "number" ? `$${plan.price}` : plan.price}
+                    <EditableText field={`plans.${i}.price`} value={String(plan.price)} />
                   </span>
                   {plan.period && (
                     <span
                       className="text-sm ml-1"
                       style={{ color: isHighlighted ? "rgba(255,255,255,0.6)" : "var(--color-text-muted)" }}
                     >
-                      /{plan.period}
+                      <EditableText field={`plans.${i}.period`} value={plan.period} />
                     </span>
                   )}
                 </div>
@@ -112,7 +112,7 @@ export function Pricing({
                     className="text-sm mb-6 break-words"
                     style={{ color: isHighlighted ? "rgba(255,255,255,0.7)" : "var(--color-text-muted)" }}
                   >
-                    {plan.description}
+                    <EditableText field={`plans.${i}.description`} value={plan.description} />
                   </p>
                 )}
 
@@ -127,7 +127,7 @@ export function Pricing({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                       <span className="break-words" style={{ color: isHighlighted ? "rgba(255,255,255,0.85)" : "var(--color-text-muted)" }}>
-                        {feature}
+                        <EditableText field={`plans.${i}.features.${j}`} value={feature} />
                       </span>
                     </li>
                   ))}
@@ -135,7 +135,12 @@ export function Pricing({
 
                 <a href={plan.ctaHref ?? "#"}>
                   <Button isDefault={isHighlighted ? false : true} className="w-full justify-center">
-                    {plan.ctaLabel ?? "Commencer"}
+                    <EditableText
+                      field={`plans.${i}.ctaLabel`}
+                      value={plan.ctaLabel ?? "Commencer"}
+                      hrefField={`plans.${i}.ctaHref`}
+                      hrefValue={plan.ctaHref}
+                    />
                   </Button>
                 </a>
               </Card>

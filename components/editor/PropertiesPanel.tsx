@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { SECTION_FIELDS, type FieldDef } from "@/lib/section-fields";
 import { useSiteStore, useActivePage } from "@/app/store/siteStore";
+import { ColorPicker } from "@/components/ui/ColorPicker";
 import {
   ANIMATIONS, ANIMATION_MAP,
   type SectionAnimation, type AnimationTrigger, type AnimationEasing,
@@ -135,107 +136,151 @@ export function PropertiesPanel({ section, onMoveUp, onMoveDown, onRemove, onClo
             Pas de champs configurables pour cette section.
           </p>
         ) : (
-          def.fields.map((field) => {
+          (() => {
+            let colorSeparatorShown = false;
+            return def.fields.map((field) => {
 
-            /* ── Array field ── */
-            if (field.type === "array") {
-              const items      = Array.isArray(data[field.key])
-                ? (data[field.key] as Record<string, unknown>[])
-                : [];
-              const defaultItem = Object.fromEntries(
-                (field.itemFields ?? []).map((f) => [f.key, ""])
-              );
+              /* ── Color separator (shown once before first color field) ── */
+              let separator: React.ReactNode = null;
+              if (field.type === "color" && !colorSeparatorShown) {
+                colorSeparatorShown = true;
+                separator = (
+                  <p className="text-xs font-semibold uppercase tracking-wide pt-2 pb-1"
+                    style={{ color: "var(--wg-text-3)", borderTop: "1px solid var(--wg-border)" }}>
+                    Couleurs
+                  </p>
+                );
+              }
+
+              /* ── Array field ── */
+              if (field.type === "array") {
+                const items      = Array.isArray(data[field.key])
+                  ? (data[field.key] as Record<string, unknown>[])
+                  : [];
+                const defaultItem = Object.fromEntries(
+                  (field.itemFields ?? []).map((f) => [f.key, ""])
+                );
+
+                return (
+                  <React.Fragment key={field.key}>
+                    {separator}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold" style={{ color: "var(--wg-text-2)" }}>
+                          {field.label}
+                          <span className="ml-1.5 font-normal opacity-50">{items.length}</span>
+                        </label>
+                        <AddBtn onClick={() => addArrayItem(field.key, defaultItem)} />
+                      </div>
+
+                      {items.length === 0 && (
+                        <p className="text-xs italic py-2 text-center" style={{ color: "var(--wg-text-3)" }}>
+                          Aucun élément — cliquez +
+                        </p>
+                      )}
+
+                      {items.map((item, idx) => (
+                        <ArrayItemCard
+                          key={idx}
+                          idx={idx}
+                          item={item}
+                          itemLabel={field.itemLabel ?? "Item"}
+                          itemFields={field.itemFields ?? []}
+                          onUpdate={(itemKey, val) => updateArrayItem(field.key, idx, itemKey, val)}
+                          onRemove={() => removeArrayItem(field.key, idx)}
+                        />
+                      ))}
+                    </div>
+                  </React.Fragment>
+                );
+              }
+
+              /* ── Color field ── */
+              if (field.type === "color") {
+                const rawVal = data[field.key];
+                const value  = rawVal !== undefined && rawVal !== null ? String(rawVal) : "";
+                return (
+                  <React.Fragment key={field.key}>
+                    {separator}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold" style={{ color: "var(--wg-text-2)" }}>
+                        {field.label}
+                      </span>
+                      <ColorPicker
+                        value={value || "#ffffff"}
+                        onChange={(v) => update(field.key, v)}
+                        size="sm"
+                        showPresets={false}
+                        showInput
+                      />
+                    </div>
+                  </React.Fragment>
+                );
+              }
+
+              /* ── Flat field ── */
+              const rawVal = data[field.key];
+              const value  = rawVal !== undefined && rawVal !== null ? String(rawVal) : "";
 
               return (
-                <div key={field.key} className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
+                <React.Fragment key={field.key}>
+                  {separator}
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold" style={{ color: "var(--wg-text-2)" }}>
                       {field.label}
-                      <span className="ml-1.5 font-normal opacity-50">{items.length}</span>
+                      {field.type === "url" && (
+                        <span className="ml-1 font-normal opacity-60">url</span>
+                      )}
                     </label>
-                    <AddBtn onClick={() => addArrayItem(field.key, defaultItem)} />
+
+                    {field.type === "textarea" ? (
+                      <textarea
+                        value={value}
+                        rows={3}
+                        onChange={(e) => update(field.key, e.target.value)}
+                        className="text-sm rounded-lg border px-3 py-2 focus:outline-none resize-none leading-relaxed"
+                        style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wg-green)")}
+                        onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--wg-border)")}
+                      />
+                    ) : field.type === "select" ? (
+                      <select
+                        value={value}
+                        onChange={(e) => update(field.key, e.target.value)}
+                        className="text-sm rounded-lg border px-3 py-2 focus:outline-none"
+                        style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
+                      >
+                        {field.options?.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    ) : field.type === "url" ? (
+                      <input
+                        type="text"
+                        value={value}
+                        placeholder="https://..."
+                        onChange={(e) => update(field.key, e.target.value)}
+                        className="text-sm rounded-lg border px-3 py-2 focus:outline-none font-mono"
+                        style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wg-green)")}
+                        onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--wg-border)")}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={value}
+                        onChange={(e) => update(field.key, e.target.value)}
+                        className="text-sm rounded-lg border px-3 py-2 focus:outline-none"
+                        style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wg-green)")}
+                        onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--wg-border)")}
+                      />
+                    )}
                   </div>
-
-                  {items.length === 0 && (
-                    <p className="text-xs italic py-2 text-center" style={{ color: "var(--wg-text-3)" }}>
-                      Aucun élément — cliquez +
-                    </p>
-                  )}
-
-                  {items.map((item, idx) => (
-                    <ArrayItemCard
-                      key={idx}
-                      idx={idx}
-                      item={item}
-                      itemLabel={field.itemLabel ?? "Item"}
-                      itemFields={field.itemFields ?? []}
-                      onUpdate={(itemKey, val) => updateArrayItem(field.key, idx, itemKey, val)}
-                      onRemove={() => removeArrayItem(field.key, idx)}
-                    />
-                  ))}
-                </div>
+                </React.Fragment>
               );
-            }
-
-            /* ── Flat field ── */
-            const rawVal = data[field.key];
-            const value  = rawVal !== undefined && rawVal !== null ? String(rawVal) : "";
-
-            return (
-              <div key={field.key} className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold" style={{ color: "var(--wg-text-2)" }}>
-                  {field.label}
-                  {field.type === "url" && (
-                    <span className="ml-1 font-normal opacity-60">url</span>
-                  )}
-                </label>
-
-                {field.type === "textarea" ? (
-                  <textarea
-                    value={value}
-                    rows={3}
-                    onChange={(e) => update(field.key, e.target.value)}
-                    className="text-sm rounded-lg border px-3 py-2 focus:outline-none resize-none leading-relaxed"
-                    style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wg-green)")}
-                    onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--wg-border)")}
-                  />
-                ) : field.type === "select" ? (
-                  <select
-                    value={value}
-                    onChange={(e) => update(field.key, e.target.value)}
-                    className="text-sm rounded-lg border px-3 py-2 focus:outline-none"
-                    style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
-                  >
-                    {field.options?.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                ) : field.type === "url" ? (
-                  <input
-                    type="text"
-                    value={value}
-                    placeholder="https://..."
-                    onChange={(e) => update(field.key, e.target.value)}
-                    className="text-sm rounded-lg border px-3 py-2 focus:outline-none font-mono"
-                    style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wg-green)")}
-                    onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--wg-border)")}
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => update(field.key, e.target.value)}
-                    className="text-sm rounded-lg border px-3 py-2 focus:outline-none"
-                    style={{ backgroundColor: "var(--wg-bg)", borderColor: "var(--wg-border)", color: "var(--wg-text)" }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--wg-green)")}
-                    onBlur={(e)  => (e.currentTarget.style.borderColor = "var(--wg-border)")}
-                  />
-                )}
-              </div>
-            );
-          })
+            });
+          })()
         )}
       </div>}
     </div>

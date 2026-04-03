@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { SignJWT } from "jose";
 import { supabase } from "@/lib/supabase";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "webgen-dev-secret-change-in-prod"
-);
+import { signUserToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   const { email, password, name } = await req.json();
@@ -39,14 +35,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Erreur lors de la création du compte." }, { status: 500 });
   }
 
-  const token = await new SignJWT({ sub: user.id, email: user.email, name: user.name })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("30d")
-    .sign(JWT_SECRET);
+  const token = await signUserToken({ id: user.id, email: user.email, name: user.name });
 
   const res = NextResponse.json({ user: { id: user.id, email: user.email, name: user.name }, token });
-  res.cookies.set("webgen-token", token, {
+  res.cookies.set("webgenx-token", token, {
     httpOnly: true,
     sameSite: "lax",
     path:     "/",

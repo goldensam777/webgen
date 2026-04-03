@@ -66,15 +66,17 @@ export function Features({
               <Card hoverable={hoverable} shadow="sm">
                 {item.icon && (
                   <div
-                    className="inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4"
+                    className="inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4 text-xl"
                     style={{ backgroundColor: "var(--color-primary)", opacity: 0.15 }}
-                  />
+                  >
+                    {typeof item.icon === "string" ? item.icon : null}
+                  </div>
                 )}
                 <h3 className="font-semibold text-base mb-2" style={{ color: itemTitleColor }}>
-                  {item.title}
+                  <EditableText field={`items.${i}.title`} value={item.title} />
                 </h3>
                 <p className="text-sm leading-relaxed" style={{ color: itemDescColor }}>
-                  {item.description}
+                  <EditableText field={`items.${i}.description`} value={item.description} />
                 </p>
               </Card>
             </CanvasElement>

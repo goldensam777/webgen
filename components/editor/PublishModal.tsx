@@ -117,7 +117,7 @@ export function PublishModal({ isOpen, onClose }: PublishModalProps) {
               placeholder="mon-site"
               maxLength={40}
             />
-            <span className="text-sm shrink-0" style={{ color: "var(--wg-text-3)" }}>.webgen.app</span>
+            <span className="text-sm shrink-0" style={{ color: "var(--wg-text-3)" }}>.webgenx.app</span>
           </div>
 
           {error && (

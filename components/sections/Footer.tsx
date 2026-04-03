@@ -1,7 +1,13 @@
-import Link from "next/link";
 import React from "react";
 import { EditableText } from "../editor/EditableText";
 import { CanvasElement } from "../editor/CanvasElement";
+
+function LogoRender({ logo, logoSrc }: { logo: string; logoSrc?: string }) {
+  if (logoSrc) return <img src={logoSrc} alt={logo} className="h-8" />;
+  if (logo.trimStart().startsWith("<svg"))
+    return <span dangerouslySetInnerHTML={{ __html: logo }} />;
+  return <EditableText field="logo" value={logo} />;
+}
 
 interface FooterLinkGroup {
   section: string;
@@ -29,13 +35,13 @@ export function Footer({
   description,
   linkGroups = [],
   copyright,
-  bgColor = "#111827",
-  borderColor = "#1f2937",
-  logoColor = "#ffffff",
-  descriptionColor = "#9ca3af",
-  sectionTitleColor = "#e5e7eb",
-  linkColor = "#9ca3af",
-  copyrightColor = "#6b7280",
+  bgColor = "var(--color-surface)",
+  borderColor = "var(--color-border)",
+  logoColor = "var(--color-text)",
+  descriptionColor = "var(--color-text-muted)",
+  sectionTitleColor = "var(--color-text)",
+  linkColor = "var(--color-text-muted)",
+  copyrightColor = "var(--color-text-muted)",
 }: FooterProps) {
   return (
     <footer className="px-6 pt-16 pb-8" style={{ backgroundColor: bgColor }}>
@@ -44,9 +50,9 @@ export function Footer({
           {/* Brand */}
           <CanvasElement id="brand">
             <div className="flex flex-col gap-4">
-              <Link href="/" className="font-bold text-xl" style={{ color: logoColor }}>
-                {logoSrc ? <img src={logoSrc} alt={logo} className="h-8" /> : <EditableText field="logo" value={logo} />}
-              </Link>
+              <a href="/" className="font-bold text-xl" style={{ color: logoColor }}>
+                <LogoRender logo={logo} logoSrc={logoSrc} />
+              </a>
               {description && (
                 <p className="text-sm leading-relaxed max-w-xs break-words" style={{ color: descriptionColor }}>
                   <EditableText field="description" value={description} />
@@ -60,7 +66,7 @@ export function Footer({
             <CanvasElement id={`linkGroup-${i}`} key={i}>
               <div className="flex flex-col gap-3">
                 <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: sectionTitleColor }}>
-                  {group.section}
+                  <EditableText field={`linkGroups.${i}.section`} value={group.section} />
                 </p>
                 <ul className="flex flex-col gap-2">
                   {group.items.map((link, j) => (
@@ -70,7 +76,7 @@ export function Footer({
                         className="text-sm hover:text-white transition-colors"
                         style={{ color: linkColor }}
                       >
-                        {link.label}
+                        <EditableText field={`linkGroups.${i}.items.${j}.label`} value={link.label} hrefField={`linkGroups.${i}.items.${j}.href`} hrefValue={link.href} />
                       </a>
                     </li>
                   ))}

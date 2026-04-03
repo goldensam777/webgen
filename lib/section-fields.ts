@@ -1,4 +1,4 @@
-export type FieldType = "text" | "textarea" | "url" | "select" | "array";
+export type FieldType = "text" | "textarea" | "url" | "select" | "array" | "color";
 
 export interface FieldDef {
   key:         string;
@@ -31,6 +31,10 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
           { key: "href",  label: "URL",   type: "url"  },
         ],
       },
+      { key: "bgColor",      label: "Fond",         type: "color" },
+      { key: "logoColor",    label: "Logo",          type: "color" },
+      { key: "textColor",    label: "Liens",         type: "color" },
+      { key: "borderColor",  label: "Bordure",       type: "color" },
     ],
   },
 
@@ -46,6 +50,10 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
       { key: "secondaryCtaLabel",   label: "Bouton secondaire",  type: "text"     },
       { key: "secondaryCtaHref",    label: "Lien secondaire",    type: "url"      },
       { key: "align",               label: "Alignement",         type: "select",  options: ["center", "left"] },
+      { key: "bgColor",             label: "Fond",               type: "color" },
+      { key: "titleColor",          label: "Titre",              type: "color" },
+      { key: "subtitleColor",       label: "Sous-titre",         type: "color" },
+      { key: "descriptionColor",    label: "Description",        type: "color" },
     ],
   },
 
@@ -64,6 +72,11 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
           { key: "description", label: "Description", type: "textarea" },
         ],
       },
+      { key: "bgColor",        label: "Fond",            type: "color" },
+      { key: "titleColor",     label: "Titre",           type: "color" },
+      { key: "subtitleColor",  label: "Sous-titre",      type: "color" },
+      { key: "itemTitleColor", label: "Titre des items", type: "color" },
+      { key: "itemDescColor",  label: "Texte des items", type: "color" },
     ],
   },
 
@@ -83,6 +96,12 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
           { key: "description", label: "Description", type: "text" },
         ],
       },
+      { key: "bgColor",          label: "Fond",        type: "color" },
+      { key: "titleColor",       label: "Titre",       type: "color" },
+      { key: "subtitleColor",    label: "Sous-titre",  type: "color" },
+      { key: "valueColor",       label: "Valeurs",     type: "color" },
+      { key: "labelColor",       label: "Labels",      type: "color" },
+      { key: "descriptionColor", label: "Description", type: "color" },
     ],
   },
 
@@ -102,6 +121,12 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
           { key: "role",  label: "Rôle",      type: "text"     },
         ],
       },
+      { key: "bgColor",       label: "Fond",       type: "color" },
+      { key: "titleColor",    label: "Titre",      type: "color" },
+      { key: "subtitleColor", label: "Sous-titre", type: "color" },
+      { key: "quoteColor",    label: "Citations",  type: "color" },
+      { key: "nameColor",     label: "Noms",       type: "color" },
+      { key: "roleColor",     label: "Rôles",      type: "color" },
     ],
   },
 
@@ -124,6 +149,9 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
           { key: "ctaHref",     label: "Lien CTA",     type: "url"      },
         ],
       },
+      { key: "bgColor",       label: "Fond",       type: "color" },
+      { key: "titleColor",    label: "Titre",      type: "color" },
+      { key: "subtitleColor", label: "Sous-titre", type: "color" },
     ],
   },
 
@@ -142,6 +170,9 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
           { key: "content", label: "Réponse",  type: "textarea" },
         ],
       },
+      { key: "bgColor",       label: "Fond",       type: "color" },
+      { key: "titleColor",    label: "Titre",      type: "color" },
+      { key: "subtitleColor", label: "Sous-titre", type: "color" },
     ],
   },
 
@@ -154,6 +185,8 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
       { key: "ctaHref",           label: "Lien principal",    type: "url"      },
       { key: "secondaryCtaLabel", label: "Bouton secondaire", type: "text"     },
       { key: "secondaryCtaHref",  label: "Lien secondaire",   type: "url"      },
+      { key: "bgColor",           label: "Fond",              type: "color" },
+      { key: "titleColor",        label: "Titre",             type: "color" },
     ],
   },
 
@@ -166,15 +199,25 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
       { key: "phone",    label: "Téléphone",  type: "text"     },
       { key: "address",  label: "Adresse",    type: "textarea" },
       { key: "ctaLabel", label: "Bouton",     type: "text"     },
+      { key: "bgColor",       label: "Fond",       type: "color" },
+      { key: "titleColor",    label: "Titre",      type: "color" },
+      { key: "subtitleColor", label: "Sous-titre", type: "color" },
     ],
   },
 
   footer: {
     label: "Footer",
     fields: [
-      { key: "logo",        label: "Nom / Logo", type: "text"     },
+      { key: "logo",        label: "Nom / Logo",  type: "text"     },
       { key: "description", label: "Description", type: "textarea" },
-      { key: "copyright",   label: "Copyright",  type: "text"     },
+      { key: "copyright",   label: "Copyright",   type: "text"     },
+      { key: "bgColor",            label: "Fond",          type: "color" },
+      { key: "logoColor",          label: "Logo",          type: "color" },
+      { key: "descriptionColor",   label: "Description",   type: "color" },
+      { key: "sectionTitleColor",  label: "Titres groupes",type: "color" },
+      { key: "linkColor",          label: "Liens",         type: "color" },
+      { key: "copyrightColor",     label: "Copyright",     type: "color" },
+      { key: "borderColor",        label: "Bordure",       type: "color" },
     ],
   },
 
@@ -184,6 +227,8 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
       { key: "title",    label: "Titre",      type: "text"     },
       { key: "subtitle", label: "Sous-titre", type: "textarea" },
       { key: "ctaLabel", label: "Bouton",     type: "text"     },
+      { key: "bgColor",      label: "Fond",       type: "color" },
+      { key: "titleColor",   label: "Titre",      type: "color" },
     ],
   },
 
@@ -193,6 +238,7 @@ export const SECTION_FIELDS: Record<string, SectionDef> = {
       { key: "greeting",    label: "Message d'accueil", type: "textarea" },
       { key: "placeholder", label: "Placeholder",       type: "text"     },
       { key: "buttonLabel", label: "Label bouton",      type: "text"     },
+      { key: "bgColor",     label: "Fond",              type: "color" },
     ],
   },
 };

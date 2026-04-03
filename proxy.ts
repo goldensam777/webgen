@@ -11,9 +11,9 @@ const PROTECTED = ["/create", "/dashboard", "/manage"];
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  /* ── Sous-domaine webgen.app → /s/[slug] ── */
+  /* ── Sous-domaine webgenx.app → /s/[slug] ── */
   const host  = request.headers.get("host") ?? "";
-  const match = host.match(/^([a-z0-9-]+)\.webgen\.app$/);
+  const match = host.match(/^([a-z0-9-]+)\.webgenx\.app$/);
   if (match && match[1] !== "www") {
     if (!pathname.startsWith("/s/")) {
       const url    = request.nextUrl.clone();
@@ -25,7 +25,7 @@ export async function proxy(request: NextRequest) {
 
   /* ── Protection des routes authentifiées ── */
   if (PROTECTED.some(p => pathname.startsWith(p))) {
-    const token = request.cookies.get("webgen-token")?.value;
+    const token = request.cookies.get("webgenx-token")?.value;
     const authUrl = new URL("/auth", request.url);
     authUrl.searchParams.set("redirect", pathname);
 
@@ -35,7 +35,7 @@ export async function proxy(request: NextRequest) {
       await jwtVerify(token, JWT_SECRET);
     } catch {
       const res = NextResponse.redirect(authUrl);
-      res.cookies.set("webgen-token", "", { maxAge: 0, path: "/" });
+      res.cookies.set("webgenx-token", "", { maxAge: 0, path: "/" });
       return res;
     }
   }

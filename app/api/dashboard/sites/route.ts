@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     slug:        s.slug,
     title:       s.title || s.slug,
     publishedAt: s.published_at,
-    url:         `https://${s.slug}.webgen.app`,
+    url:         `https://${s.slug}.webgenx.app`,
   }));
 
   return NextResponse.json({ sites });

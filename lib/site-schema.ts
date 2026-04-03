@@ -1,3 +1,5 @@
+import sanitizeHtml from "sanitize-html";
+
 type UnknownRecord = Record<string, unknown>;
 
 export interface SitePageLike {
@@ -11,8 +13,17 @@ function asRecord(value: unknown): UnknownRecord {
     : {};
 }
 
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value : undefined;
+const SANITIZE_OPTIONS = {
+  allowedTags: ["b", "i", "em", "strong", "a", "br", "span"],
+  allowedAttributes: {
+    a: ["href", "target", "rel"],
+    span: ["style", "class"],
+  },
+};
+
+function asSafeString(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+  return sanitizeHtml(value.trim(), SANITIZE_OPTIONS);
 }
 
 function asObjectArray(value: unknown): UnknownRecord[] {
@@ -37,7 +48,7 @@ export function sectionAnchorId(section: string): string {
 
 export function sanitizePageSlug(rawSlug: unknown, pageName: unknown, isHome = false): string {
   if (isHome) return "";
-  const base = asString(rawSlug) ?? asString(pageName) ?? "page";
+  const base = asSafeString(rawSlug) ?? asSafeString(pageName) ?? "page";
   return base
     .toLowerCase()
     .normalize("NFD")
@@ -51,93 +62,109 @@ export function normalizeSectionData(section: string, rawData: unknown): Unknown
   const data = asRecord(rawData);
   const normalized: UnknownRecord = { ...data };
 
+  if (key === "hero") {
+    normalized.title = asSafeString(data.title) ?? "";
+    normalized.subtitle = asSafeString(data.subtitle) ?? "";
+    normalized.description = asSafeString(data.description) ?? "";
+    normalized.badgeLabel = asSafeString(data.badgeLabel) ?? "";
+    normalized.ctaLabel = asSafeString(data.ctaLabel) ?? "";
+    normalized.ctaHref = asSafeString(data.ctaHref) ?? "#";
+    normalized.secondaryCtaLabel = asSafeString(data.secondaryCtaLabel) ?? "";
+    normalized.secondaryCtaHref = asSafeString(data.secondaryCtaHref) ?? "#";
+    normalized.imageSrc = asSafeString(data.imageSrc) ?? "";
+    normalized.imageAlt = asSafeString(data.imageAlt) ?? asSafeString(data.title) ?? "";
+    normalized.align = data.align === "left" || data.align === "center" ? data.align : "center";
+  }
+
   if (key === "navbar") {
     normalized.links = asObjectArray(data.links).map((link) => ({
       ...link,
-      label: asString(link.label) ?? "",
-      href: asString(link.href) ?? "#",
+      label: asSafeString(link.label) ?? "",
+      href: asSafeString(link.href) ?? "#",
     }));
   }
 
   if (key === "features") {
     normalized.items = asObjectArray(data.items).map((item) => ({
       ...item,
-      title: asString(item.title) ?? "",
-      description: asString(item.description) ?? "",
+      title: asSafeString(item.title) ?? "",
+      description: asSafeString(item.description) ?? "",
     }));
   }
 
   if (key === "stats") {
     normalized.items = asObjectArray(data.items).map((item) => ({
       ...item,
-      value: asString(item.value) ?? "",
-      label: asString(item.label) ?? "",
-      description: asString(item.description),
+      value: asSafeString(item.value) ?? "",
+      label: asSafeString(item.label) ?? "",
+      description: asSafeString(item.description),
     }));
   }
 
   if (key === "testimonials") {
     normalized.items = asObjectArray(data.items).map((item) => ({
       ...item,
-      quote: asString(item.quote) ?? asString(item.content) ?? "",
-      name: asString(item.name) ?? "",
-      role: asString(item.role),
-      avatarSrc: asString(item.avatarSrc) ?? asString(item.avatar),
-      initials: asString(item.initials) ?? asString(item.name),
+      quote: asSafeString(item.quote) ?? asSafeString(item.content) ?? "",
+      name: asSafeString(item.name) ?? "",
+      role: asSafeString(item.role),
+      avatarSrc: asSafeString(item.avatarSrc) ?? asSafeString(item.avatar),
+      initials: asSafeString(item.initials) ?? asSafeString(item.name),
     }));
   }
 
   if (key === "pricing") {
     normalized.plans = asObjectArray(data.plans).map((plan) => ({
       ...plan,
-      name: asString(plan.name) ?? "",
+      name: asSafeString(plan.name) ?? "",
       price: typeof plan.price === "number" || typeof plan.price === "string" ? plan.price : "",
-      period: asString(plan.period),
-      description: asString(plan.description),
-      ctaLabel: asString(plan.ctaLabel) ?? "Commencer",
-      ctaHref: asString(plan.ctaHref) ?? "#",
+      period: asSafeString(plan.period),
+      description: asSafeString(plan.description),
+      ctaLabel: asSafeString(plan.ctaLabel) ?? "Commencer",
+      ctaHref: asSafeString(plan.ctaHref) ?? "#",
       features: asStringArray(plan.features),
+      badgeLabel: asSafeString(plan.badgeLabel) ?? "",
+      highlighted: !!plan.highlighted,
     }));
   }
 
   if (key === "faq") {
     normalized.items = asObjectArray(data.items).map((item) => ({
       ...item,
-      title: asString(item.title) ?? asString(item.question) ?? "",
-      content: asString(item.content) ?? asString(item.answer) ?? "",
+      title: asSafeString(item.title) ?? asSafeString(item.question) ?? "",
+      content: asSafeString(item.content) ?? asSafeString(item.answer) ?? "",
     }));
   }
 
   if (key === "cta") {
-    normalized.description = asString(data.description) ?? asString(data.subtitle);
-    normalized.ctaLabel = asString(data.ctaLabel) ?? asString(data.primaryCta);
-    normalized.ctaHref = asString(data.ctaHref) ?? asString(data.primaryCtaHref) ?? "#contact";
-    normalized.secondaryCtaLabel = asString(data.secondaryCtaLabel) ?? asString(data.secondaryCta);
-    normalized.secondaryCtaHref = asString(data.secondaryCtaHref) ?? "#";
+    normalized.description = asSafeString(data.description) ?? asSafeString(data.subtitle);
+    normalized.ctaLabel = asSafeString(data.ctaLabel) ?? asSafeString(data.primaryCta);
+    normalized.ctaHref = asSafeString(data.ctaHref) ?? asSafeString(data.primaryCtaHref) ?? "#contact";
+    normalized.secondaryCtaLabel = asSafeString(data.secondaryCtaLabel) ?? asSafeString(data.secondaryCta);
+    normalized.secondaryCtaHref = asSafeString(data.secondaryCtaHref) ?? "#";
   }
 
   if (key === "contact") {
-    normalized.email = asString(data.email);
-    normalized.phone = asString(data.phone);
-    normalized.address = asString(data.address);
-    normalized.ctaLabel = asString(data.ctaLabel) ?? "Envoyer";
+    normalized.email = asSafeString(data.email);
+    normalized.phone = asSafeString(data.phone);
+    normalized.address = asSafeString(data.address);
+    normalized.ctaLabel = asSafeString(data.ctaLabel) ?? "Envoyer";
   }
 
   if (key === "footer") {
-    normalized.description = asString(data.description) ?? asString(data.tagline);
+    normalized.description = asSafeString(data.description) ?? asSafeString(data.tagline);
     normalized.linkGroups = asObjectArray(data.linkGroups).map((group) => ({
       ...group,
-      section: asString(group.section) ?? "",
+      section: asSafeString(group.section) ?? "",
       items: asObjectArray(group.items).map((link) => ({
         ...link,
-        label: asString(link.label) ?? "",
-        href: asString(link.href) ?? "#",
+        label: asSafeString(link.label) ?? "",
+        href: asSafeString(link.href) ?? "#",
       })),
     }));
   }
 
   if (key === "blog") {
-    normalized.ctaLabel = asString(data.ctaLabel) ?? "Voir tous les articles";
+    normalized.ctaLabel = asSafeString(data.ctaLabel) ?? "Voir tous les articles";
   }
 
   return normalized;
@@ -169,7 +196,7 @@ export function normalizePagePayload(page: unknown, index = 0) {
 
   return {
     ...record,
-    name: asString(record.name) ?? (index === 0 ? "Accueil" : `Page ${index + 1}`),
+    name: asSafeString(record.name) ?? (index === 0 ? "Accueil" : `Page ${index + 1}`),
     slug: sanitizePageSlug(record.slug, record.name, index === 0),
     sections,
     data: normalizePageData(record, sections),
@@ -246,11 +273,17 @@ export function resolveSiteHref(
   const targetPage = findPageForHref(pathOnly, pages);
   if (!targetPage) return trimmed;
 
+  const targetSlug = targetPage.slug;
+
   if (!siteSlug) {
-    return `${targetPage.slug ? `/${targetPage.slug}` : "/"}${queryPart}${hashPart}`;
+    // Local / direct domain context
+    return `${targetSlug ? `/${targetSlug}` : "/"}${queryPart}${hashPart}`;
   }
 
-  return `${targetPage.slug ? `/s/${siteSlug}/${targetPage.slug}` : `/s/${siteSlug}`}${queryPart}${hashPart}`;
+  // Multi-site / Shared domain context (/s/[slug]/...)
+  // We ensure exactly one slash after /s/[siteSlug]
+  const cleanSiteSlug = siteSlug.replace(/^\/+/, "").replace(/\/+$/, "");
+  return `/s/${cleanSiteSlug}${targetSlug ? `/${targetSlug}` : ""}${queryPart}${hashPart}`;
 }
 
 function rewriteLinksDeep(

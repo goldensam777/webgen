@@ -12,39 +12,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const BASE_URL = "https://webgen.app";
+const BASE_URL = "https://webgenx.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
 
   title: {
-    default:  "Webgen — Créez votre site web en quelques secondes avec l'IA",
-    template: "%s | Webgen",
+    default:  "Webgenx — Créez votre site web en quelques secondes avec l'IA",
+    template: "%s | Webgenx",
   },
   description:
     "Générateur de sites web propulsé par l'IA. Décrivez votre projet en quelques mots, " +
     "obtenez un site complet avec contenu, mise en page et couleurs. Éditez visuellement et publiez en un clic.",
   keywords: [
     "générateur site web", "créer site web IA", "site web automatique",
-    "webgen", "générateur de sites web gratuit", "IA site web",
+    "webgenx", "générateur de sites web gratuit", "IA site web",
     "créer un site sans coder", "website builder IA",
   ],
-  authors:  [{ name: "Webgen", url: BASE_URL }],
-  creator:  "Webgen",
-  publisher: "Webgen",
+  authors:  [{ name: "Webgenx", url: BASE_URL }],
+  creator:  "Webgenx",
+  publisher: "Webgenx",
 
   openGraph: {
     type:        "website",
     locale:      "fr_FR",
     url:         BASE_URL,
-    siteName:    "Webgen",
-    title:       "Webgen — Créez votre site web en secondes avec l'IA",
+    siteName:    "Webgenx",
+    title:       "Webgenx — Créez votre site web en secondes avec l'IA",
     description: "Générateur de sites web IA. Décrivez votre projet, personnalisez, publiez.",
   },
 
   twitter: {
     card:        "summary_large_image",
-    title:       "Webgen — Créez votre site web en secondes",
+    title:       "Webgenx — Créez votre site web en secondes",
     description: "Générateur de sites web propulsé par l'IA. Sans coder, en quelques secondes.",
     creator:     "@webgen_app",
     site:        "@webgen_app",

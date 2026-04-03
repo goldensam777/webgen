@@ -134,7 +134,7 @@ function renderHero(d: SectionData, fs: Record<string, FieldStyle>, es: Record<s
 function renderFeatures(d: SectionData, fs: Record<string, FieldStyle>, es: Record<string, ElementStyle>): string {
   const title    = str(d.title);
   const subtitle = str(d.subtitle);
-  const items    = Array.isArray(d.items) ? d.items as { title: string; description: string }[] : [];
+  const items    = Array.isArray(d.items) ? d.items as { title: string; description: string; icon?: string }[] : [];
   const cols     = (d.columns as number) ?? 3;
   const bgColor  = str(d.bgColor, "var(--color-surface)");
   const titleColor = str(d.titleColor, "var(--color-text)");
@@ -142,6 +142,7 @@ function renderFeatures(d: SectionData, fs: Record<string, FieldStyle>, es: Reco
 
   const cards = items.map((item, i) => `
     <div class="${eClass(es[`feature-${i}`])}" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:.75rem;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.06)"${eStyle(es[`feature-${i}`])}>
+      ${item.icon ? `<div style="width:2.75rem;height:2.75rem;border-radius:.75rem;background:var(--color-primary);background-color:rgba(var(--color-primary-rgb, 37, 99, 235), 0.15);display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:1rem">${item.icon}</div>` : ""}
       <h3 style="font-weight:600;font-size:1rem;margin-bottom:.5rem;color:var(--color-text)">${item.title}</h3>
       <p style="font-size:.875rem;line-height:1.6;color:var(--color-text-muted)">${item.description}</p>
     </div>`).join("");

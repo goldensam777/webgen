@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — Webgen",
-  description: "Comment Webgen collecte, utilise et protège vos données personnelles.",
+  title: "Politique de confidentialité — Webgenx",
+  description: "Comment Webgenx collecte, utilise et protège vos données personnelles.",
   robots: { index: true, follow: true },
 };
 
@@ -15,7 +15,7 @@ export default function ConfidentialitePage() {
         style={{ backgroundColor: "var(--wg-bg-2)", borderColor: "var(--wg-border)" }}
       >
         <Link href="/" className="font-bold text-xl" style={{ color: "var(--wg-green)" }}>
-          Webgen
+          Webgenx
         </Link>
         <Link href="/" className="text-sm hover:opacity-70 transition-opacity" style={{ color: "var(--wg-text-2)" }}>
           ← Retour
@@ -30,7 +30,7 @@ export default function ConfidentialitePage() {
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>1. Qui sommes-nous ?</h2>
-            <p>Webgen est un outil de création de sites web propulsé par l&apos;intelligence artificielle. Le service est opéré par Samuel Yevi. Pour toute question relative à vos données, contactez-nous à l&apos;adresse indiquée en bas de page.</p>
+            <p>Webgenx est un outil de création de sites web propulsé par l&apos;intelligence artificielle. Le service est opéré par Samuel Yevi. Pour toute question relative à vos données, contactez-nous à l&apos;adresse indiquée en bas de page.</p>
           </section>
 
           <section>
@@ -38,7 +38,7 @@ export default function ConfidentialitePage() {
             <p className="mb-3">Nous collectons uniquement les données nécessaires au fonctionnement du service :</p>
             <ul className="list-disc list-inside flex flex-col gap-2 ml-2">
               <li><strong>Données de compte :</strong> nom, adresse e-mail, mot de passe haché (nous ne stockons jamais votre mot de passe en clair).</li>
-              <li><strong>Contenu de vos sites :</strong> textes, images et configurations générés ou uploadés via Webgen.</li>
+              <li><strong>Contenu de vos sites :</strong> textes, images et configurations générés ou uploadés via Webgenx.</li>
               <li><strong>Données d&apos;usage :</strong> logs de connexion, pages visitées — à des fins de sécurité et d&apos;amélioration du service.</li>
             </ul>
           </section>
@@ -47,7 +47,7 @@ export default function ConfidentialitePage() {
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>3. Utilisation des données</h2>
             <p>Vos données sont utilisées exclusivement pour :</p>
             <ul className="list-disc list-inside flex flex-col gap-2 ml-2 mt-2">
-              <li>Fournir et améliorer le service Webgen</li>
+              <li>Fournir et améliorer le service Webgenx</li>
               <li>Authentifier votre compte et sécuriser votre accès</li>
               <li>Stocker et publier vos sites web</li>
             </ul>
@@ -73,12 +73,12 @@ export default function ConfidentialitePage() {
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>6. Cookies</h2>
-            <p>Webgen utilise un cookie de session sécurisé (<code className="text-xs px-1 py-0.5 rounded" style={{ backgroundColor: "var(--wg-bg-3)" }}>webgen-token</code>) pour maintenir votre connexion. Ce cookie est HTTP-only, ne peut pas être lu par JavaScript, et expire après 30 jours. Aucun cookie de tracking tiers n&apos;est utilisé.</p>
+            <p>Webgenx utilise un cookie de session sécurisé (<code className="text-xs px-1 py-0.5 rounded" style={{ backgroundColor: "var(--wg-bg-3)" }}>webgenx-token</code>) pour maintenir votre connexion. Ce cookie est HTTP-only, ne peut pas être lu par JavaScript, et expire après 30 jours. Aucun cookie de tracking tiers n&apos;est utilisé.</p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold mb-3" style={{ color: "var(--wg-text)" }}>7. Contact</h2>
-            <p>Pour toute question relative à cette politique ou à vos données personnelles, écrivez-nous à : <strong>contact@webgen.app</strong></p>
+            <p>Pour toute question relative à cette politique ou à vos données personnelles, écrivez-nous à : <strong>contact@webgenx.app</strong></p>
           </section>
 
         </div>
