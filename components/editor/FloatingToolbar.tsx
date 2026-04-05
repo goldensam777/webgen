@@ -2,12 +2,27 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 
+interface FieldStyle {
+  fontWeight?: string;
+  fontStyle?: string;
+  textDecoration?: string;
+  color?: string;
+}
+
 interface Props {
   anchorEl:   HTMLElement | null;
+  field?: string;
+  style?: FieldStyle;
+  onStyleChange?: (s: FieldStyle) => void;
+  hrefField?: string;
+  hrefValue?: string;
+  onHrefChange?: (f: string, v: string) => void;
+  onToolbarMouseDown?: () => void;
+  onToolbarBlur?: () => void;
   onBold?:    () => void;
   onItalic?:  () => void;
   onLink?:    () => void;
-  onClose:    () => void;
+  onClose?:    () => void;
 }
 
 export function FloatingToolbar({ anchorEl, onBold, onItalic, onLink, onClose }: Props) {

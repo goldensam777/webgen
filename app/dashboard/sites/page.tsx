@@ -185,7 +185,7 @@ export default function SitesManagementPage() {
                   <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] opacity-40 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y" style={{ dividerColor: "var(--wg-border)" }}>
+              <tbody className="divide-y" style={{ borderColor: "var(--wg-border)" }}>
                 {processedSites.map(site => (
                   <tr key={site.slug} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
                     <td className="px-6 py-4 font-bold">{site.title || site.slug}</td>
