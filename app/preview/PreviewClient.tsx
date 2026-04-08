@@ -22,7 +22,7 @@ const SECTION_MAP: Record<string, React.ComponentType<any>> = {
   navbar: Navbar, hero: Hero, features: Features, stats: Stats,
   testimonials: Testimonials, pricing: Pricing, faq: FAQ,
   cta: CTA, contact: Contact, footer: Footer,
-  blog: Blog, chatwidget: ChatWidget,
+  blog: Blog,
 };
 
 function getPage(config: SiteConfig, pageId: string | null): SitePage | null {
@@ -63,7 +63,6 @@ function buildCSSVars(config: SiteConfig): string {
 }
 
 function buildFontUrl(font: string): string {
-  // Load weights 400 (regular), 500 (medium), 600 (semibold), 700 (bold), 800 (extrabold)
   return `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap`;
 }
 
@@ -74,7 +73,6 @@ export function PreviewClient() {
   const [transitioning, setTransitioning] = useState(false);
   const [visiblePageId, setVisiblePageId] = useState<string | null>(null);
 
-  /* ── Relay Ctrl+Z / Ctrl+Y / Ctrl+I vers le parent quand hors contentEditable ── */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
@@ -91,40 +89,31 @@ export function PreviewClient() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  /* ── Écoute les messages du parent ── */
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       const msg = e.data as ParentMsg;
       if (!msg?.type) return;
+      if (msg.type === "ready" && config && activePageId) {
+        iframeRef.current?.contentWindow?.postMessage({ type: "config", config, pageId: activePageId }, "*");
+      }
       if (msg.type === "config") {
         const newPageId = msg.pageId;
         setConfig(msg.config);
         setPageId(newPageId);
         setVisiblePageId(prev => {
-          if (prev === null || prev === newPageId) {
-            // First load or same page — no transition
-            return newPageId;
-          }
-          // Page change → trigger fade transition
+          if (prev === null || prev === newPageId) return newPageId;
           setTransitioning(true);
-          setTimeout(() => {
-            setVisiblePageId(newPageId);
-            setTransitioning(false);
-          }, 220);
-          return prev; // Keep old page visible during fade-out
+          setTimeout(() => { setVisiblePageId(newPageId); setTransitioning(false); }, 220);
+          return prev;
         });
       }
-      if (msg.type === "highlight") {
-        setSelected(msg.sectionId);
-      }
+      if (msg.type === "highlight") setSelected(msg.sectionId);
     };
     window.addEventListener("message", handler);
-    // Signale au parent que l'iframe est prête
     window.parent?.postMessage({ type: "ready" }, "*");
     return () => window.removeEventListener("message", handler);
-  }, []);
+  }, [config, pageId]);
 
-  /* ── Chargement initial ── */
   if (!config) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -136,15 +125,12 @@ export function PreviewClient() {
   const page = getPage(config, visiblePageId ?? pageId);
   if (!page) return null;
 
+  const chatData = page.data["chatwidget"] ? normalizeSectionData("chatwidget", page.data["chatwidget"]) : null;
+
   return (
     <>
-      {/* CSS variables du thème courant */}
       <style dangerouslySetInnerHTML={{ __html: buildCSSVars(config) }} />
-      {/* Google Font */}
-      <link
-        rel="stylesheet"
-        href={buildFontUrl(config.theme.font || "Inter")}
-      />
+      <link rel="stylesheet" href={buildFontUrl(config.theme.font || "Inter")} />
 
       <div
         style={{
@@ -154,6 +140,7 @@ export function PreviewClient() {
         }}
       >
         {page.sections.map((sectionId) => {
+          if (sectionId === "chatwidget") return null;
           const Component = SECTION_MAP[sectionId];
           if (!Component) return null;
 
@@ -161,14 +148,11 @@ export function PreviewClient() {
           const fieldStyles   = (data._styles  ?? {}) as Record<string, FieldStyle>;
           const elementStyles = (data._elStyles ?? {}) as Record<string, ElementStyle>;
           const componentData = rewriteSectionLinks(
-            Object.fromEntries(
-              Object.entries(data).filter(([k]) => !k.startsWith("_"))
-            ),
+            Object.fromEntries(Object.entries(data).filter(([k]) => !k.startsWith("_"))),
             config.pages
           );
           const isSelected   = selected === sectionId;
           const sectionAnims = page.animations?.[sectionId] ?? [];
-          /* Section-level background override — set via AI or style panel */
           const sectionBg    = (data.bgColor as string | undefined) || undefined;
 
           return (
@@ -190,60 +174,28 @@ export function PreviewClient() {
                   const href = (a as HTMLAnchorElement).getAttribute("href") ?? "";
                   if (href.startsWith("#")) {
                     const targetId = sectionAnchorId(href.slice(1));
-                    const targetSection = page.sections.find(
-                      (candidate) => sectionAnchorId(candidate) === targetId
-                    );
-                    document.getElementById(targetId)?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
+                    const targetSection = page.sections.find(candidate => sectionAnchorId(candidate) === targetId);
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
                     if (targetSection) {
                       setSelected(targetSection);
                       window.parent?.postMessage({ type: "select", sectionId: targetSection }, "*");
                     }
                     return;
                   }
-                  // Lien interne → naviguer vers la page correspondante
                   if (href && !href.startsWith("http") && !href.startsWith("//") && !href.startsWith("#")) {
                     const targetPage = findPageForHref(href, config.pages);
-                    if (targetPage) {
-                      window.parent?.postMessage({ type: "navigate", pageId: targetPage.id }, "*");
-                    }
+                    if (targetPage) window.parent?.postMessage({ type: "navigate", pageId: targetPage.id }, "*");
                   }
                   return;
                 }
                 setSelected(sectionId);
                 window.parent?.postMessage({ type: "select", sectionId }, "*");
               }}
-              onMouseEnter={(e) => {
-                if (!isSelected)
-                  (e.currentTarget as HTMLElement).style.outline = "1.5px dashed rgba(16,185,129,0.4)";
-              }}
-              onMouseLeave={(e) => {
-                if (!isSelected)
-                  (e.currentTarget as HTMLElement).style.outline = "none";
-              }}
+              onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.outline = "1.5px dashed rgba(16,185,129,0.4)"; }}
+              onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.outline = "none"; }}
             >
-              {/* Badge de sélection */}
               {isSelected && (
-                <span
-                  style={{
-                    position:      "absolute",
-                    top:           6,
-                    left:          6,
-                    zIndex:        100,
-                    pointerEvents: "none",
-                    backgroundColor: "#10b981",
-                    color:         "#fff",
-                    fontSize:      "10px",
-                    fontWeight:    700,
-                    padding:       "2px 8px",
-                    borderRadius:  "4px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    fontFamily:    "system-ui, sans-serif",
-                  }}
-                >
+                <span style={{ position: "absolute", top: 6, left: 6, zIndex: 100, pointerEvents: "none", backgroundColor: "#10b981", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "system-ui, sans-serif" }}>
                   {sectionId}
                 </span>
               )}
@@ -254,21 +206,9 @@ export function PreviewClient() {
                   canvasMode: sectionId === selected,
                   fieldStyles,
                   elementStyles,
-                  onUpdate: (field, value) => {
-                    window.parent?.postMessage(
-                      { type: "update", sectionId, field, value }, "*"
-                    );
-                  },
-                  onStyleUpdate: (field, style) => {
-                    window.parent?.postMessage(
-                      { type: "style-update", sectionId, field, style }, "*"
-                    );
-                  },
-                  onElementStyleUpdate: (elementId, style) => {
-                    window.parent?.postMessage(
-                      { type: "element-style-update", sectionId, elementId, style }, "*"
-                    );
-                  },
+                  onUpdate: (field, value) => { window.parent?.postMessage({ type: "update", sectionId, field, value }, "*"); },
+                  onStyleUpdate: (field, style) => { window.parent?.postMessage({ type: "style-update", sectionId, field, style }, "*"); },
+                  onElementStyleUpdate: (elementId, style) => { window.parent?.postMessage({ type: "element-style-update", sectionId, elementId, style }, "*"); },
                 }}
               >
                 {sectionAnims.length > 0 ? (
@@ -286,6 +226,15 @@ export function PreviewClient() {
           );
         })}
       </div>
+
+      {chatData && (
+        <ChatWidget 
+          greeting={chatData.greeting as string}
+          placeholder={chatData.placeholder as string}
+          buttonLabel={chatData.buttonLabel as string}
+          primaryColor={config.theme.primary}
+        />
+      )}
     </>
   );
 }

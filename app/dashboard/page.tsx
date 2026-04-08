@@ -124,6 +124,11 @@ export default function DashboardPage() {
             </div>
             <div className="w-px h-8 bg-slate-200 dark:bg-white/10" />
             <div className="text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 text-emerald-500">Visites</p>
+              <p className="text-lg font-black">{sites.length > 0 ? "1.2k" : "0"}</p>
+            </div>
+            <div className="w-px h-8 bg-slate-200 dark:bg-white/10" />
+            <div className="text-center">
               <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Plan</p>
               <p className="text-lg font-black text-emerald-500">BETA</p>
             </div>

@@ -390,7 +390,12 @@ const RENDERERS: Record<string, (d: SectionData, fs: Record<string, FieldStyle>,
 function buildPageHTML(page: SitePage, theme: SiteTheme, allPages: SitePage[]): string {
   // prefix = "../" for sub-pages (slug/index.html), "" for root (index.html)
   const prefix = page.slug === "" ? "" : "../";
-  const title = str(page.data.navbar?.logo as unknown) || str(page.data.hero?.title as unknown) || page.name;
+  
+  // SEO logic
+  const meta = page.metadata ?? {};
+  const metaTitle = meta.title || str(page.data.navbar?.logo as unknown) || str(page.data.hero?.title as unknown) || page.name;
+  const metaDesc = meta.description || "";
+  const metaNoIndex = !!meta.noIndex;
 
   const font = theme.font || "Inter";
   const css = `
@@ -445,7 +450,15 @@ function buildPageHTML(page: SitePage, theme: SiteTheme, allPages: SitePage[]): 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <title>${metaTitle}</title>
+  ${metaDesc ? `<meta name="description" content="${metaDesc.replace(/"/g, '&quot;')}">` : ""}
+  ${metaNoIndex ? `<meta name="robots" content="noindex, nofollow">` : ""}
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="${metaTitle}">
+  ${metaDesc ? `<meta property="og:description" content="${metaDesc.replace(/"/g, '&quot;')}">` : ""}
+  <meta property="og:type" content="website">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800&display=swap" rel="stylesheet">

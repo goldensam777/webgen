@@ -5,11 +5,12 @@ import { StylePanel }       from "./StylePanel";
 import { SectionPanel }     from "./SectionPanel";
 import { PropertiesPanel }  from "./PropertiesPanel";
 import { MediaPanel }       from "./MediaPanel";
+import { SEOPanel }         from "./SEOPanel";
 import { AIPatchPanel }     from "./AIPatchPanel";
 import { useSiteStore, useActivePage } from "@/app/store/siteStore";
 import type { PreviewMsg } from "@/lib/preview-bridge";
 
-type Tab = "sections" | "styles" | "media" | "pages";
+type Tab = "sections" | "styles" | "media" | "pages" | "seo";
 type Viewport = "desktop" | "tablet" | "mobile";
 
 /* ── Icons ───────────────── */
@@ -27,6 +28,11 @@ const Icons = {
   Media: () => (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  ),
+  SEO: () => (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
     </svg>
   ),
   Pages: () => (
@@ -132,6 +138,7 @@ export function EditorLayout() {
         <SidebarTab icon={<Icons.Sections />} active={tab === "sections"} onClick={() => setTab("sections")} label="Sections" />
         <SidebarTab icon={<Icons.Styles />} active={tab === "styles"} onClick={() => setTab("styles")} label="Styles" />
         <SidebarTab icon={<Icons.Media />} active={tab === "media"} onClick={() => setTab("media")} label="Médias" />
+        <SidebarTab icon={<Icons.SEO />} active={tab === "seo"} onClick={() => setTab("seo")} label="SEO" />
         <SidebarTab icon={<Icons.Pages />} active={tab === "pages"} onClick={() => setTab("pages")} label="Pages" />
       </aside>
 
@@ -147,6 +154,7 @@ export function EditorLayout() {
           {tab === "styles" && <StylePanel />}
           {tab === "media" && <MediaPanel />}
           {tab === "pages" && <PagesPanel />}
+          {tab === "seo" && <SEOPanel />}
         </div>
       </aside>
 

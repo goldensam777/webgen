@@ -6,6 +6,7 @@ export interface AuthUser {
   id:    string;
   email: string;
   name:  string;
+  plan?: "free" | "pro";
 }
 
 interface AuthStore {

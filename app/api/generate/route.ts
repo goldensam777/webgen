@@ -112,17 +112,17 @@ HERO ALIGNMENT :
 ══════════════════════════════════════════════
 RÈGLES DE SÉLECTION DES SECTIONS
 ══════════════════════════════════════════════
-Sections disponibles : navbar, hero, features, stats, testimonials, pricing, faq, cta, contact, blog, footer
+Sections disponibles : navbar, hero, features, stats, testimonials, pricing, faq, cta, contact, blog, footer, chatwidget
 
 Choisis les sections en fonction du secteur et du contenu :
-- SaaS / Produit tech : navbar, hero, features, stats, pricing, testimonials, faq, cta, footer
-- Service local / artisan : navbar, hero, features, testimonials, contact, footer
+- SaaS / Produit tech : navbar, hero, features, stats, pricing, testimonials, faq, cta, chatwidget, footer
+- Service local / artisan : navbar, hero, features, testimonials, contact, chatwidget, footer
 - Restaurant : navbar, hero, features (menu/spécialités), stats, testimonials, contact, footer
-- Formation / coaching : navbar, hero, features, pricing, testimonials, faq, cta, footer
+- Formation / coaching : navbar, hero, features, pricing, testimonials, faq, cta, blog, footer
 - Blog / portfolio : navbar, hero, features, blog, cta, footer
 - Page Contact / À propos : navbar, hero, contact, footer (max 4 sections)
 N'inclus jamais une section vide ou artificielle. Ajoute "stats" uniquement si des chiffres réels ont du sens.
-Ajoute "testimonials" uniquement si des avis clients sont pertinents.
+Ajoute "chatwidget" si un support client ou une interaction directe est pertinente.
 
 ══════════════════════════════════════════════
 STRUCTURE JSON ATTENDUE
@@ -133,107 +133,31 @@ STRUCTURE JSON ATTENDUE
       "name": "Accueil",
       "slug": "",
       "sections": ["navbar", "hero", "features", "cta", "footer"],
-      "navbar": {
-        "logo": "string",
-        "links": [{ "label": "string", "href": "string" }],
+      ... (navbar, hero, features, stats, testimonials, pricing, faq, cta, contact schémas) ...
+      "blog": {
+        "title": "string",
+        "subtitle": "string",
         "ctaLabel": "string",
-        "ctaHref": "string",
-        "bgColor": "string",
-        "logoColor": "string",
-        "textColor": "string"
-      },
-      "hero": {
-        "title": "string",
-        "subtitle": "string",
-        "description": "string",
-        "badgeLabel": "string",
-        "ctaLabel": "string",
-        "ctaHref": "string",
-        "secondaryCtaLabel": "string",
-        "secondaryCtaHref": "string",
-        "imageSrc": "string (URL Unsplash crédible avec paramètres d'optimisation ex: https://images.unsplash.com/photo-...?auto=format&fit=crop&w=1200&q=80) ou vide",
-        "imageAlt": "string",
-        "align": "left | center",
-        "bgColor": "string",
-        "titleColor": "string",
-        "subtitleColor": "string",
-        "descriptionColor": "string"
-      },
-      "features": {
-        "title": "string",
-        "subtitle": "string",
-        "items": [{ "title": "string", "description": "string" }],
-        "bgColor": "string",
-        "titleColor": "string",
-        "subtitleColor": "string",
-        "itemTitleColor": "string",
-        "itemDescColor": "string"
-      },
-      "stats": {
-        "items": [{ "value": "string", "label": "string" }],
-        "bgColor": "string",
-        "titleColor": "string",
-        "valueColor": "string"
-      },
-      "testimonials": {
-        "title": "string",
-        "subtitle": "string",
-        "items": [{ "quote": "string", "name": "string", "role": "string", "avatarSrc": "url" }],
+        "posts": [
+          {
+            "title": "string",
+            "excerpt": "string",
+            "date": "string (ex: 12 Mars 2026)",
+            "imageSrc": "url unsplash optimisée",
+            "slug": "string"
+          }
+        ],
         "bgColor": "string",
         "titleColor": "string"
       },
-      "pricing": {
-        "title": "string",
-        "subtitle": "string",
-        "plans": [{
-          "name": "string",
-          "price": "string",
-          "period": "string",
-          "description": "string",
-          "features": ["string"],
-          "ctaLabel": "string",
-          "ctaHref": "string",
-          "highlighted": false,
-          "badgeLabel": "string (ex: Populaire, Économique)"
-        }],
-        "bgColor": "string",
-        "titleColor": "string"
-      },
-      "faq": {
-        "title": "string",
-        "subtitle": "string",
-        "items": [{ "title": "string", "content": "string" }],
-        "bgColor": "string",
-        "titleColor": "string"
-      },
-      "cta": {
-        "title": "string",
-        "description": "string",
-        "ctaLabel": "string",
-        "ctaHref": "string",
-        "secondaryCtaLabel": "string",
-        "secondaryCtaHref": "string",
-        "bgColor": "string",
-        "titleColor": "string",
-        "descriptionColor": "string"
-      },
-      "contact": {
-        "title": "string",
-        "subtitle": "string",
-        "email": "string",
-        "phone": "string",
-        "address": "string",
-        "ctaLabel": "string",
-        "bgColor": "string",
-        "titleColor": "string"
+      "chatwidget": {
+        "greeting": "string (ex: Bonjour ! Comment puis-je vous aider ?)",
+        "placeholder": "string (ex: Posez votre question...)",
+        "buttonLabel": "string (ex: Support, Chat, Aide)",
+        "bgColor": "string (hex)"
       },
       "footer": {
-        "logo": "string",
-        "description": "string",
-        "copyright": "string",
-        "bgColor": "string",
-        "textColor": "string",
-        "borderColor": "string"
+        ...
       }
     }
   ],

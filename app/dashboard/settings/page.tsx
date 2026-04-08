@@ -121,6 +121,46 @@ export default function SettingsPage() {
           </div>
         </SettingsSection>
 
+        {/* ── Billing / Plans ── */}
+        <SettingsSection title="Abonnement">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Free Plan */}
+            <div className="p-5 rounded-2xl border bg-slate-50 dark:bg-white/[0.02]" style={{ borderColor: user.plan !== "pro" ? "var(--wg-green)" : "var(--wg-border)" }}>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Plan actuel</p>
+                  <h4 className="text-lg font-black">Gratuit</h4>
+                </div>
+                {user.plan !== "pro" && <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase">Actif</span>}
+              </div>
+              <ul className="space-y-2 mb-6">
+                {["1 site actif", "Générations IA limitées", "Sous-domaine webgenx.app", "Aide communautaire"].map(f => (
+                  <li key={f} className="text-[10px] opacity-60 flex items-center gap-2">✓ {f}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="p-5 rounded-2xl border relative overflow-hidden group transition-all hover:shadow-xl" 
+              style={{ borderColor: user.plan === "pro" ? "var(--wg-green)" : "var(--wg-border)", backgroundColor: "var(--wg-bg-2)" }}>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-40 text-emerald-500">Recommandé</p>
+                  <h4 className="text-lg font-black text-gradient">Pro</h4>
+                </div>
+                {user.plan === "pro" && <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase">Actif</span>}
+              </div>
+              <ul className="space-y-2 mb-6 relative z-10">
+                {["Sites illimités", "Générations IA prioritaires", "Domaines personnalisés", "Export code source ZIP", "Support 24/7"].map(f => (
+                  <li key={f} className="text-[10px] opacity-80 flex items-center gap-2">✓ {f}</li>
+                ))}
+              </ul>
+              <button className="w-full btn-green py-2 rounded-xl text-[10px] font-black uppercase tracking-widest relative z-10">Passer au Pro</button>
+            </div>
+          </div>
+        </SettingsSection>
+
         {/* ── Danger Zone ── */}
         <SettingsSection title="Zone de danger">
           <div className="p-6 rounded-[2rem] border-2 border-red-500/10 bg-red-500/[0.02] flex flex-col gap-4">

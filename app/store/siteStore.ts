@@ -25,6 +25,12 @@ export interface SitePage {
   data:       Record<string, Record<string, unknown>>;
   /** animations[sectionKey] = list of SectionAnimation configs */
   animations?: Record<string, SectionAnimation[]>;
+  metadata?: {
+    title?:       string;
+    description?: string;
+    ogImage?:     string;
+    noIndex?:     boolean;
+  };
 }
 
 export interface SiteConfig {
@@ -43,6 +49,7 @@ interface SiteStore {
   setConfig:       (config: SiteConfig) => void;
   clearConfig:     () => void;
   setActivePage:   (id: string) => void;
+  updatePageMetadata: (pageId: string, metadata: Partial<NonNullable<SitePage["metadata"]>>) => void;
 
   /* undo / redo */
   undo:            () => void;
@@ -139,9 +146,20 @@ export const useSiteStore = create<SiteStore>()(
 
       clearConfig: () => set({ config: null, activePageId: null, past: [], future: [] }),
 
-      setActivePage: (id) => set({ activePageId: id }),
+      setActivePage:   (id)     => set({ activePageId: id }),
 
-      /* ── undo / redo ── */
+      updatePageMetadata: (pageId, metadata) => set((s) => {
+        if (!s.config) return s;
+        return {
+          ...snapshot(s),
+          config: mapPage(s.config, pageId, p => ({
+            ...p,
+            metadata: { ...(p.metadata ?? {}), ...metadata }
+          })),
+        };
+      }),
+
+      /* undo / redo */
 
       undo: () => set((s) => {
         if (!s.past.length) return s;
