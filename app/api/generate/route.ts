@@ -4,22 +4,22 @@ import { normalizeSitePayload } from "@/lib/site-schema";
 /* ── Palettes concrètes ───────────────────────────────────────── */
 
 const PALETTES = [
-  { name: "Nuit violette",    primary:"#7c3aed", secondary:"#a855f7", background:"#0d0a1a", surface:"#1a1330", text:"#f1f0ff", textMuted:"#9b8fc4", border:"#2e2650", font:"Space Grotesk" },
   { name: "Cyan tech",        primary:"#06b6d4", secondary:"#0ea5e9", background:"#0a0f1a", surface:"#0f1929", text:"#e0f7ff", textMuted:"#7bb8cc", border:"#1a3040", font:"DM Sans" },
-  { name: "Crème artisan",    primary:"#b45309", secondary:"#d97706", background:"#faf7f0", surface:"#ffffff", text:"#1c1209", textMuted:"#7c6650", border:"#e8ddc8", font:"Merriweather" },
+  { name: "Crème artisan",    primary:"#d97706", secondary:"#f59e0b", background:"#faf7f0", surface:"#ffffff", text:"#1c1209", textMuted:"#7c6650", border:"#e8ddc8", font:"Merriweather" },
   { name: "Vert forêt",       primary:"#059669", secondary:"#10b981", background:"#f0fdf4", surface:"#ffffff", text:"#052e16", textMuted:"#4b7a5e", border:"#d1fae5", font:"Nunito" },
   { name: "Rouge passion",    primary:"#dc2626", secondary:"#ef4444", background:"#0a0a0a", surface:"#181818", text:"#fafafa", textMuted:"#a3a3a3", border:"#262626", font:"Montserrat" },
   { name: "Marine premium",   primary:"#1e40af", secondary:"#2563eb", background:"#f8faff", surface:"#ffffff", text:"#0f172a", textMuted:"#475569", border:"#dbeafe", font:"Inter" },
   { name: "Rose lifestyle",   primary:"#db2777", secondary:"#ec4899", background:"#fff7fb", surface:"#ffffff", text:"#1a0010", textMuted:"#9d4d7a", border:"#fce7f3", font:"Raleway" },
-  { name: "Ardoise corporate",primary:"#334155", secondary:"#475569", background:"#f8fafc", surface:"#ffffff", text:"#0f172a", textMuted:"#64748b", border:"#e2e8f0", font:"Roboto" },
-  { name: "Or luxe",          primary:"#b45309", secondary:"#92400e", background:"#fafaf9", surface:"#ffffff", text:"#1c1917", textMuted:"#78716c", border:"#e7e5e4", font:"Playfair Display" },
-  { name: "Indigo éducation", primary:"#4f46e5", secondary:"#6366f1", background:"#ffffff", surface:"#f5f3ff", text:"#1e1b4b", textMuted:"#6b7280", border:"#e0e7ff", font:"Poppins" },
-  { name: "Sable chaud",      primary:"#c2410c", secondary:"#ea580c", background:"#fffbf7", surface:"#ffffff", text:"#1c0a00", textMuted:"#9a6548", border:"#fed7aa", font:"Lato" },
-  { name: "Nuit bleue",       primary:"#0369a1", secondary:"#0284c7", background:"#020617", surface:"#0c1a2e", text:"#e0f2fe", textMuted:"#7ba8cc", border:"#1e3a5f", font:"Open Sans" },
+  { name: "Ardoise corporate",primary:"#475569", secondary:"#64748b", background:"#f8fafc", surface:"#ffffff", text:"#0f172a", textMuted:"#64748b", border:"#e2e8f0", font:"Roboto" },
+  { name: "Or luxe",          primary:"#b45309", secondary:"#d97706", background:"#fafaf9", surface:"#ffffff", text:"#1c1917", textMuted:"#78716c", border:"#e7e5e4", font:"Playfair Display" },
+  { name: "Sable chaud",      primary:"#ea580c", secondary:"#f97316", background:"#fffbf7", surface:"#ffffff", text:"#1c0a00", textMuted:"#9a6548", border:"#fed7aa", font:"Lato" },
+  { name: "Nuit bleue",       primary:"#0284c7", secondary:"#38bdf8", background:"#020617", surface:"#0c1a2e", text:"#e0f2fe", textMuted:"#7ba8cc", border:"#1e3a5f", font:"Open Sans" },
   { name: "Émeraude sombre",  primary:"#10b981", secondary:"#34d399", background:"#021310", surface:"#061f1a", text:"#ecfdf5", textMuted:"#6ee7b7", border:"#064e3b", font:"DM Sans" },
   { name: "Brique moderne",   primary:"#be123c", secondary:"#e11d48", background:"#fff1f2", surface:"#ffffff", text:"#0a0304", textMuted:"#9f1239", border:"#fecdd3", font:"Space Grotesk" },
-  { name: "Taupe minimaliste",primary:"#6b7280", secondary:"#374151", background:"#ffffff", surface:"#f9fafb", text:"#111827", textMuted:"#6b7280", border:"#e5e7eb", font:"Inter" },
-  { name: "Aubergine créatif",primary:"#7e22ce", secondary:"#9333ea", background:"#1a0526", surface:"#2d0d40", text:"#f5e6ff", textMuted:"#c084fc", border:"#3b0764", font:"Space Grotesk" },
+  { name: "Taupe minimaliste",primary:"#6b7280", secondary:"#9ca3af", background:"#ffffff", surface:"#f9fafb", text:"#111827", textMuted:"#6b7280", border:"#e5e7eb", font:"Inter" },
+  { name: "Lavande douce",    primary:"#8b5cf6", secondary:"#a78bfa", background:"#faf5ff", surface:"#ffffff", text:"#2e1065", textMuted:"#8b5cf6", border:"#e9d5ff", font:"Poppins" },
+  { name: "Soleil énergie",   primary:"#f59e0b", secondary:"#fbbf24", background:"#fffbeb", surface:"#ffffff", text:"#451a03", textMuted:"#b45309", border:"#fef3c7", font:"DM Sans" },
+  { name: "Bleu océan",       primary:"#0ea5e9", secondary:"#7dd3fc", background:"#f0f9ff", surface:"#ffffff", text:"#082f49", textMuted:"#0284c7", border:"#e0f2fe", font:"Inter" },
 ] as const;
 
 const CONTENT_TONES = [
@@ -249,7 +249,7 @@ Style des CTA : ${styleDeCTA}`,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model:      "claude-opus-4-5",
+        model:      "claude-opus-4-20250514",
         max_tokens: 8000,
         system:     systemPrompt,
         messages:   [{ role: "user", content: userContent }],
