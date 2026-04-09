@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import type { SiteTheme, SitePage } from "@/app/store/siteStore";
 
-const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-const MODEL = "gemini-2.0-flash";
+const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
+const MODEL = "claude-opus-4-20250514";
 
 /* ── Tool definitions ─────────────────────────────────────────── */
 
@@ -237,29 +237,34 @@ export async function POST(req: NextRequest) {
       { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
-  const geminiRes = await fetch(`${GEMINI_API}?key=${process.env.GEMINI_API_KEY ?? ""}`, {
+  const anthropicRes = await fetch(ANTHROPIC_API, {
     method:  "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type":      "application/json",
+      "x-api-key":         process.env.ANTHROPIC_API_KEY ?? "",
+      "anthropic-version": "2023-06-01",
+    },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: ctx.prompt }] },
-      contents: [{ role: "user", parts: [{ text: ctx.prompt }] }],
-      generationConfig: { maxOutputTokens: ctx.maxTokens },
+      model:      MODEL,
+      max_tokens: ctx.maxTokens,
+      system:     ctx.prompt,
+      messages:   [{ role: "user", content: ctx.prompt }],
     }),
   });
 
-  if (!geminiRes.ok) {
-    const err = await geminiRes.text();
-    return new Response(JSON.stringify({ error: `Gemini ${geminiRes.status}: ${err}` }),
+  if (!anthropicRes.ok) {
+    const err = await anthropicRes.text();
+    return new Response(JSON.stringify({ error: `Anthropic ${anthropicRes.status}: ${err}` }),
       { status: 500, headers: { "Content-Type": "application/json" } });
   }
 
-  const geminiData = await geminiRes.json() as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>
+  const anthropicData = await anthropicRes.json() as {
+    content?: Array<{ text?: string }>
   };
-  const responseText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  const responseText = anthropicData?.content?.[0]?.text ?? "";
 
   if (!responseText) {
-    return new Response(JSON.stringify({ error: "Réponse Gemini vide" }),
+    return new Response(JSON.stringify({ error: "Réponse Claude vide" }),
       { status: 500, headers: { "Content-Type": "application/json" } });
   }
 
