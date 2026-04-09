@@ -93,9 +93,6 @@ export function PreviewClient() {
     const handler = (e: MessageEvent) => {
       const msg = e.data as ParentMsg;
       if (!msg?.type) return;
-      if (msg.type === "ready" && config && activePageId) {
-        iframeRef.current?.contentWindow?.postMessage({ type: "config", config, pageId: activePageId }, "*");
-      }
       if (msg.type === "config") {
         const newPageId = msg.pageId;
         setConfig(msg.config);
