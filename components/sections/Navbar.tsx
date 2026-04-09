@@ -4,11 +4,12 @@ import { Button } from "../ui/Button";
 import { EditableText } from "../editor/EditableText";
 import { CanvasElement } from "../editor/CanvasElement";
 
-function LogoRender({ logo, logoSrc }: { logo: string; logoSrc?: string }) {
-  if (logoSrc) return <img src={logoSrc} alt={logo} className="h-8" />;
-  if (logo.trimStart().startsWith("<svg"))
-    return <span dangerouslySetInnerHTML={{ __html: logo }} />;
-  return <EditableText field="logo" value={logo} />;
+function LogoRender({ logo, logoSrc }: { logo?: string; logoSrc?: string }) {
+  const safeLogo = logo ?? "";
+  if (logoSrc) return <img src={logoSrc} alt={safeLogo} className="h-8" />;
+  if (safeLogo.trimStart().startsWith("<svg"))
+    return <span dangerouslySetInnerHTML={{ __html: safeLogo }} />;
+  return <EditableText field="logo" value={safeLogo} />;
 }
 
 interface NavLink {
