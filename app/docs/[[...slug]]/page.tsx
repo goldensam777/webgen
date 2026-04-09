@@ -4,7 +4,6 @@ import { MDXRemote }   from "next-mdx-remote/rsc";
 import remarkGfm       from "remark-gfm";
 import rehypeSlug      from "rehype-slug";
 import rehypeHighlight from "rehype-highlight";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import Link            from "next/link";
 import { getDoc, extractToc, getAllDocSlugs, type TocEntry } from "@/lib/docs";
 import { getAdjacentSlugs, DOCS_NAV }                       from "@/lib/docs-nav";
@@ -156,7 +155,6 @@ export default async function DocPage({ params }: PageProps) {
                 remarkPlugins: [remarkGfm],
                 rehypePlugins: [
                   rehypeSlug,
-                  [rehypeAutolinkHeadings, { behavior: "wrap", properties: { tabIndex: -1 } }],
                   rehypeHighlight,
                 ],
               },

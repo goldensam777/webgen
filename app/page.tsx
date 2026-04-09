@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/app/store/authStore";
 import { useHydrated } from "@/lib/use-hydrated";
+import { Logo } from "@/components/ui/Logo";
 
 /* ── Icons ──────────────── */
 const Icons = {
@@ -195,7 +196,7 @@ export default function LandingPage() {
       {/* ── Navbar ──────────────────────────────────────── */}
       <nav className="fixed top-8 inset-x-0 mx-auto max-w-4xl h-16 glass rounded-full z-[100] px-8 flex items-center justify-between shadow-2xl border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/20" />
+          <Logo size={28} />
           <span className="font-bold tracking-tighter text-lg">Webgenx</span>
         </div>
         
@@ -354,7 +355,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16">
           <div className="col-span-2">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-6 h-6 rounded-lg bg-emerald-500 shadow-lg shadow-emerald-500/20" />
+              <Logo size={24} />
               <span className="font-bold text-xl tracking-tighter">Webgenx</span>
             </div>
             <p className="text-base max-w-xs leading-relaxed" style={{ color: "var(--wg-text-2)" }}>
