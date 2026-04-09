@@ -6,10 +6,11 @@ import { CanvasElement } from "../editor/CanvasElement";
 
 function LogoRender({ logo, logoSrc }: { logo?: string; logoSrc?: string }) {
   const safeLogo = logo ?? "";
+  const displayLogo = safeLogo.trim() || "Votre marque";
   if (logoSrc) return <img src={logoSrc} alt={safeLogo} className="h-8" />;
   if (safeLogo.trimStart().startsWith("<svg"))
     return <span dangerouslySetInnerHTML={{ __html: safeLogo }} />;
-  return <EditableText field="logo" value={safeLogo} />;
+  return <EditableText field="logo" value={displayLogo} />;
 }
 
 interface NavLink {

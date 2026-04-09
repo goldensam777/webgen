@@ -84,7 +84,7 @@ export function Hero({
               {ctaLabel && (
                 <a href={ctaHref}>
                   <CanvasElement id="ctaBtn">
-                    <Button isDefault={false}>
+                    <Button isDefault={true}>
                       <EditableText field="ctaLabel" value={ctaLabel} hrefField="ctaHref" hrefValue={ctaHref} />
                     </Button>
                   </CanvasElement>
